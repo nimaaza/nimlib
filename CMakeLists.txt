@@ -17,5 +17,9 @@ FetchContent_MakeAvailable(googletest)
 
 # Link against gtest or gtest_main as needed
 add_executable(unit_tests library.test.cpp)
-target_link_libraries(unit_tests gtest_main)
+target_link_libraries(unit_tests GTest::gtest_main)
 add_test(NAME unit_tests COMMAND unit_tests)
+
+enable_testing()
+include(GoogleTest)
+gtest_discover_tests(unit_tests)
