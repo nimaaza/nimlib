@@ -227,6 +227,9 @@ bool Request::parse_headers_and_body() {
     // message has no header and/or no body, p will be npos and
     // header_line will be empty.
     if (header_line.empty()) {
+      if (p == std::string::npos) {
+        headers_parse_success = false;
+      }
       break;
     }
     // When this happens while processing the headers, it means that
@@ -248,9 +251,8 @@ bool Request::parse_headers_and_body() {
 
   // For a correctly formatted message with body, after processing
   // headers (whether any exists), p should point to right after \r\n\r\n
-  // before the body. When body does not exit, p is set to npos in the
-  // loop above hence the check p < message.length().
-  if (headers_parse_success && p < message.length()) {
+  // before the body.
+  if (headers_parse_success) {
     body = message.substr(p);
   }
 

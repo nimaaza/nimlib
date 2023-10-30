@@ -222,7 +222,7 @@ TEST(HttpHeaderTests, ParseHeaderFields) {
 }
 
 TEST(HttpRequestMessage, ParseHttpRequest_WithoutHeaderWithoutBody) {
-  std::string message = "GET / HTTP/1.1\r\n";
+  std::string message = "GET / HTTP/1.1\r\n\r\n";
   Request request{message};
 
   EXPECT_TRUE(request.parsed());
@@ -237,7 +237,8 @@ TEST(HttpRequestMessage, ParseHttpRequest_WithHeaderWithoutBody) {
                         "Accept: text/html,application/xhtml+xml\r\n"
                         "Accept-Language: en-US,en;q=0.5\r\n"
                         "Accept-Encoding: gzip, deflate\r\n"
-                        "Connection: keep-alive\r\n";
+                        "Connection: keep-alive\r\n"
+                        "\r\n";
   Request request{message};
 
   EXPECT_TRUE(request.parsed());
@@ -295,6 +296,7 @@ TEST(HttpRequestMessage, ParseHttpRequest_WithoutHeaderWithBody) {
 TEST(HttpRequestMessage, ParseHttpRequest_WithHeaderWithBody) {
   std::string message = "POST /test/demo_form.php HTTP/1.1\r\n"
                         "Host: w3schools.com\r\n"
+                        "Accept: text/html,application/xhtml+xml\r\n"
                         "\r\n"
                         "name1=value1&name2=value2";
 
@@ -302,7 +304,6 @@ TEST(HttpRequestMessage, ParseHttpRequest_WithHeaderWithBody) {
   auto& request_line = reinterpret_cast<const RequestStartLine&>(request.get_start_line());
 
   EXPECT_TRUE(request.parsed());
-  EXPECT_EQ(request.get_headers().size(), 1);
 
   EXPECT_TRUE(request_line.parsed());
   EXPECT_TRUE(request_line.get_method().has_value());
@@ -315,7 +316,7 @@ TEST(HttpRequestMessage, ParseHttpRequest_WithHeaderWithBody) {
   EXPECT_EQ(request_line.get_request_target().value().to_string().value(), "/test/demo_form.php");
   EXPECT_EQ(request_line.get_version().value().to_string().value(), "HTTP/1.1");
 
-  EXPECT_EQ(request.get_headers().size(), 1);
+  EXPECT_EQ(request.get_headers().size(), 2);
   EXPECT_TRUE(request.get_headers()[0].parsed());
   EXPECT_TRUE(request.get_headers()[0].to_string().has_value());
   EXPECT_TRUE(request.get_headers()[0].get_field_name().has_value());
@@ -323,6 +324,14 @@ TEST(HttpRequestMessage, ParseHttpRequest_WithHeaderWithBody) {
   EXPECT_EQ(request.get_headers()[0].to_string().value(), "host: w3schools.com");
   EXPECT_EQ(request.get_headers()[0].get_field_name().value(), "host");
   EXPECT_EQ(request.get_headers()[0].get_field_value().value(), "w3schools.com");
+
+  EXPECT_TRUE(request.get_headers()[1].parsed());
+  EXPECT_TRUE(request.get_headers()[1].to_string().has_value());
+  EXPECT_TRUE(request.get_headers()[1].get_field_name().has_value());
+  EXPECT_TRUE(request.get_headers()[1].get_field_value().has_value());
+  EXPECT_EQ(request.get_headers()[1].to_string().value(), "accept: text/html,application/xhtml+xml");
+  EXPECT_EQ(request.get_headers()[1].get_field_name().value(), "accept");
+  EXPECT_EQ(request.get_headers()[1].get_field_value().value(), "text/html,application/xhtml+xml");
 
   EXPECT_TRUE(request.get_body().has_value());
   EXPECT_EQ(request.get_body().value(), "name1=value1&name2=value2");
@@ -379,7 +388,7 @@ TEST(HttpRequestMessage, ParseHttpRequest_IncorrectMessages) {
   EXPECT_FALSE(request_4.to_string().has_value());
   EXPECT_TRUE(request_4.get_headers().empty());
 
-  // Incorrect message body delimiter (missing one \r\n)
+  // Incorrect message body delimiter (missing \r\n)
   message = "POST /test/demo_form.php HTTP/1.1\r\n"
             "Host: w3schools.com\r\n"
             "User-Agent: Mozilla/5.0\r\n"
@@ -392,7 +401,6 @@ TEST(HttpRequestMessage, ParseHttpRequest_IncorrectMessages) {
   EXPECT_FALSE(request_5.to_string().has_value());
   EXPECT_EQ(request_5.get_headers().size(), 2); // The first two headers are still parsed
 
-  // Incorrect header (missing one \r\n)
   message = "POST /test/demo_form.php HTTP/1.1\r\n"
             "Host: w3schools.com\r\n"
             "User-Agent: Mozilla/5.0"
@@ -405,7 +413,7 @@ TEST(HttpRequestMessage, ParseHttpRequest_IncorrectMessages) {
   EXPECT_FALSE(request_6.to_string().has_value());
   EXPECT_EQ(request_6.get_headers().size(), 1); // The first header is still parsed
 
-  // Incorrect message body delimiter (missing one \r\n)
+  // Incorrect message body delimiter (space before \r\n)
   message = "POST /test/demo_form.php HTTP/1.1\r\n"
             "Host: w3schools.com\r\n"
             "User-Agent: Mozilla/5.0\r\n"
@@ -419,7 +427,6 @@ TEST(HttpRequestMessage, ParseHttpRequest_IncorrectMessages) {
   EXPECT_FALSE(request_7.to_string().has_value());
   EXPECT_EQ(request_7.get_headers().size(), 2); // The first header is still parsed
 
-  // Incorrect message body delimiter (missing one \r\n)
   message = "POST /test/demo_form.php HTTP/1.1\r\n"
             "Host: w3schools.com\r\n"
             " \r\n"
@@ -433,11 +440,12 @@ TEST(HttpRequestMessage, ParseHttpRequest_IncorrectMessages) {
   EXPECT_FALSE(request_8.to_string().has_value());
   EXPECT_EQ(request_8.get_headers().size(), 1); // The first header is still parsed
 
-  // Incorrect message body delimiter (missing one \r\n)
+  // Incorrect message (space before header)
   message = "POST /test/demo_form.php HTTP/1.1\r\n"
             "Host: w3schools.com\r\n"
             " "
             "User-Agent: Mozilla/5.0\r\n"
+            "\r\n"
             "name1=value1&name2=value2";
   Request request_9{message};
 
@@ -446,6 +454,28 @@ TEST(HttpRequestMessage, ParseHttpRequest_IncorrectMessages) {
   EXPECT_FALSE(request_9.get_body().has_value());
   EXPECT_FALSE(request_9.to_string().has_value());
   EXPECT_EQ(request_9.get_headers().size(), 1); // The first header is still parsed
+
+  // Incorrect message (the last \r\n missing)
+  message = "GET / HTTP/1.1\r\n";
+  Request request_10{message};
+
+  EXPECT_FALSE(request_10.parsed());
+  EXPECT_TRUE(request_10.get_start_line().parsed());
+  EXPECT_FALSE(request_10.get_body().has_value());
+  EXPECT_FALSE(request_10.to_string().has_value());
+  EXPECT_TRUE(request_10.get_headers().empty());
+
+  message = "GET / HTTP/1.1\r\n"
+            "Host: w3schools.com\r\n"
+            "User-Agent: Mozilla/5.0\r\n";
+
+  Request request_11{message};
+
+  EXPECT_FALSE(request_11.parsed());
+  EXPECT_TRUE(request_11.get_start_line().parsed());
+  EXPECT_FALSE(request_11.get_body().has_value());
+  EXPECT_FALSE(request_11.to_string().has_value());
+  EXPECT_EQ(request_11.get_headers().size(), 2);
 }
 
 TEST(SplitOnceTests, SplitsAsRequired) {
