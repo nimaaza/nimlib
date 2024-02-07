@@ -29,7 +29,7 @@ void PollingServer::run()
         poll_result = poll(sockets.data(), sockets.size(), -1);
 
         // accept and create new connection
-        accept_connections(sockets);
+        accept_new_connection(sockets);
 
         // move connections to reading & writing queue
         queue_connections(POLLIN, sockets, allowed_states_for_read, read_queue);
@@ -50,25 +50,25 @@ void PollingServer::setup_fds(std::vector<pollfd>& sockets)
 
     sockets.clear();
     pollfd server_fd;
-    create_socket_descriptor(server_socket_descriptor, server_fd);
+    create_pollfds_entry(server_socket_descriptor, server_fd);
     sockets.push_back(server_fd);
 
     for (auto& c : connections)
     {
         pollfd fds;
-        create_socket_descriptor(c.first, fds);
+        create_pollfds_entry(c.first, fds);
         sockets.push_back(fds);
     }
 }
 
-void PollingServer::create_socket_descriptor(int s, pollfd& fds)
+void PollingServer::create_pollfds_entry(int s, pollfd& fds)
 {
     fds.fd = s;
     fds.events = POLLIN | POLLOUT;
     fds.revents = 0;
 }
 
-void PollingServer::accept_connections(std::vector<pollfd>& sockets)
+void PollingServer::accept_new_connection(std::vector<pollfd>& sockets)
 {
     if (sockets[0].revents & POLLIN)
     {
@@ -76,11 +76,16 @@ void PollingServer::accept_connections(std::vector<pollfd>& sockets)
         auto connection = std::make_unique<Connection>(nullptr, std::move(connection_socket));
         connections.emplace(connection->get_tcp_socket_descriptor(), std::move(connection));
     }
-    
+
     sockets.erase(sockets.begin());
 }
 
-void PollingServer::queue_connections(short poll_event, std::vector<pollfd>& sockets, std::vector<ConnectionState>& allowed_states, std::queue<std::unique_ptr<Connection>>& queue)
+void PollingServer::queue_connections(
+    short poll_event,
+    std::vector<pollfd>& sockets,
+    std::vector<ConnectionState>& allowed_states,
+    std::queue<connection_ptr>& queue
+)
 {
     for (auto& s : sockets)
     {

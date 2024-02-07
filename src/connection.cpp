@@ -1,8 +1,8 @@
 #include "connection.h"
 
 Connection::Connection(std::unique_ptr<HttpRouter> router, std::unique_ptr<TcpSocket> socket)
-    : router{ std::move(router) }, 
-    socket{ std::move(socket) }, 
+    : router{ std::move(router) },
+    socket{ std::move(socket) },
     state{ STARTING }
 {}
 
@@ -15,12 +15,13 @@ void Connection::read()
     state = WRITING;
 }
 
-void Connection::write() {
-    std::array<char, 4> s {'d', 'o', 'n', 'e'};
+void Connection::write()
+{
+    std::array<char, 4> s{ 'd', 'o', 'n', 'e' };
     socket->tcp_send(s);
     state = DONE;
 }
 
-ConnectionState Connection::get_state() { return state; }
+ConnectionState Connection::get_state() const { return state; }
 
-int Connection::get_tcp_socket_descriptor() { return socket->get_tcp_socket_descriptor(); }
+int Connection::get_tcp_socket_descriptor() const { return socket->get_tcp_socket_descriptor(); }

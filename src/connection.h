@@ -20,21 +20,20 @@ class Connection
 {
 public:
     Connection(std::unique_ptr<HttpRouter>, std::unique_ptr<TcpSocket>);
-    Connection(std::unique_ptr<TcpSocket>);
     ~Connection();
 
     Connection(const Connection&) = delete;
     Connection& operator=(const Connection&) = delete;
 
-    Connection(Connection&&) noexcept;
-    Connection& operator=(Connection&&) noexcept;
+    Connection(Connection&&) noexcept = delete;
+    Connection& operator=(Connection&&) noexcept = delete;
 
     void read();
     void write();
     void halt();
     void set_state(ConnectionState);
-    ConnectionState get_state();
-    int get_tcp_socket_descriptor();
+    ConnectionState get_state() const;
+    int get_tcp_socket_descriptor() const;
 
 private:
     void parse();

@@ -12,24 +12,32 @@
 
 class PollingServer
 {
+    using connection_ptr = std::unique_ptr<Connection>;
+
 public:
     PollingServer(const std::string&);
     ~PollingServer();
+
+    PollingServer(const PollingServer&) = delete;
+    PollingServer& operator=(const PollingServer&) = delete;
+
+    PollingServer(PollingServer&&) noexcept = delete;
+    PollingServer& operator=(PollingServer&&) noexcept = delete;
 
     void run();
 
 private:
     void setup_fds(std::vector<pollfd>&);
-    void create_socket_descriptor(int, pollfd&);
-    void accept_connections(std::vector<pollfd>&);
-    void queue_connections(short, std::vector<pollfd>&, std::vector<ConnectionState>&, std::queue<std::unique_ptr<Connection>>&);
+    void create_pollfds_entry(int, pollfd&);
+    void accept_new_connection(std::vector<pollfd>&);
+    void queue_connections(short, std::vector<pollfd>&, std::vector<ConnectionState>&, std::queue<connection_ptr>&);
     void handle_reads();
     void handle_writes();
 
 private:
     const std::string& port;
     std::unique_ptr<TcpSocket> server_socket;
-    std::unordered_map<int, std::unique_ptr<Connection>> connections;
-    std::queue <std::unique_ptr<Connection>> read_queue;
-    std::queue <std::unique_ptr<Connection>> write_queue;
+    std::unordered_map<int, connection_ptr> connections;
+    std::queue <connection_ptr> read_queue;
+    std::queue <connection_ptr> write_queue;
 };
