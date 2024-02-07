@@ -19,7 +19,9 @@ public:
     void run();
 
 private:
-    pollfd create_socket_descriptor(int);
+    void setup_fds(std::vector<pollfd>&);
+    void create_socket_descriptor(int, pollfd&);
+    void accept_connections(std::vector<pollfd>&);
     void queue_connections(short, std::vector<pollfd>&, std::vector<ConnectionState>&, std::queue<std::unique_ptr<Connection>>&);
     void handle_reads();
     void handle_writes();
