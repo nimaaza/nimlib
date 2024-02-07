@@ -4,7 +4,7 @@
 
 #include <memory>
 #include <iostream>
-#include <sstream> // temp
+#include <sstream>
 
 // =======================================================================
 class HttpRouter {};
@@ -42,6 +42,7 @@ private:
     void write_response();
 
 private:
+    std::stringstream request_stream;
     HttpParser parser;
     HttpObject http_object;
     HttpRequest request;
