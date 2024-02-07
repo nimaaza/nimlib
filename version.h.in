@@ -1,0 +1,3 @@
+#define nimlib_VERSION_MAJOR @nimlib_VERSION_MAJOR@
+#define nimlib_VERSION_MINOR @nimlib_VERSION_MINOR@
+#define nimlib_VERSION_PATCH @nimlib_VERSION_PATCH@
