@@ -8,6 +8,6 @@ configure_file(version.h.in version.h)
 find_package(OpenSSL)
 message("Using OpenSSL version: ${OPENSSL_VERSION}")
 
-add_executable(test_run src/test_run.cpp src/tcp_socket.cpp)
+add_executable(test_run src/test_run.cpp src/tcp_socket.cpp src/polling_server.cpp src/connection.cpp)
 target_include_directories(test_run PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(test_run OpenSSL::SSL OpenSSL::Crypto)
