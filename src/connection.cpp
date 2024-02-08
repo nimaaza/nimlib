@@ -13,22 +13,11 @@ Connection::~Connection() {}
 
 void Connection::read()
 {
-    static const int SIZE = 10;
-
-    int flag = 0;
-    int bytes_count;
+    static const int SIZE = 10240;
     std::array<char, SIZE> buff{};
+    int bytes_count;
 
-    do
-    {
-        bytes_count = socket->tcp_read(buff, flag);
-        for (int i = 0; i < buff.size(); i++)
-        {
-            request_stream << buff[i];
-            buff[i] = '\0';
-            flag = MSG_DONTWAIT;
-        }
-    } while (bytes_count > 0);
+    bytes_count = socket->tcp_read(buff, 0);
 
     set_state(WRITING);
 }

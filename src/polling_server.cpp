@@ -9,6 +9,7 @@ PollingServer::PollingServer(const std::string& port)
 {
     server_socket->tcp_bind();
     server_socket->tcp_listen();
+    create_pollfds_entry(server_socket->get_tcp_socket_descriptor(), server_fd);
 }
 
 PollingServer::~PollingServer() {}
@@ -16,8 +17,8 @@ PollingServer::~PollingServer() {}
 void PollingServer::run()
 {
     std::vector<pollfd> sockets;
-    int poll_result;
-    std::vector allowed_states_for_read{ STARTING, PENDING };
+    int poll_result{};
+    std::vector allowed_states_for_read{ STARTING, READING, PENDING };
     std::vector allowed_states_for_write{ WRITING };
 
     while (true)
@@ -26,7 +27,7 @@ void PollingServer::run()
         setup_fds(sockets);
 
         // poll;
-        poll_result = poll(sockets.data(), sockets.size(), -1);
+        poll_result = poll(sockets.data(), sockets.size(), -1); // TODO: timeout for polling
 
         // accept and create new connection
         accept_new_connection(sockets);
@@ -49,8 +50,6 @@ void PollingServer::setup_fds(std::vector<pollfd>& sockets)
     static const int server_socket_descriptor{ server_socket->get_tcp_socket_descriptor() };
 
     sockets.clear();
-    pollfd server_fd;
-    create_pollfds_entry(server_socket_descriptor, server_fd);
     sockets.push_back(server_fd);
 
     for (auto& c : connections)
@@ -107,7 +106,7 @@ void PollingServer::handle_reads()
     while (!read_queue.empty())
     {
         auto state = read_queue.front()->get_state();
-        if (state == PENDING || state == STARTING)
+        if (state == PENDING || state == STARTING || state == READING)
             read_queue.front()->read();
         auto s = read_queue.front()->get_tcp_socket_descriptor();
         connections.emplace(s, std::move(read_queue.front()));

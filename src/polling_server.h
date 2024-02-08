@@ -37,6 +37,7 @@ private:
 private:
     const std::string& port;
     std::unique_ptr<TcpSocket> server_socket;
+    pollfd server_fd;
     std::unordered_map<int, connection_ptr> connections;
     std::queue <connection_ptr> read_queue;
     std::queue <connection_ptr> write_queue;

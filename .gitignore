@@ -1,2 +1,6 @@
 .vscode/
+.idea/
+.mypy_cache/
+cmake-build-debug/
 build/
+venv/
