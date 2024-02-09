@@ -1,10 +1,8 @@
 #pragma once
 
-#include "tcp_socket.h"
-
-#include <memory>
-#include <iostream>
 #include <sstream>
+
+#include "tcp_socket.h"
 
 // =======================================================================
 class HttpRouter {};
@@ -32,7 +30,7 @@ public:
     void write();
     void halt();
     void set_state(ConnectionState);
-    ConnectionState get_state() const;
+    std::pair<ConnectionState, long> get_state() const;
     int get_tcp_socket_descriptor() const;
 
 private:

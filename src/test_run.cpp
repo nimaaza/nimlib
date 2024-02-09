@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "version.h"
 #include "polling_server.h"
 

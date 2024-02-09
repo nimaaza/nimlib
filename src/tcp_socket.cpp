@@ -1,8 +1,5 @@
-#include "tcp_socket.h"
-
 #include <iostream>
 #include <span>
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -10,6 +7,8 @@
 #include <netdb.h>
 #include <unistd.h>
 // #include "errno.h"
+
+#include "tcp_socket.h"
 
 TcpSocket::TcpSocket(const std::string& port)
 {

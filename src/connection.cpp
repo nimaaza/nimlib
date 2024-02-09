@@ -1,12 +1,14 @@
-#include "connection.h"
-
 #include <sys/socket.h>
+#include <utility>
+
+#include "connection.h"
 
 Connection::Connection(std::unique_ptr<HttpRouter> router, std::unique_ptr<TcpSocket> socket)
     : router{ std::move(router) },
     socket{ std::move(socket) },
     request_stream{},
-    state{ STARTING }
+    state{ STARTING },
+    last_state_change{}
 {}
 
 Connection::~Connection() {}
@@ -35,6 +37,6 @@ void Connection::set_state(ConnectionState s)
     state = s;
 }
 
-ConnectionState Connection::get_state() const { return state; }
+std::pair<ConnectionState, long> Connection::get_state() const { return { state, last_state_change }; }
 
 int Connection::get_tcp_socket_descriptor() const { return socket->get_tcp_socket_descriptor(); }
