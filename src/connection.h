@@ -2,22 +2,14 @@
 
 #include <sstream>
 
+#include "common.h"
 #include "tcp_socket.h"
-
-// =======================================================================
-class HttpRouter {};
-class HttpParser {};
-class HttpObject {};
-class HttpRequest {};
-class HttpResponse {};
-// =======================================================================
-
-enum ConnectionState { STARTING, READING, HANDLING, WRITING, PENDING, DONE };
+#include "protocol.h"
 
 class Connection
 {
 public:
-    Connection(std::unique_ptr<HttpRouter>, std::unique_ptr<TcpSocket>);
+    Connection(std::unique_ptr<TcpSocket>);
     ~Connection();
 
     Connection(const Connection&) = delete;
@@ -30,23 +22,20 @@ public:
     void write();
     void halt();
     void set_state(ConnectionState);
+    void reset_state();
     std::pair<ConnectionState, long> get_state() const;
     int get_tcp_socket_descriptor() const;
 
 private:
-    void parse();
-    void route();
-    void write_error();
-    void write_response();
+    void handle_incoming_data();
 
 private:
     std::stringstream request_stream;
-    HttpParser parser;
-    HttpObject http_object;
-    HttpRequest request;
-    HttpResponse response;
-    std::unique_ptr<HttpRouter> router;
+    std::stringstream response_stream;
+    Protocol protocol;
     std::unique_ptr<TcpSocket> socket;
     ConnectionState state;
+    ParseResult parse_result;
     long last_state_change;
+    int reset_count;
 };

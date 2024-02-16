@@ -1,42 +1,162 @@
 #include <sys/socket.h>
 #include <utility>
+#include <string_view>
+#include <vector>
+#include <ranges>
 
 #include "connection.h"
 
-Connection::Connection(std::unique_ptr<HttpRouter> router, std::unique_ptr<TcpSocket> socket)
-    : router{ std::move(router) },
+Connection::Connection(std::unique_ptr<TcpSocket> socket)
+    : protocol{},
     socket{ std::move(socket) },
     request_stream{},
-    state{ STARTING },
-    last_state_change{}
+    response_stream{},
+    state{ ConnectionState::STARTING },
+    parse_result{ ParseResult::STILL_NEED_MORE },
+    last_state_change{},
+    reset_count{}
 {}
 
 Connection::~Connection() {}
 
 void Connection::read()
 {
-    static const int SIZE = 10240;
-    std::array<char, SIZE> buff{};
-    int bytes_count;
+    set_state(ConnectionState::READING);
 
-    bytes_count = socket->tcp_read(buff, 0);
+    std::array<char, BUFFER_SIZE> buff{};
+    int bytes_count = socket->tcp_read(buff, MSG_DONTWAIT); // read without waiting
 
-    set_state(WRITING);
+    if (bytes_count > 0)
+    {
+        for (int i = 0; i < bytes_count && i < BUFFER_SIZE; i++)
+        {
+            request_stream << buff[i];
+        }
+
+        handle_incoming_data();
+    }
+    else if (bytes_count == 0)
+    {
+        // TODO: still no data to read, what to do here?
+        // This may never happen because when poll returns
+        // there must be something to read.
+        reset_state();
+    }
+    else
+    {
+        set_state(ConnectionState::ERROR);
+    }
 }
 
 void Connection::write()
 {
-    std::array<char, 4> s{ 'd', 'o', 'n', 'e' };
-    socket->tcp_send(s);
-    set_state(DONE);
+    std::string response_str {response_stream.str()};
+    std::string_view response_view{ response_str };
+    size_t bytes_to_send{ response_str.size() };
+    size_t total_bytes_sent{};
+
+    while (bytes_to_send > 0)
+    {
+        auto substr = response_view.substr(total_bytes_sent, BUFFER_SIZE);
+        int sent = socket->tcp_send(substr);
+
+        if (sent < 0)
+        {
+            break;
+        }
+
+        bytes_to_send -= sent;
+        total_bytes_sent += sent;
+    }
+
+    if (bytes_to_send == 0 && parse_result == ParseResult::WRITE_AND_DIE)
+    {
+        set_state(ConnectionState::DONE);
+    }
+    else if (bytes_to_send == 0 && parse_result == ParseResult::WRITE_AND_WAIT)
+    {
+        set_state(ConnectionState::PENDING);
+    }
+    else if (bytes_to_send > 0)
+    {
+        // TODO: erase might be faster
+        response_stream.str(response_str.substr(total_bytes_sent));
+        reset_state();
+    }
+    else
+    {
+        //TODO: crash? bytes_to_send cannot be negative
+        set_state(ConnectionState::ERROR);
+    }
+}
+
+void Connection::halt()
+{
+    set_state(ConnectionState::ERROR);
 }
 
 void Connection::set_state(ConnectionState s)
 {
-    if (s == PENDING) request_stream.clear();
-    state = s;
+    if (s == PENDING)
+    {
+        // TODO: is the clear() function what I think it is?
+        request_stream.clear();
+        response_stream.clear();
+    }
+
+    if (s == state)
+    {
+        reset_state();
+    }
+    else
+    {
+        state = s;
+        last_state_change = 0; // TODO: must be set to now
+    }
 }
 
-std::pair<ConnectionState, long> Connection::get_state() const { return { state, last_state_change }; }
+void Connection::reset_state()
+{
+    if (reset_count < MAX_RESET_COUNT)
+    {
+        last_state_change = 0; // TODO: must be set to now
+    }
+    else
+    {
+        set_state(ConnectionState::ERROR);
+    }
 
-int Connection::get_tcp_socket_descriptor() const { return socket->get_tcp_socket_descriptor(); }
+    reset_count++;
+}
+
+std::pair<ConnectionState, long> Connection::get_state() const
+{
+    return { state, last_state_change };
+}
+
+int Connection::get_tcp_socket_descriptor() const
+{
+    return socket->get_tcp_socket_descriptor();
+}
+
+void Connection::handle_incoming_data()
+{
+    set_state(ConnectionState::HANDLING);
+    parse_result = protocol.parse(request_stream, response_stream);
+
+    if (parse_result == ParseResult::WRITE_AND_DIE || parse_result == ParseResult::WRITE_AND_WAIT)
+    {
+        set_state(ConnectionState::WRITING);
+    }
+    else if (parse_result == ParseResult::STILL_NEED_MORE)
+    {
+        set_state(ConnectionState::READING);
+        reset_state();
+    }
+    else
+    {
+        // crash?
+        set_state(ConnectionState::ERROR);
+
+    }
+}
