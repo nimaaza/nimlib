@@ -3,6 +3,7 @@
 #include <queue>
 #include <poll.h>
 
+#include "common.h"
 #include "connection.h"
 #include "tcp_socket.h"
 

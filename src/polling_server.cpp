@@ -1,10 +1,7 @@
 #include <unordered_map>
-#include <queue>
 #include <string>
 #include <memory>
 #include <algorithm>
-#include <queue>
-#include <poll.h>
 
 #include "polling_server.h"
 
@@ -47,7 +44,10 @@ void PollingServer::run()
         handle_queue(write_queue, allowed_states_for_write, false);
 
         // filter connections (moving remaining live connections to connections map)
-        std::erase_if(connections, [](const auto& c) { return (c.second->get_state().first == DONE); });
+        std::erase_if(connections, [](const auto& c) {
+            auto state = c.second->get_state().first;
+            return (state == DONE || state == ERROR);
+        });
     }
 }
 
@@ -76,7 +76,7 @@ void PollingServer::accept_new_connection(std::vector<pollfd>& sockets)
     if (sockets[0].revents & POLLIN)
     {
         auto connection_socket = server_socket->tcp_accept();
-        auto connection = std::make_unique<Connection>(nullptr, std::move(connection_socket));
+        auto connection = std::make_unique<Connection>(std::move(connection_socket));
         connections.emplace(connection->get_tcp_socket_descriptor(), std::move(connection));
     }
 }
