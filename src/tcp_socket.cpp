@@ -1,5 +1,6 @@
 #include <iostream>
 #include <span>
+#include <string_view>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -92,7 +93,7 @@ std::unique_ptr<TcpSocket> TcpSocket::tcp_accept()
         // log new connection (use page 93 of c network programming)
         std::string host_name;
         tcp_get_host_name(reinterpret_cast<sockaddr&>(client_address), host_name);
-        std::cout << host_name << std::endl;
+        // std::cout << host_name << std::endl;
         return std::make_unique<TcpSocket>(socket_client);
     }
 }
@@ -118,6 +119,11 @@ int TcpSocket::tcp_read(std::span<char> buffer, int flags = 0)
 }
 
 int TcpSocket::tcp_send(std::span<char> buffer)
+{
+    return send(tcp_socket_descriptor, buffer.data(), buffer.size(), 0);
+}
+
+int TcpSocket::tcp_send(std::string_view buffer)
 {
     return send(tcp_socket_descriptor, buffer.data(), buffer.size(), 0);
 }

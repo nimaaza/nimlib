@@ -22,6 +22,7 @@ struct TcpSocket
     void tcp_get_host_name(const sockaddr& socket_address, std::string& host_name);
     int tcp_read(std::span<char> buffer, int flags);
     int tcp_send(std::span<char> buffer);
+    int tcp_send(std::string_view buffer);
     void tcp_close();  // TODO: may never be used
 
     const int get_tcp_socket_descriptor() const;
