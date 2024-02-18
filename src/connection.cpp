@@ -24,7 +24,7 @@ void Connection::read()
     set_state(ConnectionState::READING);
 
     std::array<char, BUFFER_SIZE> buff{};
-    int bytes_count = socket->tcp_read(buff, MSG_DONTWAIT); // read without waiting
+    int bytes_count = socket->tcp_read(buff, MSG_DONTWAIT);
 
     if (bytes_count > 0)
     {
@@ -48,22 +48,38 @@ void Connection::read()
     }
 }
 
+void Connection::handle_incoming_data()
+{
+    set_state(ConnectionState::HANDLING);
+    parse_result = protocol.parse(request_stream, response_stream);
+
+    if (parse_result == ParseResult::WRITE_AND_DIE || parse_result == ParseResult::WRITE_AND_WAIT)
+    {
+        set_state(ConnectionState::WRITING);
+    }
+    else if (parse_result == ParseResult::STILL_NEED_MORE)
+    {
+        set_state(ConnectionState::READING);
+        reset_state();
+    }
+    else
+    {
+        set_state(ConnectionState::ERROR);
+    }
+}
+
 void Connection::write()
 {
-    std::string response_str {response_stream.str()};
+    std::string response_str{ response_stream.str() };
     std::string_view response_view{ response_str };
     size_t bytes_to_send{ response_str.size() };
     size_t total_bytes_sent{};
 
     while (bytes_to_send > 0)
     {
-        auto substr = response_view.substr(total_bytes_sent, BUFFER_SIZE);
-        int sent = socket->tcp_send(substr);
+        int sent = socket->tcp_send(response_view.substr(total_bytes_sent, BUFFER_SIZE));
 
-        if (sent < 0)
-        {
-            break;
-        }
+        if (sent < 0) break;
 
         bytes_to_send -= sent;
         total_bytes_sent += sent;
@@ -95,68 +111,50 @@ void Connection::halt()
     set_state(ConnectionState::ERROR);
 }
 
-void Connection::set_state(ConnectionState s)
+void Connection::set_state(ConnectionState new_state)
 {
-    if (s == PENDING)
+    if (new_state == ConnectionState::PENDING)
     {
-        // TODO: is the clear() function what I think it is?
-        request_stream.clear();
-        response_stream.clear();
+        // When the connection is to be reused, the state of the connection
+        // object must be reset.
+        request_stream.str("");
+        response_stream.str("");
+        reset_count = 0;
+        parse_result = ParseResult::STILL_NEED_MORE;
     }
 
-    if (s == state)
+    if (new_state == state)
     {
         reset_state();
     }
     else
     {
-        state = s;
-        last_state_change = 0; // TODO: must be set to now
+        state = new_state;
     }
+
+    last_state_change = std::chrono::high_resolution_clock::now();
 }
 
 void Connection::reset_state()
 {
-    if (reset_count < MAX_RESET_COUNT)
-    {
-        last_state_change = 0; // TODO: must be set to now
-    }
-    else
+    reset_count++;
+
+    if (reset_count >= MAX_RESET_COUNT)
     {
         set_state(ConnectionState::ERROR);
     }
 
-    reset_count++;
+    last_state_change = std::chrono::high_resolution_clock::now();
 }
 
 std::pair<ConnectionState, long> Connection::get_state() const
 {
-    return { state, last_state_change };
+    auto now = std::chrono::high_resolution_clock::now();
+    long elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(now - last_state_change).count();
+    return { state, elapsed };
 }
 
 int Connection::get_tcp_socket_descriptor() const
 {
     return socket->get_tcp_socket_descriptor();
-}
-
-void Connection::handle_incoming_data()
-{
-    set_state(ConnectionState::HANDLING);
-    parse_result = protocol.parse(request_stream, response_stream);
-
-    if (parse_result == ParseResult::WRITE_AND_DIE || parse_result == ParseResult::WRITE_AND_WAIT)
-    {
-        set_state(ConnectionState::WRITING);
-    }
-    else if (parse_result == ParseResult::STILL_NEED_MORE)
-    {
-        set_state(ConnectionState::READING);
-        reset_state();
-    }
-    else
-    {
-        // crash?
-        set_state(ConnectionState::ERROR);
-
-    }
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sstream>
+#include <chrono>
 
 #include "common.h"
 #include "tcp_socket.h"
@@ -21,21 +22,21 @@ public:
     void read();
     void write();
     void halt();
-    void set_state(ConnectionState);
-    void reset_state();
     std::pair<ConnectionState, long> get_state() const;
     int get_tcp_socket_descriptor() const;
 
 private:
     void handle_incoming_data();
+    void set_state(ConnectionState);
+    void reset_state();
 
 private:
     std::stringstream request_stream;
     std::stringstream response_stream;
-    Protocol protocol;
     std::unique_ptr<TcpSocket> socket;
     ConnectionState state;
     ParseResult parse_result;
-    long last_state_change;
+    std::chrono::steady_clock::time_point last_state_change;
     int reset_count;
+    Protocol protocol;
 };
