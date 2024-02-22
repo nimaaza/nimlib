@@ -5,7 +5,6 @@
 #include "../src/socket.h"
 #include "../src/connection.h"
 #include "../src/common.h"
-#include "../src/state_manager.h"
 
 struct MockProtocolParser : public ProtocolInterface
 {

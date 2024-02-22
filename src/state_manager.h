@@ -40,16 +40,16 @@ StateManager<T>::StateManager(T initial_state, T error_state, int max_reset_coun
 template<typename T>
 void StateManager<T>::set_state(T new_state)
 {
-    if (new_state == state)
+    if (new_state != state)
     {
-        reset_count++;
+        state = new_state;
+        reset_count = 0;
+        last_state_change = std::chrono::high_resolution_clock::now();
     }
     else
     {
-        state = new_state;
+        reset_state();
     }
-
-    last_state_change = std::chrono::high_resolution_clock::now();
 }
 
 template<typename T>
@@ -57,7 +57,7 @@ void StateManager<T>::reset_state()
 {
     reset_count++;
 
-    if (reset_count >= max_reset_count)
+    if (reset_count > max_reset_count)
     {
         set_state(error_state);
     }
