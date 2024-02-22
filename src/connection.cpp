@@ -1,30 +1,39 @@
 #include <sys/socket.h>
+#include <memory>
 #include <utility>
 #include <string_view>
 #include <vector>
 #include <ranges>
 
 #include "connection.h"
+#include "state_manager.h"
 
-Connection::Connection(std::unique_ptr<TcpSocket> socket)
-    : protocol{},
-    socket{ std::move(socket) },
+Connection::Connection(std::unique_ptr<Socket> s, connection_id id)
+    : id{ id },
+    sm{ ConnectionState::STARTING, ConnectionState::ERROR, MAX_RESET_COUNT },
+    socket{ std::move(s) },
     request_stream{},
     response_stream{},
-    state{ ConnectionState::STARTING },
-    parse_result{ ParseResult::STILL_NEED_MORE },
-    last_state_change{},
-    reset_count{}
-{}
+    parse_result{ ParseResult::STILL_NEED_MORE }
+{
+    if (!this->socket)
+    {
+        sm.set_state(ConnectionState::ERROR);
+    }
+
+    protocol = std::make_shared<Protocol>();
+}
 
 Connection::~Connection() {}
 
-void Connection::read()
+ConnectionErrorCode Connection::read()
 {
-    set_state(ConnectionState::READING);
+    if (sm.get_state().first == ConnectionState::ERROR) return ConnectionErrorCode::WONT_CONTINUE;
+
+    sm.set_state(ConnectionState::READING);
 
     std::array<char, BUFFER_SIZE> buff{};
-    int bytes_count = socket->tcp_read(buff, MSG_DONTWAIT);
+    int bytes_count = socket->read(buff);
 
     if (bytes_count > 0)
     {
@@ -33,42 +42,47 @@ void Connection::read()
             request_stream << buff[i];
         }
 
-        handle_incoming_data();
+        return handle_incoming_data();
     }
     else if (bytes_count == 0)
     {
         // TODO: still no data to read, what to do here?
         // This may never happen because when poll returns
         // there must be something to read.
-        reset_state();
+        sm.reset_state();
+        return ConnectionErrorCode::RESET;
     }
     else
     {
-        set_state(ConnectionState::ERROR);
+        sm.set_state(ConnectionState::ERROR);
+        return ConnectionErrorCode::NOT_READY;
     }
 }
 
-void Connection::handle_incoming_data()
+ConnectionErrorCode Connection::handle_incoming_data()
 {
-    set_state(ConnectionState::HANDLING);
-    parse_result = protocol.parse(request_stream, response_stream);
+    sm.set_state(ConnectionState::HANDLING);
+    parse_result = protocol->parse(request_stream, response_stream);
 
     if (parse_result == ParseResult::WRITE_AND_DIE || parse_result == ParseResult::WRITE_AND_WAIT)
     {
-        set_state(ConnectionState::WRITING);
+        sm.set_state(ConnectionState::WRITING);
+        return ConnectionErrorCode::OK;
     }
     else if (parse_result == ParseResult::STILL_NEED_MORE)
     {
-        set_state(ConnectionState::READING);
-        reset_state();
+        sm.set_state(ConnectionState::READING);
+        sm.reset_state();
+        return ConnectionErrorCode::RESET;
     }
     else
     {
-        set_state(ConnectionState::ERROR);
+        sm.set_state(ConnectionState::ERROR);
+        return ConnectionErrorCode::WONT_CONTINUE;
     }
 }
 
-void Connection::write()
+ConnectionErrorCode Connection::write()
 {
     std::string response_str{ response_stream.str() };
     std::string_view response_view{ response_str };
@@ -77,7 +91,7 @@ void Connection::write()
 
     while (bytes_to_send > 0)
     {
-        int sent = socket->tcp_send(response_view.substr(total_bytes_sent, BUFFER_SIZE));
+        int sent = socket->send(response_view.substr(total_bytes_sent, BUFFER_SIZE));
 
         if (sent < 0) break;
 
@@ -87,74 +101,44 @@ void Connection::write()
 
     if (bytes_to_send == 0 && parse_result == ParseResult::WRITE_AND_DIE)
     {
-        set_state(ConnectionState::DONE);
+        sm.set_state(ConnectionState::DONE);
     }
     else if (bytes_to_send == 0 && parse_result == ParseResult::WRITE_AND_WAIT)
     {
-        set_state(ConnectionState::PENDING);
+        sm.set_state(ConnectionState::PENDING);
     }
     else if (bytes_to_send > 0)
     {
         // TODO: erase might be faster
         response_stream.str(response_str.substr(total_bytes_sent));
-        reset_state();
+        sm.reset_state();
     }
     else
     {
         //TODO: crash? bytes_to_send cannot be negative
-        set_state(ConnectionState::ERROR);
+        sm.set_state(ConnectionState::ERROR);
     }
+
+    return ConnectionErrorCode::OK; // TODO: correctly send code
 }
 
 void Connection::halt()
 {
-    set_state(ConnectionState::ERROR);
+    sm.set_state(ConnectionState::ERROR);
 }
 
-void Connection::set_state(ConnectionState new_state)
+void Connection::set_protocol(std::shared_ptr<ProtocolInterface> p)
 {
-    if (new_state == ConnectionState::PENDING)
-    {
-        // When the connection is to be reused, the state of the connection
-        // object must be reset.
-        request_stream.str("");
-        response_stream.str("");
-        reset_count = 0;
-        parse_result = ParseResult::STILL_NEED_MORE;
-    }
-
-    if (new_state == state)
-    {
-        reset_state();
-    }
-    else
-    {
-        state = new_state;
-    }
-
-    last_state_change = std::chrono::high_resolution_clock::now();
+    protocol = p;
 }
 
-void Connection::reset_state()
-{
-    reset_count++;
-
-    if (reset_count >= MAX_RESET_COUNT)
-    {
-        set_state(ConnectionState::ERROR);
-    }
-
-    last_state_change = std::chrono::high_resolution_clock::now();
-}
 
 std::pair<ConnectionState, long> Connection::get_state() const
 {
-    auto now = std::chrono::high_resolution_clock::now();
-    long elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(now - last_state_change).count();
-    return { state, elapsed };
+    return sm.get_state();
 }
 
-int Connection::get_tcp_socket_descriptor() const
+const int Connection::get_id() const
 {
-    return socket->get_tcp_socket_descriptor();
+    return id;
 }

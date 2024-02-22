@@ -6,6 +6,7 @@
 #include "common.h"
 #include "connection.h"
 #include "tcp_socket.h"
+#include "socket.h"
 
 class PollingServer
 {

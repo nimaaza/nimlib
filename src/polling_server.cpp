@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "polling_server.h"
+#include "socket.h"
 
 PollingServer::PollingServer(const std::string& port)
     : port{ port },
@@ -45,7 +46,7 @@ void PollingServer::run()
 
         // filter connections (moving remaining live connections to connections map)
         std::erase_if(connections, [](const auto& c) {
-            auto state = c.second->get_state().first;
+            auto [state, elapsed] = c.second->get_state();
             return (state == DONE || state == ERROR);
         });
     }
@@ -75,9 +76,11 @@ void PollingServer::accept_new_connection(std::vector<pollfd>& sockets)
 {
     if (sockets[0].revents & POLLIN)
     {
-        auto connection_socket = server_socket->tcp_accept();
-        auto connection = std::make_unique<Connection>(std::move(connection_socket));
-        connections.emplace(connection->get_tcp_socket_descriptor(), std::move(connection));
+        auto new_connection = server_socket->tcp_accept();
+        connection_id id = new_connection->get_tcp_socket_descriptor();
+        auto socket_wrapper = std::make_unique<TcpSocketAdapter>(std::move(new_connection));
+        auto connection = std::make_unique<Connection>(std::move(socket_wrapper), id);
+        connections.emplace(id, std::move(connection));
     }
 }
 
@@ -112,7 +115,7 @@ void PollingServer::handle_queue(
         {
             read_buff ? queue.front()->read() : queue.front()->write();
         }
-        auto s = queue.front()->get_tcp_socket_descriptor();
+        auto s = queue.front()->get_id();
         connections.emplace(s, std::move(queue.front()));
         queue.pop();
     }

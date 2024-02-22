@@ -15,7 +15,7 @@ struct TcpSocket
     TcpSocket(TcpSocket&&) noexcept;
     TcpSocket& operator=(TcpSocket&&) noexcept;
 
-
+    void tcp_connect(const std::string& addr, const std::string& port);
     void tcp_bind();
     void tcp_listen();
     std::unique_ptr<TcpSocket> tcp_accept();

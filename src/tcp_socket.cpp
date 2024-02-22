@@ -7,7 +7,9 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
-// #include "errno.h"
+#include <errno.h>
+
+#include <iostream>
 
 #include "tcp_socket.h"
 
@@ -36,8 +38,6 @@ TcpSocket::TcpSocket(const std::string& port)
     // is there any reason to keep bind_address? apparently it can be freed after binding.
 }
 
-TcpSocket::TcpSocket(int tcp_socket) : tcp_socket_descriptor(tcp_socket) {}
-
 TcpSocket::~TcpSocket()
 {
     freeaddrinfo(bind_address);
@@ -45,6 +45,36 @@ TcpSocket::~TcpSocket()
 }
 
 const int TcpSocket::get_tcp_socket_descriptor() const { return tcp_socket_descriptor; }
+
+void TcpSocket::tcp_connect(const std::string& addr, const std::string& port)
+{
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_socktype = SOCK_STREAM;
+    struct addrinfo* peer_address;
+
+    if (getaddrinfo(addr.data(), port.data(), &hints, &peer_address))
+    {
+        fprintf(stderr, "getaddrinfo() failed for connect().\n");
+    }
+
+    // printf("Remote address is: ");
+    // char address_buffer[100];
+    // char service_buffer[100];
+    // getnameinfo(peer_address->ai_addr, peer_address->ai_addrlen,
+    //     address_buffer, sizeof(address_buffer),
+    //     service_buffer, sizeof(service_buffer),
+    //     NI_NUMERICHOST);
+    // printf("%s %s\n", address_buffer, service_buffer);
+
+    if (connect(tcp_socket_descriptor, peer_address->ai_addr, peer_address->ai_addrlen) == -1)
+    {
+        fprintf(stderr, "connect() failed.\n");
+    }
+    else printf("Connected.\n\n");
+
+    freeaddrinfo(peer_address);
+}
 
 void TcpSocket::tcp_bind()
 {
@@ -132,3 +162,5 @@ void TcpSocket::tcp_close()
 {
     close(tcp_socket_descriptor);
 }
+
+TcpSocket::TcpSocket(int tcp_socket) : tcp_socket_descriptor(tcp_socket) {}

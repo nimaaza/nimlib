@@ -22,7 +22,7 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(unit_tests tests/connection.test.cpp)
+add_executable(unit_tests tests/connection.test.cpp src/connection.cpp src/protocol.cpp src/tcp_socket.cpp)
 target_link_libraries(unit_tests GTest::gtest_main)
 
 include(GoogleTest)

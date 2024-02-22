@@ -1,9 +1,64 @@
 #include <gtest/gtest.h>
+#include <memory>
 
-// Demonstrate some basic assertions.
-TEST(HelloTest, BasicAssertions) {
-  // Expect two strings not to be equal.
-  EXPECT_STRNE("hello", "world");
-  // Expect equality.
-  EXPECT_EQ(7 * 6, 42);
+#include "../src/tcp_socket.h"
+#include "../src/socket.h"
+#include "../src/connection.h"
+#include "../src/common.h"
+#include "../src/state_manager.h"
+
+struct MockProtocolParser : public ProtocolInterface
+{
+  ParseResult parse(std::stringstream& in, std::stringstream& out) override { return ParseResult::WRITE_AND_DIE; }
+};
+
+TEST(ConnectionState_WhenToldToRead, SocketNotReady)
+{
+  auto s = std::make_unique<TcpSocketAdapter>("8080");
+  Connection c{ std::move(s), 1 };
+
+  auto read_result = c.read();
+
+  auto [state, elapsed] = c.get_state();
+  EXPECT_EQ(read_result, ConnectionErrorCode::NOT_READY);
+  EXPECT_EQ(state, ConnectionState::ERROR);
+}
+
+TEST(ConnectionState_WhenToldToRead, ConnectionInErrorState)
+{
+  auto s = std::make_unique<TcpSocketAdapter>("8080");
+  Connection c{ std::move(s), 1 };
+
+  c.halt(); // This forces connection in error state.
+
+  auto read_result = c.read();
+  EXPECT_EQ(read_result, ConnectionErrorCode::WONT_CONTINUE);
+}
+
+TEST(ConnectionState_WhenCreated, ValidSocket)
+{
+  auto s = std::make_unique<TcpSocketAdapter>("8080");
+  Connection c{ std::move(s), 1 };
+
+  auto [state, elapsed] = c.get_state();
+  EXPECT_EQ(state, ConnectionState::STARTING);
+}
+
+TEST(ConnectionState_WhenCreated, NullSocket)
+{
+  Connection c{ nullptr, 0 };
+
+  auto [state, elapsed] = c.get_state();
+  EXPECT_EQ(state, ConnectionState::ERROR);
+}
+
+TEST(ConnectionState_WhenHalted, _)
+{
+  auto s = std::make_unique<TcpSocketAdapter>("8080");
+  Connection c{ std::move(s), 1 };
+
+  c.halt();
+
+  auto [state, elapsed] = c.get_state();
+  EXPECT_EQ(state, ConnectionState::ERROR);
 }
