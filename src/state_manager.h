@@ -17,8 +17,8 @@ public:
     StateManager(StateManager&&) noexcept = delete;
     StateManager& operator=(StateManager&&) noexcept = delete;
 
-    void set_state(T);
-    void reset_state();
+    T set_state(T);
+    T reset_state();
     const std::pair<T, long> get_state() const;
 private:
     T state;
@@ -38,22 +38,23 @@ StateManager<T>::StateManager(T initial_state, T error_state, int max_reset_coun
 {}
 
 template<typename T>
-void StateManager<T>::set_state(T new_state)
+T StateManager<T>::set_state(T new_state)
 {
     if (new_state != state)
     {
         state = new_state;
         reset_count = 0;
         last_state_change = std::chrono::high_resolution_clock::now();
+        return state;
     }
     else
     {
-        reset_state();
+        return reset_state();
     }
 }
 
 template<typename T>
-void StateManager<T>::reset_state()
+T StateManager<T>::reset_state()
 {
     reset_count++;
 
@@ -63,6 +64,8 @@ void StateManager<T>::reset_state()
     }
 
     last_state_change = std::chrono::high_resolution_clock::now();
+
+    return state;
 }
 
 template<typename T>

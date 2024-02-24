@@ -19,8 +19,7 @@ TEST(ConnectionState_WhenToldToRead, SocketNotReady)
   auto read_result = c.read();
 
   auto [state, elapsed] = c.get_state();
-  EXPECT_EQ(read_result, ConnectionErrorCode::NOT_READY);
-  EXPECT_EQ(state, ConnectionState::ERROR);
+  EXPECT_EQ(read_result, ConnectionState::ERROR);
 }
 
 TEST(ConnectionState_WhenToldToRead, ConnectionInErrorState)
@@ -31,7 +30,7 @@ TEST(ConnectionState_WhenToldToRead, ConnectionInErrorState)
   c.halt(); // This forces connection in error state.
 
   auto read_result = c.read();
-  EXPECT_EQ(read_result, ConnectionErrorCode::WONT_CONTINUE);
+  EXPECT_EQ(read_result, ConnectionState::ERROR);
 }
 
 TEST(ConnectionState_WhenCreated, ValidSocket)

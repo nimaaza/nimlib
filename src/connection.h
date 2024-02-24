@@ -21,15 +21,15 @@ public:
     Connection(Connection&&) noexcept = delete;
     Connection& operator=(Connection&&) noexcept = delete;
 
-    ConnectionErrorCode read();
-    ConnectionErrorCode write();
+    ConnectionState read();
+    ConnectionState write();
     void halt();
     void set_protocol(std::shared_ptr<ProtocolInterface>);
     std::pair<ConnectionState, long> get_state() const;
     const int get_id() const;
 
 private:
-    ConnectionErrorCode handle_incoming_data();
+    ConnectionState handle_incoming_data();
 
 private:
     connection_id id;
