@@ -6,15 +6,15 @@
 
 namespace nimlib::Metrics::Aggregations
 {
-    struct Opt
+    struct Aggregator
     {
-        virtual ~Opt() = default;
+        virtual ~Aggregator() = default;
 
         virtual bool involve(long) = 0;
         virtual bool get_val(long&) = 0;
     };
 
-    class Increment : public Opt
+    class Increment : public Aggregator
     {
     public:
         Increment();
@@ -27,7 +27,7 @@ namespace nimlib::Metrics::Aggregations
         long count;
     };
 
-    class Sum : public Opt
+    class Sum : public Aggregator
     {
     public:
         Sum();
@@ -40,7 +40,7 @@ namespace nimlib::Metrics::Aggregations
         long sum;
     };
 
-    class Max : public Opt
+    class Max : public Aggregator
     {
     public:
         Max();
@@ -53,7 +53,7 @@ namespace nimlib::Metrics::Aggregations
         long max;
     };
 
-    class Min : public Opt
+    class Min : public Aggregator
     {
     public:
         Min();
@@ -66,7 +66,7 @@ namespace nimlib::Metrics::Aggregations
         long min;
     };
 
-    class Avg : public Opt
+    class Avg : public Aggregator
     {
     public:
         Avg();
@@ -81,7 +81,7 @@ namespace nimlib::Metrics::Aggregations
         long avg;
     };
 
-    class RatePerSecond : public Opt
+    class RatePerSecond : public Aggregator
     {
     public:
         RatePerSecond();
