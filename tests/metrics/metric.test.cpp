@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "../../src/metrics/metric_store.h"
+#include "../../src/metrics/metrics_store.h"
 #include "../../src/metrics/aggregations.h"
 #include "../../src/metrics/metric.h"
 
@@ -11,19 +11,19 @@ using namespace nimlib::Metrics;
 TEST(MetricStoreTest, _)
 {
     std::vector<int> values{ 4, 6, 8, 12, 45, 67, 8, 0, 9, -1, -2, 4, 7, -10 };
-    auto avg = std::make_unique<Aggregations::Avg>();
-    auto max = std::make_unique<Aggregations::Max>();
-    auto min = std::make_unique<Aggregations::Min>();
-    auto sum = std::make_unique<Aggregations::Sum>();
+    auto avg = std::make_shared<Aggregations::Avg>();
+    auto max = std::make_shared<Aggregations::Max>();
+    auto min = std::make_shared<Aggregations::Min>();
+    auto sum = std::make_shared<Aggregations::Sum>();
     long avg_result{};
     long max_result{};
     long min_result{};
     long sum_result{};
     Metric ms{ "some_metric_name" };
-    ms.register_aggregator(std::move(avg))
-        .register_aggregator(std::move(max))
-        .register_aggregator(std::move(min))
-        .register_aggregator(std::move(sum));
+    ms.register_aggregator(avg)
+        .register_aggregator(max)
+        .register_aggregator(min)
+        .register_aggregator(sum);
 
     for (auto v : values)
     {

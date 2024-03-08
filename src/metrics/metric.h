@@ -7,7 +7,7 @@
 
 namespace nimlib::Metrics
 {
-    using aggregator_ptr = std::unique_ptr<nimlib::Metrics::Aggregations::Opt>;
+    using aggregator_ptr = std::shared_ptr<nimlib::Metrics::Aggregations::Opt>;
 
     class Metric
     {

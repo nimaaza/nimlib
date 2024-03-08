@@ -1,4 +1,4 @@
-#include "metric_store.h"
+#include "metrics_store.h"
 
 namespace nimlib::Metrics
 {

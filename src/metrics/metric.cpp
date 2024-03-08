@@ -8,7 +8,7 @@ namespace nimlib::Metrics
 
     Metric& Metric::register_aggregator(aggregator_ptr agg)
     {
-        if (agg) aggregators.push_back(std::move(agg));
+        if (agg) aggregators.push_back(agg);
         return *this;
     }
 
@@ -16,7 +16,7 @@ namespace nimlib::Metrics
     {
         bool well_received{ true };
 
-        for (auto& agg : aggregators)
+        for (auto agg : aggregators)
         {
             well_received = well_received && agg->involve(m);
         }
