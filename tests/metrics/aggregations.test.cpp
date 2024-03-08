@@ -11,7 +11,7 @@ TEST(IncrementTest, IncrementsCorrectly)
     std::vector<int> ints{ 1, 2, -5, 7 };
     long expected_count{};
     long actual_count{};
-    Increment increment{};
+    Increment<long> increment{};
 
     for (auto i : ints)
     {
@@ -31,7 +31,7 @@ TEST(MaxTest, ReturnsMax)
     std::vector<int> ints{ 1, 3, 7, 4, 23, 5, 6 , 7 };
     long expected_max{};
     long actual_max{ ints[0] };
-    Max max{};
+    Max<long> max{};
 
     for (auto i : ints)
     {
@@ -47,7 +47,7 @@ TEST(MinTest, ReturnsMin)
     std::vector<int> ints{ 12, 3, 7, 4, 23, 5, 6 , 7 };
     long expected_min{ 1000 };
     long actual_min{  };
-    Min min{ };
+    Min<long> min{ };
 
     for (auto i : ints)
     {
@@ -63,7 +63,7 @@ TEST(AvgTest, RetunsAvgRoundedDown)
     std::vector<int> ints{ 3, 4, 6, 12, 34, 5, 7 };
     long expected_avg{};
     long actual_avg{};
-    Avg avg{};
+    Avg<long> avg{};
 
     for (auto i : ints)
     {

@@ -8,5 +8,5 @@ TEST(CountMeasurement, _)
 {
     const std::string m_name {"metric"};
 
-    Count count {m_name};
+    Count<long> count {m_name};
 }

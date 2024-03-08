@@ -11,15 +11,15 @@ using namespace nimlib::Metrics;
 TEST(MetricStoreTest, _)
 {
     std::vector<int> values{ 4, 6, 8, 12, 45, 67, 8, 0, 9, -1, -2, 4, 7, -10 };
-    auto avg = std::make_shared<Aggregations::Avg>();
-    auto max = std::make_shared<Aggregations::Max>();
-    auto min = std::make_shared<Aggregations::Min>();
-    auto sum = std::make_shared<Aggregations::Sum>();
+    auto avg = std::make_shared<Aggregations::Avg<long>>();
+    auto max = std::make_shared<Aggregations::Max<long>>();
+    auto min = std::make_shared<Aggregations::Min<long>>();
+    auto sum = std::make_shared<Aggregations::Sum<long>>();
     long avg_result{};
     long max_result{};
     long min_result{};
     long sum_result{};
-    Metric ms{ "some_metric_name" };
+    Metric<long> ms{ "some_metric_name" };
     ms.register_aggregator(avg)
         .register_aggregator(max)
         .register_aggregator(min)
