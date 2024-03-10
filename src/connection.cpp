@@ -1,12 +1,10 @@
-#include <sys/socket.h>
+#include "connection.h"
+#include "state_manager.h"
+
 #include <memory>
 #include <utility>
 #include <string_view>
 #include <vector>
-#include <ranges>
-
-#include "connection.h"
-#include "state_manager.h"
 
 Connection::Connection(std::unique_ptr<Socket> s, connection_id id)
     : id{ id },
@@ -14,8 +12,11 @@ Connection::Connection(std::unique_ptr<Socket> s, connection_id id)
     socket{ std::move(s) },
     request_stream{},
     response_stream{},
-    parse_result{ ParseResult::INCOMPLETE }
+    parse_result{ ParseResult::INCOMPLETE },
+    response_timer{ TIME_TO_RESPONSE }
 {
+    response_timer.start();
+
     if (!this->socket)
     {
         sm.set_state(ConnectionState::ERROR);
@@ -24,7 +25,10 @@ Connection::Connection(std::unique_ptr<Socket> s, connection_id id)
     protocol = std::make_shared<Protocol>();
 }
 
-Connection::~Connection() {}
+Connection::~Connection()
+{
+    response_timer.end();
+}
 
 ConnectionState Connection::read()
 {

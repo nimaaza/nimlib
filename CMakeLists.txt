@@ -8,7 +8,13 @@ configure_file(version.h.in version.h)
 find_package(OpenSSL)
 message("Using OpenSSL version: ${OPENSSL_VERSION}")
 
-add_executable(test_run src/test_run.cpp src/tcp_socket.cpp src/polling_server.cpp src/connection.cpp src/protocol.cpp)
+add_executable(test_run
+        src/test_run.cpp
+        src/tcp_socket.cpp
+        src/polling_server.cpp
+        src/connection.cpp
+        src/protocol.cpp
+        src/metrics/timer.cpp)
 target_include_directories(test_run PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(test_run OpenSSL::SSL OpenSSL::Crypto)
 
@@ -22,7 +28,18 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(unit_tests tests/connection.test.cpp src/connection.cpp src/protocol.cpp src/tcp_socket.cpp)
+add_executable(unit_tests
+        tests/connection.test.cpp
+        tests/state_manager.test.cpp
+        tests/metrics/timer.test.cpp
+        tests/metrics/aggregations.test.cpp
+        tests/metrics/metric_store.test.cpp
+        tests/metrics/metric.test.cpp
+        tests/metrics/measurements.test.cpp
+        src/connection.cpp
+        src/protocol.cpp
+        src/tcp_socket.cpp
+        src/metrics/timer.cpp)
 target_link_libraries(unit_tests GTest::gtest_main)
 
 include(GoogleTest)

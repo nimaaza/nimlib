@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "polling_server.h"
+#include "metrics/factory.h"
 #include "socket.h"
 
 PollingServer::PollingServer(const std::string& port)
@@ -13,6 +14,11 @@ PollingServer::PollingServer(const std::string& port)
     write_queue{},
     server_socket{ std::make_unique<TcpSocket>(port) }
 {
+    nimlib::Metrics::Factory<long>::instanciate_metric(TIME_TO_RESPONSE)
+        .measure_avg()
+        .measure_max()
+        .get();
+
     server_socket->tcp_bind();
     server_socket->tcp_listen();
     create_pollfds_entry(server_socket->get_tcp_socket_descriptor(), server_fd);

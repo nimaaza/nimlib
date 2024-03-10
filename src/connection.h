@@ -7,6 +7,7 @@
 #include "socket.h"
 #include "protocol.h"
 #include "state_manager.h"
+#include "metrics/measurements.h"
 
 using connection_id = int;
 
@@ -39,4 +40,5 @@ private:
     std::unique_ptr<Socket> socket;
     ParseResult parse_result;
     std::shared_ptr<ProtocolInterface> protocol;
+    nimlib::Metrics::Measurements::Duration<long> response_timer;
 };

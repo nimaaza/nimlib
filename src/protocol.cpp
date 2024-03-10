@@ -1,3 +1,5 @@
+#include <array>
+
 #include "protocol.h"
 
 Protocol::Protocol() {}
