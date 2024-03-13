@@ -5,6 +5,6 @@
 
 int main()
 {
-    PollingServer ps {"8080"};
+    nimlib::Server::PollingServer ps {"8080"};
     ps.run();
 }

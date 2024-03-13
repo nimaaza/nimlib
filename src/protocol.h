@@ -4,25 +4,27 @@
 
 #include "common.h"
 
-using ParseResult = nimlib::Server::Constants::ParseResult;
-
-struct ProtocolInterface
+namespace nimlib::Server::Protocols
 {
-    virtual ~ProtocolInterface() = default;
+    using ParseResult = nimlib::Server::Constants::ParseResult;
 
-    // ProtocolInterface(const ProtocolInterface&) = delete;
-    // ProtocolInterface& operator=(const ProtocolInterface&) = delete;
+    struct ProtocolInterface
+    {
+        virtual ~ProtocolInterface() = default;
 
-    // ProtocolInterface(ProtocolInterface&&) noexcept = delete;
-    // ProtocolInterface& operator=(ProtocolInterface&&) noexcept = delete;
+        // ProtocolInterface(const ProtocolInterface&) = delete;
+        // ProtocolInterface& operator=(const ProtocolInterface&) = delete;
+        // ProtocolInterface(ProtocolInterface&&) noexcept = delete;
+        // ProtocolInterface& operator=(ProtocolInterface&&) noexcept = delete;
 
-    virtual ParseResult parse(std::stringstream& incoming_message, std::stringstream& outgoing_message) = 0;
-};
+        virtual ParseResult parse(std::stringstream& incoming_message, std::stringstream& outgoing_message) = 0;
+    };
 
-class Protocol : public ProtocolInterface
-{
-public:
-    explicit Protocol();
-    ~Protocol() override;
-    ParseResult parse(std::stringstream&, std::stringstream&) override;
+    class Protocol : public ProtocolInterface
+    {
+    public:
+        explicit Protocol();
+        ~Protocol() override;
+        ParseResult parse(std::stringstream&, std::stringstream&) override;
+    };
 };

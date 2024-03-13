@@ -6,6 +6,8 @@
 #include "../src/connection.h"
 #include "../src/common.h"
 
+using Connection = nimlib::Server::Connection;
+using ProtocolInterface = nimlib::Server::Protocols::ProtocolInterface;
 using ParseResult = nimlib::Server::Constants::ParseResult;
 using ConnectionState = nimlib::Server::Constants::ConnectionState;
 

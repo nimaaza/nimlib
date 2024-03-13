@@ -18,6 +18,8 @@ struct Socket
 
 #include <sys/socket.h>
 
+using TcpSocket = nimlib::Server::Sockets::TcpSocket;
+
 class TcpSocketAdapter : public Socket
 {
 public:
