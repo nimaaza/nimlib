@@ -2,7 +2,7 @@
 
 #include "../../src/metrics/measurements.h"
 
-using namespace nimlib::Metrics::Measurements;
+using namespace nimlib::Server::Metrics::Measurements;
 
 TEST(CountMeasurement, _)
 {

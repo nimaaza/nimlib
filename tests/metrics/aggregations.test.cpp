@@ -4,7 +4,7 @@
 
 #include "../../src/metrics/aggregations.h"
 
-using namespace nimlib::Metrics::Aggregations;
+using namespace nimlib::Server::Metrics::Aggregations;
 
 TEST(IncrementTest, IncrementsCorrectly)
 {

@@ -6,12 +6,12 @@
 
 #include "metric.h"
 
-namespace nimlib::Metrics
+namespace nimlib::Server::Metrics
 {
     template <typename T>
     class MetricsStore
     {
-        using metric_ptr = std::shared_ptr<nimlib::Metrics::Metric<T>>;
+        using metric_ptr = std::shared_ptr<nimlib::Server::Metrics::Metric<T>>;
     private:
         MetricsStore();
 
@@ -35,10 +35,10 @@ namespace nimlib::Metrics
     };
 };
 
-namespace nimlib::Metrics
+namespace nimlib::Server::Metrics
 {
     template <typename T>
-    using metric_ptr = std::shared_ptr<nimlib::Metrics::Metric<T>>;
+    using metric_ptr = std::shared_ptr<nimlib::Server::Metrics::Metric<T>>;
 
     template <typename T>
     MetricsStore<T>::MetricsStore() {}

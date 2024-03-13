@@ -4,7 +4,7 @@
 
 #include "../../src/metrics/timer.h"
 
-using namespace nimlib::Metrics::Measurements;
+using namespace nimlib::Server::Metrics::Measurements;
 
 TEST(TimerTest, ProperUse)
 {

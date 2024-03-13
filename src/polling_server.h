@@ -40,7 +40,7 @@ private:
     std::unordered_map<int, connection_ptr> connections;
     std::queue<connection_ptr> read_queue;
     std::queue<connection_ptr> write_queue;
-    std::shared_ptr<nimlib::Logging::LoggerAgent> main_log_agent;
+    std::shared_ptr<nimlib::Server::Logging::LoggerAgent> main_log_agent;
 
     const std::vector<ConnectionState> allowed_states_for_read{ STARTING, READING, PENDING };
     const std::vector<ConnectionState> allowed_states_for_write{ WRITING };

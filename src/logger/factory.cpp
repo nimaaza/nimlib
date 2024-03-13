@@ -2,7 +2,7 @@
 
 #include "factory.h"
 
-namespace nimlib::Logging::Factory
+namespace nimlib::Server::Logging::Factory
 {
     std::shared_ptr<LoggerAgent> get_agent(const std::string& agent_name, LogLevel level)
     {

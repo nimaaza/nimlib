@@ -6,13 +6,13 @@
 #include <memory>
 #include <iostream>
 
-namespace nimlib::Metrics::Measurements
+namespace nimlib::Server::Metrics::Measurements
 {
     template<typename T>
     struct Measurement
     {
         Measurement(const std::string& target_name)
-            : metric{ nimlib::Metrics::MetricsStore<T>::get_instance().get_metric(target_name) }
+            : metric{ nimlib::Server::Metrics::MetricsStore<T>::get_instance().get_metric(target_name) }
         {};
 
         virtual ~Measurement()
@@ -29,7 +29,7 @@ namespace nimlib::Metrics::Measurements
         virtual void end() = 0;
 
     protected:
-        std::shared_ptr<nimlib::Metrics::Metric<T>> metric;
+        std::shared_ptr<nimlib::Server::Metrics::Metric<T>> metric;
         T measurement_result{};
         bool successful_measurement{ false };
     };
@@ -60,7 +60,7 @@ namespace nimlib::Metrics::Measurements
     };
 };
 
-namespace nimlib::Metrics::Measurements
+namespace nimlib::Server::Metrics::Measurements
 {
     template<typename T>
     Count<T>::Count(const std::string& target_name) : Measurement<T>{ target_name } {}

@@ -6,7 +6,7 @@
 #include "../../src/metrics/aggregations.h"
 #include "../../src/metrics/metric.h"
 
-using namespace nimlib::Metrics;
+using namespace nimlib::Server::Metrics;
 
 TEST(MetricStoreTest, _)
 {

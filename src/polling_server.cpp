@@ -13,12 +13,12 @@ PollingServer::PollingServer(const std::string& port)
     connections{},
     read_queue{},
     write_queue{},
-    main_log_agent{ nimlib::Logging::Factory::get_agent("main") },
+    main_log_agent{ nimlib::Server::Logging::Factory::get_agent("main") },
     server_socket{ std::make_unique<TcpSocket>(port) }
 {
     main_log_agent->log(std::format("server version {}.{}.{} starting", nimlib_VERSION_MAJOR, nimlib_VERSION_MINOR, nimlib_VERSION_PATCH));
 
-    nimlib::Metrics::Factory<long>::instanciate_metric(TIME_TO_RESPONSE)
+    nimlib::Server::Metrics::Factory<long>::instanciate_metric(TIME_TO_RESPONSE)
         .measure_avg()
         .measure_max()
         .get();

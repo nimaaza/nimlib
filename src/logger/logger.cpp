@@ -1,6 +1,6 @@
 #include "logger.h"
 
-namespace nimlib::Logging
+namespace nimlib::Server::Logging
 {
     Logger::Logger() {}
 

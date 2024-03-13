@@ -4,7 +4,7 @@
 
 #include "../../src/metrics/metrics_store.h"
 
-using namespace nimlib::Metrics;
+using namespace nimlib::Server::Metrics;
 
 TEST(MetricStoreTest, ReturnNullWhenMetricStoreNotRegistered)
 {

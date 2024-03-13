@@ -1,10 +1,10 @@
 #include "timer.h"
 
-nimlib::Metrics::Measurements::Timer::Timer() : then{ std::chrono::high_resolution_clock::now() } {}
+nimlib::Server::Metrics::Measurements::Timer::Timer() : then{ std::chrono::high_resolution_clock::now() } {}
 
-nimlib::Metrics::Measurements::Timer::~Timer() {}
+nimlib::Server::Metrics::Measurements::Timer::~Timer() {}
 
-bool nimlib::Metrics::Measurements::Timer::begin()
+bool nimlib::Server::Metrics::Measurements::Timer::begin()
 {
     if (timing)
     {
@@ -18,7 +18,7 @@ bool nimlib::Metrics::Measurements::Timer::begin()
     }
 }
 
-bool nimlib::Metrics::Measurements::Timer::end(long& latency)
+bool nimlib::Server::Metrics::Measurements::Timer::end(long& latency)
 {
     if (!timing)
     {

@@ -5,7 +5,7 @@
 #include <format>
 #include <unordered_map>
 
-namespace nimlib::Logging
+namespace nimlib::Server::Logging
 {
     const std::unordered_map<LogLevel, std::string_view> Agent::level_to_string_translation = {
         {LogLevel::INFO, "info"},
@@ -16,7 +16,7 @@ namespace nimlib::Logging
     };
 
     Agent::Agent(const std::string& agent_name, LogLevel level)
-        : master_logger{ nimlib::Logging::Logger::get_instance() },
+        : master_logger{ nimlib::Server::Logging::Logger::get_instance() },
         level{ level },
         agent_name{ agent_name }
     {}

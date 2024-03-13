@@ -46,7 +46,7 @@ private:
     addrinfo* bind_address;
     const std::string& port;
     int tcp_socket_descriptor;
-    std::shared_ptr<nimlib::Logging::LoggerAgent> log_agent;
+    std::shared_ptr<nimlib::Server::Logging::LoggerAgent> log_agent;
 
     // TODO: this will eventually come from config
     static const int MAX_CONNECTIONS{ 10 };

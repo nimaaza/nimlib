@@ -1,6 +1,6 @@
 #include <chrono>
 
-namespace nimlib::Metrics::Measurements
+namespace nimlib::Server::Metrics::Measurements
 {
     class Timer
     {

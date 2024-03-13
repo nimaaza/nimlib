@@ -6,12 +6,12 @@
 #include <string>
 #include <memory>
 
-namespace nimlib::Metrics
+namespace nimlib::Server::Metrics
 {
     template <typename T = long>
     class Factory
     {
-        using metric_ptr = std::shared_ptr<nimlib::Metrics::Metric<T>>;
+        using metric_ptr = std::shared_ptr<nimlib::Server::Metrics::Metric<T>>;
     private:
         Factory(const std::string& metric_name);
 
@@ -33,7 +33,7 @@ namespace nimlib::Metrics
     };
 };
 
-namespace nimlib::Metrics
+namespace nimlib::Server::Metrics
 {
     template <typename T>
     Factory<T>::Factory(const std::string& metric_name)
@@ -47,7 +47,7 @@ namespace nimlib::Metrics
     template <typename T>
     Factory<T>& Factory<T>::measure_increment()
     {
-        auto inc = std::make_shared<nimlib::Metrics::Aggregations::Increment<T>>();
+        auto inc = std::make_shared<nimlib::Server::Metrics::Aggregations::Increment<T>>();
         metric->register_aggregator(inc);
         return *this;
     }
@@ -55,7 +55,7 @@ namespace nimlib::Metrics
     template <typename T>
     Factory<T>& Factory<T>::measure_avg()
     {
-        auto avg = std::make_shared<nimlib::Metrics::Aggregations::Avg<T>>();
+        auto avg = std::make_shared<nimlib::Server::Metrics::Aggregations::Avg<T>>();
         metric->register_aggregator(avg);
         return *this;
     }
@@ -63,7 +63,7 @@ namespace nimlib::Metrics
     template <typename T>
     Factory<T>& Factory<T>::measure_max()
     {
-        auto max = std::make_shared<nimlib::Metrics::Aggregations::Max<T>>();
+        auto max = std::make_shared<nimlib::Server::Metrics::Aggregations::Max<T>>();
         metric->register_aggregator(max);
         return *this;
     }
@@ -71,7 +71,7 @@ namespace nimlib::Metrics
     template <typename T>
     Factory<T>& Factory<T>::measure_min()
     {
-        auto min = std::make_shared<nimlib::Metrics::Aggregations::Min<T>>();
+        auto min = std::make_shared<nimlib::Server::Metrics::Aggregations::Min<T>>();
         metric->register_aggregator(min);
         return *this;
     }
@@ -79,15 +79,15 @@ namespace nimlib::Metrics
     template <typename T>
     Factory<T>& Factory<T>::measure_sum()
     {
-        auto sum = std::make_shared<nimlib::Metrics::Aggregations::Sum<T>>();
+        auto sum = std::make_shared<nimlib::Server::Metrics::Aggregations::Sum<T>>();
         metric->register_aggregator(sum);
         return *this;
     }
 
     template <typename T>
-    std::shared_ptr<nimlib::Metrics::Metric<T>> Factory<T>::get()
+    std::shared_ptr<nimlib::Server::Metrics::Metric<T>> Factory<T>::get()
     {
-        auto& metrics_store = nimlib::Metrics::MetricsStore<T>::get_instance();
+        auto& metrics_store = nimlib::Server::Metrics::MetricsStore<T>::get_instance();
         metrics_store.register_metric(metric);
         return metric;
     }

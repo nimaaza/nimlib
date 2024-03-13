@@ -6,7 +6,7 @@
 #include <string_view>
 #include <string>
 
-namespace nimlib::Logging
+namespace nimlib::Server::Logging
 {
     class Agent : public LoggerAgent
     {
@@ -35,7 +35,7 @@ namespace nimlib::Logging
         void print_message(LogLevel requested_level, std::string_view message);
 
     private:
-        nimlib::Logging::Logger& master_logger;
+        nimlib::Server::Logging::Logger& master_logger;
         std::string agent_name;
         LogLevel level;
         std::string format_string;

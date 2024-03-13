@@ -5,13 +5,13 @@
 
 #include "aggregations.h"
 
-namespace nimlib::Metrics
+namespace nimlib::Server::Metrics
 {
     template <typename T>
     class Metric
     {
     public:
-        using aggregator_ptr = std::shared_ptr<nimlib::Metrics::Aggregations::Aggregator<T>>;
+        using aggregator_ptr = std::shared_ptr<nimlib::Server::Metrics::Aggregations::Aggregator<T>>;
 
         Metric(const std::string& name);
         ~Metric();
@@ -32,7 +32,7 @@ namespace nimlib::Metrics
     };
 };
 
-namespace nimlib::Metrics
+namespace nimlib::Server::Metrics
 {
     template <typename T>
     Metric<T>::Metric(const std::string& name) : name{ name } {}

@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <memory>
 
-namespace nimlib::Logging
+namespace nimlib::Server::Logging
 {
     struct LoggerAgent
     {

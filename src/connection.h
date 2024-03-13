@@ -40,5 +40,5 @@ private:
     std::unique_ptr<Socket> socket;
     ParseResult parse_result;
     std::shared_ptr<ProtocolInterface> protocol;
-    nimlib::Metrics::Measurements::Duration<long> response_timer;
+    nimlib::Server::Metrics::Measurements::Duration<long> response_timer;
 };

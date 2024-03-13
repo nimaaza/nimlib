@@ -18,12 +18,12 @@
 TcpSocket::TcpSocket(int tcp_socket, const std::string& port) :
     tcp_socket_descriptor(tcp_socket),
     port{ port },
-    log_agent{ nimlib::Logging::Factory::get_agent("socket") }
+    log_agent{ nimlib::Server::Logging::Factory::get_agent("socket") }
 {}
 
 TcpSocket::TcpSocket(const std::string& port) :
     port{ port },
-    log_agent{ nimlib::Logging::Factory::get_agent("socket") }
+    log_agent{ nimlib::Server::Logging::Factory::get_agent("socket") }
 {
     addrinfo hints;
     memset(&hints, 0, sizeof(hints));

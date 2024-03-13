@@ -4,7 +4,7 @@
 
 #include "timer.h"
 
-namespace nimlib::Metrics::Aggregations
+namespace nimlib::Server::Metrics::Aggregations
 {
     template <typename T>
     struct Aggregator
@@ -98,13 +98,13 @@ namespace nimlib::Metrics::Aggregations
         bool get_val(T& m) override;
 
     private:
-        nimlib::Metrics::Measurements::Timer timer{};
+        nimlib::Server::Metrics::Measurements::Timer timer{};
         Sum<T> sum_of_time{};
         Sum<T> sum_of_count{};
     };
 };
 
-namespace nimlib::Metrics::Aggregations
+namespace nimlib::Server::Metrics::Aggregations
 {
     template <typename T>
     Increment<T>::Increment() : count{} {}
@@ -127,7 +127,7 @@ namespace nimlib::Metrics::Aggregations
     }
 }
 
-namespace nimlib::Metrics::Aggregations
+namespace nimlib::Server::Metrics::Aggregations
 {
     template <typename T>
     Sum<T>::Sum() : sum{} {}
@@ -150,7 +150,7 @@ namespace nimlib::Metrics::Aggregations
     }
 }
 
-namespace nimlib::Metrics::Aggregations
+namespace nimlib::Server::Metrics::Aggregations
 {
     template <typename T>
     Max<T>::Max() : max{ -1000000000 } {} // TODO: initialize with minus infinity
@@ -173,7 +173,7 @@ namespace nimlib::Metrics::Aggregations
     }
 }
 
-namespace nimlib::Metrics::Aggregations
+namespace nimlib::Server::Metrics::Aggregations
 {
     template <typename T>
     Min<T>::Min() : min{ 1000000000 } {} // TODO: initialize with infinity
@@ -196,7 +196,7 @@ namespace nimlib::Metrics::Aggregations
     }
 }
 
-namespace nimlib::Metrics::Aggregations
+namespace nimlib::Server::Metrics::Aggregations
 {
     template <typename T>
     Avg<T>::Avg() : avg{}, increment{}, sum{} {}
@@ -231,7 +231,7 @@ namespace nimlib::Metrics::Aggregations
     }
 }
 
-namespace nimlib::Metrics::Aggregations
+namespace nimlib::Server::Metrics::Aggregations
 {
     template <typename T>
     RatePerSecond<T>::RatePerSecond() { timer.begin(); }
