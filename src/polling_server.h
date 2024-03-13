@@ -10,6 +10,8 @@
 #include "socket.h"
 #include "logger/factory.h"
 
+using ConnectionState = nimlib::Server::Constants::ConnectionState;
+
 class PollingServer
 {
     using connection_ptr = std::unique_ptr<Connection>;
@@ -42,6 +44,10 @@ private:
     std::queue<connection_ptr> write_queue;
     std::shared_ptr<nimlib::Server::Logging::LoggerAgent> main_log_agent;
 
-    const std::vector<ConnectionState> allowed_states_for_read{ STARTING, READING, PENDING };
-    const std::vector<ConnectionState> allowed_states_for_write{ WRITING };
+    const std::vector<ConnectionState> allowed_states_for_read{
+        ConnectionState::STARTING,
+        ConnectionState::READING,
+        ConnectionState::PENDING
+    };
+    const std::vector<ConnectionState> allowed_states_for_write{ ConnectionState::WRITING };
 };

@@ -4,6 +4,8 @@
 
 #include "common.h"
 
+using ParseResult = nimlib::Server::Constants::ParseResult;
+
 struct ProtocolInterface
 {
     virtual ~ProtocolInterface() = default;

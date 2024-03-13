@@ -18,7 +18,7 @@ PollingServer::PollingServer(const std::string& port)
 {
     main_log_agent->log(std::format("server version {}.{}.{} starting", nimlib_VERSION_MAJOR, nimlib_VERSION_MINOR, nimlib_VERSION_PATCH));
 
-    nimlib::Server::Metrics::Factory<long>::instanciate_metric(TIME_TO_RESPONSE)
+    nimlib::Server::Metrics::Factory<long>::instanciate_metric(nimlib::Server::Constants::TIME_TO_RESPONSE)
         .measure_avg()
         .measure_max()
         .get();
@@ -63,7 +63,7 @@ void PollingServer::run()
         // filter connections (moving remaining live connections to connections map)
         std::erase_if(connections, [](const auto& c) {
             auto [state, elapsed] = c.second->get_state();
-            return (state == DONE || state == CON_ERROR);
+            return (state == ConnectionState::DONE || state == ConnectionState::CON_ERROR);
             });
     }
 }

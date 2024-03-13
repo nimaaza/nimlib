@@ -8,6 +8,8 @@
 
 namespace nimlib::Server::Logging
 {
+    using LogLevel = nimlib::Server::Constants::LogLevel;
+
     class Agent : public LoggerAgent
     {
     public:
@@ -39,7 +41,5 @@ namespace nimlib::Server::Logging
         std::string agent_name;
         LogLevel level;
         std::string format_string;
-
-        static const std::unordered_map<LogLevel, std::string_view> level_to_string_translation;
     };
 };

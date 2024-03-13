@@ -10,6 +10,8 @@
 #include "metrics/measurements.h"
 
 using connection_id = int;
+using ConnectionState = nimlib::Server::Constants::ConnectionState;
+using ParseResult = nimlib::Server::Constants::ParseResult;
 
 class Connection
 {

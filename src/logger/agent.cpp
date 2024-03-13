@@ -7,13 +7,7 @@
 
 namespace nimlib::Server::Logging
 {
-    const std::unordered_map<LogLevel, std::string_view> Agent::level_to_string_translation = {
-        {LogLevel::INFO, "info"},
-        {LogLevel::DEBUG, "debug"},
-        {LogLevel::WARN, "warn"},
-        {LogLevel::ERROR, "error"},
-        {LogLevel::CRITICAL, "critical"}
-    };
+    using LogLevel = nimlib::Server::Constants::LogLevel;
 
     Agent::Agent(const std::string& agent_name, LogLevel level)
         : master_logger{ nimlib::Server::Logging::Logger::get_instance() },
@@ -50,7 +44,7 @@ namespace nimlib::Server::Logging
     {
         std::cout << format("[{0:%F} {0:%T}]: [{1:}] [{2:}] {3:}",
             std::chrono::system_clock::now(),
-            level_to_string_translation.at(requested_level),
+            nimlib::Server::Constants::level_to_string_translation.at(requested_level),
             agent_name,
             message) << std::endl;
     }

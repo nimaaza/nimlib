@@ -8,12 +8,12 @@
 
 Connection::Connection(std::unique_ptr<Socket> s, connection_id id)
     : id{ id },
-    sm{ConnectionState::STARTING, ConnectionState::CON_ERROR, MAX_RESET_COUNT },
+    sm{ ConnectionState::STARTING, ConnectionState::CON_ERROR, nimlib::Server::Constants::MAX_RESET_COUNT },
     socket{ std::move(s) },
     request_stream{},
     response_stream{},
     parse_result{ ParseResult::INCOMPLETE },
-    response_timer{ TIME_TO_RESPONSE }
+    response_timer{ nimlib::Server::Constants::TIME_TO_RESPONSE }
 {
     response_timer.start();
 
@@ -36,12 +36,12 @@ ConnectionState Connection::read()
 
     sm.set_state(ConnectionState::READING);
 
-    std::array<char, BUFFER_SIZE> buff{};
+    std::array<char, nimlib::Server::Constants::BUFFER_SIZE> buff{};
     int bytes_count = socket->read(buff);
 
     if (bytes_count > 0)
     {
-        for (int i = 0; i < bytes_count && i < BUFFER_SIZE; i++)
+        for (int i = 0; i < bytes_count && i < nimlib::Server::Constants::BUFFER_SIZE; i++)
         {
             request_stream << buff[i];
         }
@@ -95,7 +95,7 @@ ConnectionState Connection::write()
 
     while (bytes_to_send > 0)
     {
-        int sent = socket->send(response_view.substr(total_bytes_sent, BUFFER_SIZE));
+        int sent = socket->send(response_view.substr(total_bytes_sent, nimlib::Server::Constants::BUFFER_SIZE));
 
         if (sent < 0) break;
 

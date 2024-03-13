@@ -6,6 +6,9 @@
 #include "../src/connection.h"
 #include "../src/common.h"
 
+using ParseResult = nimlib::Server::Constants::ParseResult;
+using ConnectionState = nimlib::Server::Constants::ConnectionState;
+
 struct MockProtocolParser : public ProtocolInterface
 {
   ParseResult parse(std::stringstream& in, std::stringstream& out) override { return ParseResult::WRITE_AND_DIE; }

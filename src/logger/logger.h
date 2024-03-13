@@ -9,6 +9,8 @@
 
 namespace nimlib::Server::Logging
 {
+    using LogLevel = nimlib::Server::Constants::LogLevel;
+
     struct LoggerAgent
     {
         virtual ~LoggerAgent() = default;
