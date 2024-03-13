@@ -19,7 +19,6 @@ namespace nimlib::Metrics::Measurements
         {
             if (successful_measurement && metric)
             {
-                std::cout << measurement_result << std::endl;
                 metric->receive(measurement_result);
             }
         };
