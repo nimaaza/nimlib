@@ -11,7 +11,7 @@ namespace nimlib::Logging
     class Agent : public LoggerAgent
     {
     public:
-        Agent(const std::string& agent_name, LogLevel level = LogLevel::DEBUG);
+        Agent(const std::string& agent_name, LogLevel level);
         ~Agent();
 
         Agent(const Agent&) = delete;
@@ -21,7 +21,7 @@ namespace nimlib::Logging
 
         void set_level(LogLevel new_level) override;
         void log(std::string_view message) override;
-        void log(LogLevel level, std::string_view message) override;
+        void log(LogLevel requested_level, std::string_view message) override;
 
         void debug(std::string_view message) override;
         void info(std::string_view message) override;
@@ -32,12 +32,14 @@ namespace nimlib::Logging
         const std::string& get_name() override;
 
     private:
-        void print_message(std::string_view message);
+        void print_message(LogLevel requested_level, std::string_view message);
 
     private:
         nimlib::Logging::Logger& master_logger;
         std::string agent_name;
         LogLevel level;
         std::string format_string;
+
+        static const std::unordered_map<LogLevel, std::string_view> level_to_string_translation;
     };
 };
