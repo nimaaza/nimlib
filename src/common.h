@@ -11,4 +11,3 @@ const int MAX_RESET_COUNT = 10;
 
 // Metric name constants
 const std::string TIME_TO_RESPONSE{ "resp_tm" };
-
