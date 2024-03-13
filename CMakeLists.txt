@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28.1)
+cmake_minimum_required(VERSION 3.27.8)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
@@ -14,7 +14,10 @@ add_executable(test_run
         src/polling_server.cpp
         src/connection.cpp
         src/protocol.cpp
-        src/metrics/timer.cpp)
+        src/metrics/timer.cpp
+        src/logger/logger.cpp
+        src/logger/agent.cpp
+        src/logger/factory.cpp)
 target_include_directories(test_run PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(test_run OpenSSL::SSL OpenSSL::Crypto)
 
@@ -39,7 +42,10 @@ add_executable(unit_tests
         src/connection.cpp
         src/protocol.cpp
         src/tcp_socket.cpp
-        src/metrics/timer.cpp)
+        src/metrics/timer.cpp
+        src/logger/logger.cpp
+        src/logger/agent.cpp
+        src/logger/factory.cpp)
 target_link_libraries(unit_tests GTest::gtest_main)
 
 include(GoogleTest)

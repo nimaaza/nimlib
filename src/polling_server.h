@@ -1,12 +1,14 @@
 #pragma once
 
 #include <queue>
+#include <memory>
 #include <poll.h>
 
 #include "common.h"
 #include "connection.h"
 #include "tcp_socket.h"
 #include "socket.h"
+#include "logger/factory.h"
 
 class PollingServer
 {
@@ -38,6 +40,7 @@ private:
     std::unordered_map<int, connection_ptr> connections;
     std::queue<connection_ptr> read_queue;
     std::queue<connection_ptr> write_queue;
+    std::shared_ptr<nimlib::Logging::LoggerAgent> main_log_agent;
 
     const std::vector<ConnectionState> allowed_states_for_read{ STARTING, READING, PENDING };
     const std::vector<ConnectionState> allowed_states_for_write{ WRITING };

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <format>
 #include <span>
 #include <string_view>
 #include <sys/types.h>
@@ -12,8 +13,17 @@
 #include <iostream>
 
 #include "tcp_socket.h"
+#include "logger/factory.h"
 
-TcpSocket::TcpSocket(const std::string& port)
+TcpSocket::TcpSocket(int tcp_socket, const std::string& port) :
+    tcp_socket_descriptor(tcp_socket),
+    port{ port },
+    log_agent{ nimlib::Logging::Factory::get_agent("socket") }
+{}
+
+TcpSocket::TcpSocket(const std::string& port) :
+    port{ port },
+    log_agent{ nimlib::Logging::Factory::get_agent("socket") }
 {
     addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -31,8 +41,11 @@ TcpSocket::TcpSocket(const std::string& port)
 
     if (tcp_socket_descriptor < 0)
     {
-        // log failure.
-        std::cout << "failed to create socket" << std::endl;
+        log_agent->error(std::format("failed to create socket to bind to port {}", port));
+    }
+    else
+    {
+        log_agent->info(std::format("socket {} created to bind to port {}", tcp_socket_descriptor, port));
     }
 
     // is there any reason to keep bind_address? apparently it can be freed after binding.
@@ -40,6 +53,7 @@ TcpSocket::TcpSocket(const std::string& port)
 
 TcpSocket::~TcpSocket()
 {
+    log_agent->info(std::format("closing socket {} bound to port", tcp_socket_descriptor, port));
     freeaddrinfo(bind_address);
     close(tcp_socket_descriptor);
 }
@@ -55,7 +69,7 @@ void TcpSocket::tcp_connect(const std::string& addr, const std::string& port)
 
     if (getaddrinfo(addr.data(), port.data(), &hints, &peer_address))
     {
-        fprintf(stderr, "getaddrinfo() failed for connect().\n");
+        log_agent->error(std::format("getaddrinfo() failed on call to connect() for TCP connection to {}:{}", addr, port));
     }
 
     // printf("Remote address is: ");
@@ -69,15 +83,19 @@ void TcpSocket::tcp_connect(const std::string& addr, const std::string& port)
 
     if (connect(tcp_socket_descriptor, peer_address->ai_addr, peer_address->ai_addrlen) == -1)
     {
-        fprintf(stderr, "connect() failed.\n");
+        log_agent->error(std::format("call to connect() failed for TCP connection to {}:{}", addr, port));
     }
-    else printf("Connected.\n\n");
+    else
+    {
+        log_agent->info(std::format("TCP connection established to {}:{}", addr, port));
+    }
 
     freeaddrinfo(peer_address);
 }
 
 void TcpSocket::tcp_bind()
 {
+    // TODO: return true or false depending on failing to successding
     if (bind_address)
     {
         auto bind_result = bind(
@@ -88,8 +106,11 @@ void TcpSocket::tcp_bind()
 
         if (bind_result != 0)
         {
-            // log failure.
-            std::cout << "failed to bind socket to port" << std::endl;
+            log_agent->error(std::format("failed to bind socket {} to port {}", tcp_socket_descriptor, port));
+        }
+        else
+        {
+            log_agent->info(std::format("bound socket {} to port {}", tcp_socket_descriptor, port));
         }
     }
 }
@@ -98,8 +119,11 @@ void TcpSocket::tcp_listen()
 {
     if (listen(tcp_socket_descriptor, MAX_CONNECTIONS) < 0)
     {
-        // log failure.
-        std::cout << "failed to listen" << std::endl;
+        log_agent->error(std::format("socket {} failed to start listening on port {}", tcp_socket_descriptor, port));
+    }
+    else
+    {
+        log_agent->info(std::format("socket {} listening on port {}", tcp_socket_descriptor, port));
     }
 }
 
@@ -115,7 +139,7 @@ std::unique_ptr<TcpSocket> TcpSocket::tcp_accept()
 
     if (socket_client < 0)
     {
-        // log failure.
+        log_agent->error(std::format("TCP socket {} failed to accept new connection", tcp_socket_descriptor));
         return {};
     }
     else
@@ -123,7 +147,7 @@ std::unique_ptr<TcpSocket> TcpSocket::tcp_accept()
         // log new connection (use page 93 of c network programming)
         std::string host_name;
         tcp_get_host_name(reinterpret_cast<sockaddr&>(client_address), host_name);
-        // std::cout << host_name << std::endl;
+        log_agent->info(std::format("TCP socket {} accepted connection from {}", tcp_socket_descriptor, host_name));
         return std::make_unique<TcpSocket>(socket_client);
     }
 }
@@ -150,17 +174,20 @@ int TcpSocket::tcp_read(std::span<char> buffer, int flags = 0)
 
 int TcpSocket::tcp_send(std::span<char> buffer)
 {
-    return send(tcp_socket_descriptor, buffer.data(), buffer.size(), 0);
+    int bytes_count = send(tcp_socket_descriptor, buffer.data(), buffer.size(), 0);
+    log_agent->info(std::format("read {} bytes from socket {}", bytes_count, tcp_socket_descriptor));
+    return bytes_count;
 }
 
 int TcpSocket::tcp_send(std::string_view buffer)
 {
-    return send(tcp_socket_descriptor, buffer.data(), buffer.size(), 0);
+    int bytes_count = send(tcp_socket_descriptor, buffer.data(), buffer.size(), 0);
+    log_agent->info(std::format("wrote {} bytes to socket {}", bytes_count, tcp_socket_descriptor));
+    return bytes_count;
 }
 
 void TcpSocket::tcp_close()
 {
+    log_agent->info(std::format("TCP socket {} closing", tcp_socket_descriptor));
     close(tcp_socket_descriptor);
 }
-
-TcpSocket::TcpSocket(int tcp_socket) : tcp_socket_descriptor(tcp_socket) {}

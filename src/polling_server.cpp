@@ -1,19 +1,23 @@
 #include <unordered_map>
 #include <string>
-#include <memory>
 #include <algorithm>
+#include <format>
 
 #include "polling_server.h"
 #include "metrics/factory.h"
 #include "socket.h"
+#include "version.h"
 
 PollingServer::PollingServer(const std::string& port)
     : port{ port },
     connections{},
     read_queue{},
     write_queue{},
+    main_log_agent{ nimlib::Logging::Factory::get_agent("main") },
     server_socket{ std::make_unique<TcpSocket>(port) }
 {
+    main_log_agent->log(std::format("server version {}.{}.{} starting", nimlib_VERSION_MAJOR, nimlib_VERSION_MINOR, nimlib_VERSION_PATCH));
+
     nimlib::Metrics::Factory<long>::instanciate_metric(TIME_TO_RESPONSE)
         .measure_avg()
         .measure_max()
@@ -22,9 +26,15 @@ PollingServer::PollingServer(const std::string& port)
     server_socket->tcp_bind();
     server_socket->tcp_listen();
     create_pollfds_entry(server_socket->get_tcp_socket_descriptor(), server_fd);
+
+    main_log_agent->log(std::format("listening on port: {}", port));
 }
 
-PollingServer::~PollingServer() { server_socket->tcp_close(); }
+PollingServer::~PollingServer()
+{
+    main_log_agent->log(std::format("server shutting down", port));
+    server_socket->tcp_close();
+}
 
 void PollingServer::run()
 {
@@ -53,8 +63,8 @@ void PollingServer::run()
         // filter connections (moving remaining live connections to connections map)
         std::erase_if(connections, [](const auto& c) {
             auto [state, elapsed] = c.second->get_state();
-            return (state == DONE || state == ERROR);
-        });
+            return (state == DONE || state == CON_ERROR);
+            });
     }
 }
 

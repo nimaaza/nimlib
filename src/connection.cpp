@@ -8,7 +8,7 @@
 
 Connection::Connection(std::unique_ptr<Socket> s, connection_id id)
     : id{ id },
-    sm{ ConnectionState::STARTING, ConnectionState::ERROR, MAX_RESET_COUNT },
+    sm{ConnectionState::STARTING, ConnectionState::CON_ERROR, MAX_RESET_COUNT },
     socket{ std::move(s) },
     request_stream{},
     response_stream{},
@@ -19,7 +19,7 @@ Connection::Connection(std::unique_ptr<Socket> s, connection_id id)
 
     if (!this->socket)
     {
-        sm.set_state(ConnectionState::ERROR);
+        sm.set_state(ConnectionState::CON_ERROR);
     }
 
     protocol = std::make_shared<Protocol>();
@@ -32,7 +32,7 @@ Connection::~Connection()
 
 ConnectionState Connection::read()
 {
-    if (sm.get_state().first == ConnectionState::ERROR) return ConnectionState::ERROR;
+    if (sm.get_state().first == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
 
     sm.set_state(ConnectionState::READING);
 
@@ -57,13 +57,13 @@ ConnectionState Connection::read()
     }
     else
     {
-        return sm.set_state(ConnectionState::ERROR);
+        return sm.set_state(ConnectionState::CON_ERROR);
     }
 }
 
 ConnectionState Connection::handle_incoming_data()
 {
-    if (sm.get_state().first == ConnectionState::ERROR) return ConnectionState::ERROR;
+    if (sm.get_state().first == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
 
     sm.set_state(ConnectionState::HANDLING);
     parse_result = protocol->parse(request_stream, response_stream);
@@ -79,13 +79,13 @@ ConnectionState Connection::handle_incoming_data()
     }
     else
     {
-        return sm.set_state(ConnectionState::ERROR);
+        return sm.set_state(ConnectionState::CON_ERROR);
     }
 }
 
 ConnectionState Connection::write()
 {
-    if (sm.get_state().first == ConnectionState::ERROR) return ConnectionState::ERROR;
+    if (sm.get_state().first == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
 
     // TODO: trim response string?
     std::string response_str{ response_stream.str() };
@@ -121,13 +121,13 @@ ConnectionState Connection::write()
     else
     {
         //TODO: crash? bytes_to_send cannot be negative
-        return sm.set_state(ConnectionState::ERROR);
+        return sm.set_state(ConnectionState::CON_ERROR);
     }
 }
 
 void Connection::halt()
 {
-    sm.set_state(ConnectionState::ERROR);
+    sm.set_state(ConnectionState::CON_ERROR);
 }
 
 void Connection::set_protocol(std::shared_ptr<ProtocolInterface> p)

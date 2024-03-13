@@ -3,10 +3,12 @@
 #include <span>
 #include <netdb.h>
 
+#include "logger/factory.h"
+
 struct TcpSocket
 {
+    TcpSocket(int tcp_socket, const std::string& port = "");
     TcpSocket(const std::string& port);
-    TcpSocket(int tcp_socket);
     ~TcpSocket();
 
     TcpSocket(const TcpSocket&) = delete;
@@ -28,7 +30,6 @@ struct TcpSocket
     const int get_tcp_socket_descriptor() const;
 
     // TODO: the following operations on sockets might become necessary
-    // connect(2)
     // connectx(2)
     // disconnectx(2)
     // getsockopt(2)
@@ -43,7 +44,9 @@ struct TcpSocket
 private:
     // TODO: try to avoid the raw pointer here
     addrinfo* bind_address;
+    const std::string& port;
     int tcp_socket_descriptor;
+    std::shared_ptr<nimlib::Logging::LoggerAgent> log_agent;
 
     // TODO: this will eventually come from config
     static const int MAX_CONNECTIONS{ 10 };
