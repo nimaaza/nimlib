@@ -8,8 +8,8 @@ struct Socket
 {
     virtual ~Socket() = default;
 
-    virtual int read(std::span<char>) = 0;
-    virtual int send(std::span<char>) = 0;
+    virtual int read(std::span<uint8_t>) = 0;
+    virtual int send(std::span<uint8_t>) = 0;
     virtual int send(std::string_view) = 0;
 };
 
@@ -36,9 +36,9 @@ public:
     TcpSocketAdapter(TcpSocketAdapter&&) noexcept = delete;
     TcpSocketAdapter& operator=(TcpSocketAdapter&&) noexcept = delete;
 
-    int read(std::span<char> buf) override { return s->tcp_read(buf, MSG_DONTWAIT); }
+    int read(std::span<uint8_t> buf) override { return s->tcp_read(buf, MSG_DONTWAIT); }
 
-    int send(std::span<char> buf) override { return s->tcp_send(buf); }
+    int send(std::span<uint8_t> buf) override { return s->tcp_send(buf); }
 
     int send(std::string_view buf) override { return s->tcp_send(buf); }
 

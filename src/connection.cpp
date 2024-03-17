@@ -38,7 +38,7 @@ namespace nimlib::Server
 
         sm.set_state(ConnectionState::READING);
 
-        std::array<char, nimlib::Server::Constants::BUFFER_SIZE> buff{};
+        std::array<uint8_t, nimlib::Server::Constants::BUFFER_SIZE> buff{};
         int bytes_count = socket->read(buff);
 
         if (bytes_count > 0)

@@ -23,8 +23,8 @@ namespace nimlib::Server::Sockets
         void tcp_listen();
         std::unique_ptr<TcpSocket> tcp_accept();
         void tcp_get_host_name(const sockaddr& socket_address, std::string& host_name);
-        int tcp_read(std::span<char> buffer, int flags);
-        int tcp_send(std::span<char> buffer);
+        int tcp_read(std::span<uint8_t> buffer, int flags);
+        int tcp_send(std::span<uint8_t> buffer);
         int tcp_send(std::string_view buffer);
         void tcp_close();  // TODO: may never be used
 

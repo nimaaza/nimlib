@@ -169,12 +169,12 @@ namespace nimlib::Server::Sockets
         host_name = std::string(name_buffer);
     }
 
-    int TcpSocket::tcp_read(std::span<char> buffer, int flags = 0)
+    int TcpSocket::tcp_read(std::span<uint8_t> buffer, int flags = 0)
     {
         return recv(tcp_socket_descriptor, buffer.data(), buffer.size(), flags);
     }
 
-    int TcpSocket::tcp_send(std::span<char> buffer)
+    int TcpSocket::tcp_send(std::span<uint8_t> buffer)
     {
         int bytes_count = send(tcp_socket_descriptor, buffer.data(), buffer.size(), 0);
         log_agent->info(std::format("read {} bytes from socket {}", bytes_count, tcp_socket_descriptor));
