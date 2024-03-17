@@ -34,7 +34,7 @@ StateManager<T>::StateManager(T initial_state, T error_state, int max_reset_coun
     error_state{ error_state },
     max_reset_count{ max_reset_count },
     reset_count{},
-    last_state_change{ std::chrono::high_resolution_clock::now() }
+    last_state_change{ std::chrono::steady_clock::now() }
 {}
 
 template<typename T>
@@ -44,7 +44,7 @@ T StateManager<T>::set_state(T new_state)
     {
         state = new_state;
         reset_count = 0;
-        last_state_change = std::chrono::high_resolution_clock::now();
+        last_state_change = std::chrono::steady_clock::now();
         return state;
     }
     else
@@ -63,7 +63,7 @@ T StateManager<T>::reset_state()
         set_state(error_state);
     }
 
-    last_state_change = std::chrono::high_resolution_clock::now();
+    last_state_change = std::chrono::steady_clock::now();
 
     return state;
 }
@@ -71,7 +71,7 @@ T StateManager<T>::reset_state()
 template<typename T>
 const std::pair<T, long> StateManager<T>::get_state() const
 {
-    auto now = std::chrono::high_resolution_clock::now();
+    auto now = std::chrono::steady_clock::now();
     long elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(now - last_state_change).count();
     return { state, elapsed };
 }
