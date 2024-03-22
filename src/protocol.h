@@ -2,29 +2,19 @@
 
 #include <sstream>
 
-#include "common.h"
+#include "types.h"
 
 namespace nimlib::Server::Protocols
 {
-    using ParseResult = nimlib::Server::Constants::ParseResult;
+	using nimlib::Server::Types::ProtocolInterface;
+	using ParseResult = nimlib::Server::Constants::ParseResult;
 
-    struct ProtocolInterface
-    {
-        virtual ~ProtocolInterface() = default;
+	class Protocol : public ProtocolInterface
+	{
+	public:
+		explicit Protocol(std::stringstream& in, std::stringstream& out);
+		~Protocol();
 
-        // ProtocolInterface(const ProtocolInterface&) = delete;
-        // ProtocolInterface& operator=(const ProtocolInterface&) = delete;
-        // ProtocolInterface(ProtocolInterface&&) noexcept = delete;
-        // ProtocolInterface& operator=(ProtocolInterface&&) noexcept = delete;
-
-        virtual ParseResult parse(std::stringstream& incoming_message, std::stringstream& outgoing_message) = 0;
-    };
-
-    class Protocol : public ProtocolInterface
-    {
-    public:
-        explicit Protocol();
-        ~Protocol() override;
-        ParseResult parse(std::stringstream&, std::stringstream&) override;
-    };
+		ParseResult parse() override;
+	};
 };

@@ -18,12 +18,14 @@ struct Socket
 
 #include <sys/socket.h>
 
-using TcpSocket = nimlib::Server::Sockets::TcpSocket;
+using nimlib::Server::Sockets::TcpSocketInterface;
+using nimlib::Server::Sockets::TcpSocket;
+
 
 class TcpSocketAdapter : public Socket
 {
 public:
-    TcpSocketAdapter(std::unique_ptr<TcpSocket> s) : s{ std::move(s) } {}
+    TcpSocketAdapter(std::unique_ptr<TcpSocketInterface> s) : s{ std::move(s) } {}
 
     TcpSocketAdapter(const std::string& port)
     {
@@ -43,6 +45,6 @@ public:
     int send(std::string_view buf) override { return s->tcp_send(buf); }
 
 private:
-    std::unique_ptr<TcpSocket> s;
+    std::unique_ptr<TcpSocketInterface> s;
 };
 ///////////////////////////////////////////////

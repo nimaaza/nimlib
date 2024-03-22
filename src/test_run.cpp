@@ -1,10 +1,11 @@
 #include <iostream>
 
-#include "version.h"
 #include "polling_server.h"
+#include "polling_server_with_logger.h"
 
 int main()
 {
     nimlib::Server::PollingServer ps {"8080"};
-    ps.run();
+	nimlib::Server::PollingServerWithLogger psl { ps};
+    psl.run();
 }

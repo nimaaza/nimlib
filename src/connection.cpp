@@ -1,5 +1,7 @@
 #include "connection.h"
 #include "state_manager.h"
+//#include "tls_layer.h"
+#include "protocol.h"
 
 #include <memory>
 #include <utility>
@@ -14,22 +16,23 @@ namespace nimlib::Server
         socket{ std::move(s) },
         request_stream{},
         response_stream{},
-        parse_result{ ParseResult::INCOMPLETE },
-        response_timer{ nimlib::Server::Constants::TIME_TO_RESPONSE }
+        parse_result{ ParseResult::INCOMPLETE }
+        //        response_timer{ nimlib::Server::Constants::TIME_TO_RESPONSE }
     {
-        response_timer.start();
+        //        response_timer.start();
 
         if (!this->socket)
         {
             sm.set_state(ConnectionState::CON_ERROR);
         }
 
-        protocol = std::make_shared<Protocol>();
+        protocol = std::make_shared<nimlib::Server::Protocols::Protocol>(request_stream, response_stream);
+        // protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(request_stream, response_stream, http_protocol);
     }
 
     Connection::~Connection()
     {
-        response_timer.end();
+        //        response_timer.end();
     }
 
     ConnectionState Connection::read()
@@ -68,7 +71,7 @@ namespace nimlib::Server
         if (sm.get_state().first == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
 
         sm.set_state(ConnectionState::HANDLING);
-        parse_result = protocol->parse(request_stream, response_stream);
+        parse_result = protocol->parse();
 
         if (parse_result == ParseResult::WRITE_AND_DIE || parse_result == ParseResult::WRITE_AND_WAIT)
         {
@@ -112,6 +115,8 @@ namespace nimlib::Server
         else if (bytes_to_send == 0 && parse_result == ParseResult::WRITE_AND_WAIT)
         {
             // TODO: reset connection variables or use state callbacks for clean up
+            request_stream = std::stringstream();
+            response_stream = std::stringstream();
             return sm.set_state(ConnectionState::PENDING);
         }
         else if (bytes_to_send > 0)

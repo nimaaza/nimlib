@@ -3,21 +3,20 @@
 #include <sstream>
 #include <chrono>
 
-#include "common.h"
+#include "types.h"
 #include "socket.h"
-#include "protocol.h"
 #include "state_manager.h"
-#include "metrics/measurements.h"
+//#include "metrics/measurements.h"
 
 namespace nimlib::Server
 {
     using connection_id = int;
-    using ConnectionState = nimlib::Server::Constants::ConnectionState;
-    using ParseResult = nimlib::Server::Constants::ParseResult;
-    using ProtocolInterface = nimlib::Server::Protocols::ProtocolInterface;
-    using Protocol = nimlib::Server::Protocols::Protocol;
+	using nimlib::Server::Types::ConnectionInterface;
+	using nimlib::Server::Types::ProtocolInterface;
+    using nimlib::Server::Constants::ConnectionState;
+    using nimlib::Server::Constants::ParseResult;
 
-    class Connection
+	class Connection : public ConnectionInterface
     {
     public:
         Connection(std::unique_ptr<Socket>, connection_id);
@@ -28,12 +27,12 @@ namespace nimlib::Server
         Connection(Connection&&) noexcept = delete;
         Connection& operator=(Connection&&) noexcept = delete;
 
-        ConnectionState read();
-        ConnectionState write();
-        void halt();
-        void set_protocol(std::shared_ptr<ProtocolInterface>);
-        std::pair<ConnectionState, long> get_state() const;
-        const int get_id() const;
+        ConnectionState read() override;
+        ConnectionState write() override;
+        void halt() override;
+        void set_protocol(std::shared_ptr<ProtocolInterface>) override;
+        std::pair<ConnectionState, long> get_state() const override;
+        const int get_id() const override;
 
     private:
         ConnectionState handle_incoming_data();
@@ -46,6 +45,6 @@ namespace nimlib::Server
         std::unique_ptr<Socket> socket;
         ParseResult parse_result;
         std::shared_ptr<ProtocolInterface> protocol;
-        nimlib::Server::Metrics::Measurements::Duration<long> response_timer;
+//        nimlib::Server::Metrics::Measurements::Duration<long> response_timer;
     };
 };

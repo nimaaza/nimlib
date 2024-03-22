@@ -3,11 +3,13 @@
 #include <span>
 #include <netdb.h>
 
-#include "logger/factory.h"
+#include "types.h"
 
 namespace nimlib::Server::Sockets
 {
-    struct TcpSocket
+	using nimlib::Server::Types::TcpSocketInterface;
+
+    struct TcpSocket : public TcpSocketInterface
     {
         TcpSocket(int tcp_socket, const std::string& port = "");
         TcpSocket(const std::string& port);
@@ -18,19 +20,19 @@ namespace nimlib::Server::Sockets
         TcpSocket(TcpSocket&&) noexcept;
         TcpSocket& operator=(TcpSocket&&) noexcept;
 
-        void tcp_connect(const std::string& addr, const std::string& port);
-        void tcp_bind();
-        void tcp_listen();
-        std::unique_ptr<TcpSocket> tcp_accept();
-        void tcp_get_host_name(const sockaddr& socket_address, std::string& host_name);
-        int tcp_read(std::span<uint8_t> buffer, int flags);
-        int tcp_send(std::span<uint8_t> buffer);
-        int tcp_send(std::string_view buffer);
-        void tcp_close();  // TODO: may never be used
+        // int tcp_connect(const std::string& addr, const std::string& port) override;
+        int tcp_bind() override;
+        int tcp_listen() override;
+        std::unique_ptr<TcpSocketInterface> tcp_accept() override;
+        void tcp_get_host_name(const sockaddr& socket_address, std::string& host_name) override;
+        int tcp_read(std::span<uint8_t> buffer, int flags) override;
+        int tcp_send(std::span<uint8_t> buffer) override;
+        int tcp_send(std::string_view buffer) override;
+        void tcp_close() override;  // TODO: may never be used
+        const int get_tcp_socket_descriptor() const override;
+		const std::string& get_port() const override;
 
-        const int get_tcp_socket_descriptor() const;
-
-        // TODO: the following operations on sockets might become necessary
+		// TODO: the following operations on sockets might become necessary
         // connectx(2)
         // disconnectx(2)
         // getsockopt(2)
@@ -42,13 +44,9 @@ namespace nimlib::Server::Sockets
         // unix(4)
         // compat(5)
 
-    private:
+    protected:
         // TODO: try to avoid the raw pointer here
         addrinfo* bind_address;
-        const std::string& port;
-        int tcp_socket_descriptor;
-        std::shared_ptr<nimlib::Server::Logging::LoggerAgent> log_agent;
-
         // TODO: this will eventually come from config
         static const int MAX_CONNECTIONS{ 10 };
     };
