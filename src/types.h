@@ -10,6 +10,13 @@ namespace nimlib::Server::Types
 	using nimlib::Server::Constants::ConnectionState;
 	using nimlib::Server::Constants::ParseResult;
 
+	struct PollingServerInterface
+	{
+		virtual ~PollingServerInterface() = default;
+
+		virtual void run() = 0;
+	};
+
 	struct TcpSocketInterface
 	{
 		TcpSocketInterface(const std::string& port, int tcp_socket_descriptor)

@@ -11,7 +11,8 @@ namespace nimlib::Server
     class PollingServerWithLogger : public PollingServerInterface
     {
     public:
-        explicit PollingServerWithLogger(PollingServerInterface& polling_server) : polling_server{ polling_server },
+        explicit PollingServerWithLogger(std::unique_ptr<PollingServerInterface> polling_server)
+		: polling_server{ std::move(polling_server) },
             main_log_agent{ nimlib::Server::Logging::Factory::get_agent("main") }
         {};
 
@@ -32,11 +33,11 @@ namespace nimlib::Server
                 nimlib_VERSION_MINOR,
                 nimlib_VERSION_PATCH)
         );
-        polling_server.run();
+        polling_server->run();
     }
 
     private:
-        PollingServerInterface& polling_server;
+        std::unique_ptr<PollingServerInterface> polling_server;
         std::shared_ptr<nimlib::Server::Logging::LoggerAgent> main_log_agent;
     };
 };

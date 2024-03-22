@@ -5,11 +5,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 project(nimlib VERSION 0.0.1)
 configure_file(version.h.in version.h)
 
+find_package(Botan 3.3.0 REQUIRED)
+message("Using Botan version: ${BOTAN_VERSION}")
 find_package(OpenSSL)
 message("Using OpenSSL version: ${OPENSSL_VERSION}")
 
 add_executable(test_run
         src/test_run.cpp
+        src/types.h
+        src/decorators.h
         src/tcp_socket.cpp
         src/polling_server.cpp
         src/connection.cpp
@@ -17,21 +21,27 @@ add_executable(test_run
         src/metrics/timer.cpp
         src/logger/logger.cpp
         src/logger/agent.cpp
-        src/logger/factory.cpp)
+        src/logger/factory.cpp
+        src/tls_layer.cpp
+        src/botan/credentials.cpp
+        src/botan/callbacks.cpp
+        src/botan/tls_server.cpp)
 target_include_directories(test_run PUBLIC "${PROJECT_BINARY_DIR}")
-target_link_libraries(test_run OpenSSL::SSL OpenSSL::Crypto)
+target_compile_definitions(test_run PRIVATE NO_TESTING)
+target_link_libraries(test_run Botan::Botan)
+#target_link_libraries(test_run OpenSSL::SSL OpenSSL::Crypto)
 
 # TDD ---------------------------------------------------------------
 include(FetchContent)
 FetchContent_Declare(
         googletest
-        URL https://github.com/google/googletest/archive/f8d7d77c06936315286eb55f8de22cd23c188571.zip
-)
+        URL https://github.com/google/googletest/archive/f8d7d77c06936315286eb55f8de22cd23c188571.zip)
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
 add_executable(unit_tests
+        tests/polling_server.test.cpp
         tests/connection.test.cpp
         tests/state_manager.test.cpp
         tests/metrics/timer.test.cpp
@@ -39,15 +49,41 @@ add_executable(unit_tests
         tests/metrics/metric_store.test.cpp
         tests/metrics/metric.test.cpp
         tests/metrics/measurements.test.cpp
+        tests/support/tcp_socket.mock.cpp
+        src/polling_server.cpp
         src/connection.cpp
         src/protocol.cpp
-        src/tcp_socket.cpp
         src/metrics/timer.cpp
         src/logger/logger.cpp
         src/logger/agent.cpp
-        src/logger/factory.cpp)
-target_link_libraries(unit_tests GTest::gtest_main)
+        src/logger/factory.cpp
+        src/tls_layer.cpp
+        src/botan/credentials.cpp
+        src/botan/callbacks.cpp
+        src/botan/tls_server.cpp)
+target_include_directories(unit_tests PUBLIC "${PROJECT_BINARY_DIR}")
+target_link_libraries(unit_tests GTest::gtest_main Botan::Botan)
+
+add_executable(unit_tests_connection
+        tests/connection.test.cpp
+        src/connection.cpp
+        src/tcp_socket.cpp
+        src/protocol.cpp
+        src/logger/logger.cpp
+        src/logger/factory.cpp
+        src/logger/agent.cpp)
+target_include_directories(unit_tests_connection PUBLIC "${PROJECT_BINARY_DIR}")
+target_link_libraries(unit_tests_connection GTest::gtest_main Botan::Botan)
+
+add_executable(unit_tests_polling_server
+        tests/polling_server.test.cpp
+        src/polling_server.cpp
+        src/tcp_socket.cpp
+        src/connection.cpp
+        src/protocol.cpp)
+target_include_directories(unit_tests_polling_server PUBLIC "${PROJECT_BINARY_DIR}")
+target_link_libraries(unit_tests_polling_server GTest::gtest_main Botan::Botan)
 
 include(GoogleTest)
-gtest_discover_tests(unit_tests)
+gtest_discover_tests(unit_tests unit_tests_connection unit_tests_polling_server)
 # -------------------------------------------------------------------

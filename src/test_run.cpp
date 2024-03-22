@@ -5,7 +5,7 @@
 
 int main()
 {
-    nimlib::Server::PollingServer ps {"8080"};
-	nimlib::Server::PollingServerWithLogger psl { ps};
-    psl.run();
+    using nimlib::Server::PollingServer;
+    auto psl = nimlib::Server::Decorators::decorate(std::make_unique<PollingServer>("8080"));
+    psl->run();
 }

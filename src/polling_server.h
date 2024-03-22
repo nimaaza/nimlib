@@ -8,17 +8,11 @@
 
 namespace nimlib::Server
 {
+    using nimlib::Server::Types::PollingServerInterface;
     using nimlib::Server::Types::ConnectionInterface;
     using nimlib::Server::Types::TcpSocketInterface;
     using nimlib::Server::Constants::ConnectionState;
     using connection_ptr = std::unique_ptr<ConnectionInterface>;
-
-    struct PollingServerInterface
-    {
-        virtual ~PollingServerInterface() = default;
-
-        virtual void run() = 0;
-    };
 
     class PollingServer : public PollingServerInterface
     {
