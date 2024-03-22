@@ -3,17 +3,12 @@
 #include <memory>
 #include <concepts>
 
-#include "polling_server.h"
-#include "polling_server_with_logger.h"
-#include "tcp_socket.h"
-#include "tcp_socket_with_logger.h"
+#include "decorations/implementations.h"
 
 namespace nimlib::Server::Decorators
 {
     using nimlib::Server::Types::TcpSocketInterface;
     using nimlib::Server::Sockets::TcpSocketWithLogger;
-    using nimlib::Server::PollingServer;
-    using nimlib::Server::PollingServerWithLogger;
 
     template <typename T>
     concept IsTcpSocket = std::derived_from<T, TcpSocketInterface>;

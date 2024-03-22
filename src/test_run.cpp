@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "polling_server.h"
-#include "polling_server_with_logger.h"
+#include "decorators.h"
 
 int main()
 {
