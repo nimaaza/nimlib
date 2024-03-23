@@ -10,7 +10,6 @@
 
 namespace nimlib::Server
 {
-    using connection_id = int;
 	using nimlib::Server::Types::ConnectionInterface;
 	using nimlib::Server::Types::ProtocolInterface;
     using nimlib::Server::Constants::ConnectionState;

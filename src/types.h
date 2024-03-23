@@ -71,3 +71,7 @@ namespace nimlib::Server::Types
 		virtual const int get_id() const = 0;
 	};
 };
+
+using connection_ptr = std::shared_ptr<nimlib::Server::Types::ConnectionInterface>;
+using socket_ptr = std::unique_ptr<nimlib::Server::Types::TcpSocketInterface>;
+using connection_id = int;

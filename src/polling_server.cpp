@@ -4,7 +4,7 @@
 #include <cassert>
 
 #include "polling_server.h"
-#include "connection.h"
+#include "tcp_socket.h"
 
 #ifdef NO_TESTING
 #include "decorators.h"
@@ -12,11 +12,14 @@
 #include "../tests/support/decorators.h"
 #endif
 
+using nimlib::Server::Sockets::TcpSocket;
+
 namespace nimlib::Server
 {
 	PollingServer::PollingServer(const std::string& port)
 		: port{ port },
-		server_socket{ nimlib::Server::Decorators::decorate(std::make_unique<TcpSocket>(port)) }
+		server_socket{ nimlib::Server::Decorators::decorate(std::make_unique<TcpSocket>(port)) },
+		connection_pool{ nimlib::Server::ConnectionPool::get_pool() }
 	{
 		server_socket->tcp_bind();
 		server_socket->tcp_listen();
@@ -39,18 +42,7 @@ namespace nimlib::Server
 			poll_result = poll(sockets.data(), sockets.size(), -1); // TODO: timeout for polling
 			accept_new_connection(sockets);
 			handle_connections(sockets);
-
-			// Filter & clear out connections (done or in error).
-			std::for_each(connections.begin(), connections.end(), [](auto& connection) {
-				if (connection)
-				{
-					auto [state, _] = connection->get_state();
-					if (state == ConnectionState::DONE || state == ConnectionState::CON_ERROR)
-					{
-						connection.reset();
-					}
-				}
-			});
+			clear_connections();
 		}
 	}
 
@@ -59,7 +51,7 @@ namespace nimlib::Server
 		sockets.clear();
 		sockets.push_back(server_fd);
 
-		for (const auto& connection : connections)
+		for (const auto& connection : connection_pool.get_all())
 		{
 			if (connection)
 			{
@@ -85,11 +77,7 @@ namespace nimlib::Server
 		if (sockets[0].revents & POLLIN)
 		{
 			auto accepted_socket = nimlib::Server::Decorators::decorate(server_socket->tcp_accept());
-			connection_id id = accepted_socket->get_tcp_socket_descriptor();
-			auto socket_wrapper = std::make_unique<TcpSocketAdapter>(std::move(accepted_socket));
-			auto connection = std::make_unique<Connection>(std::move(socket_wrapper), id);
-			if (connections.size() < id) connections.resize(id + 1);
-			connections[id] = std::move(connection);
+			connection_pool.record_connection(std::move(accepted_socket));
 		}
 	}
 
@@ -98,18 +86,38 @@ namespace nimlib::Server
 		std::for_each(sockets.begin() + 1, sockets.end(), [&](const auto& socket) {
 			if (socket.revents & POLLIN)
 			{
-				auto [state, _] = connections[socket.fd]->get_state();
+				auto connection = connection_pool.find(socket.fd);
+				auto [state, _] = connection->get_state();
 				if (allowed_to_read(state))
 				{
-					connections[socket.fd]->read();
+					connection->read();
 				}
 			}
 			else if (socket.revents & POLLOUT)
 			{
-				auto [state, _] = connections[socket.fd]->get_state();
+				auto connection = connection_pool.find(socket.fd);
+				auto [state, _] = connection->get_state();
 				if (allowed_to_write(state))
 				{
-					connections[socket.fd]->write();
+					connection->write();
+				}
+			}
+		});
+	}
+
+	void PollingServer::clear_connections()
+	{
+		// Filter & clear out connections (done or in error).
+		// TODO: consider doing this once in every number of iterations?
+		auto& connections = connection_pool.get_all();
+		std::for_each(connections.begin(), connections.end(), [](auto& connection) {
+			if (connection)
+			{
+				auto [state, _] = connection->get_state();
+				if (state == ConnectionState::DONE || state == ConnectionState::CON_ERROR)
+				{
+					connection->halt();
+					connection.reset();
 				}
 			}
 		});
