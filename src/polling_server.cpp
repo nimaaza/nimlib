@@ -65,13 +65,6 @@ namespace nimlib::Server
 		assert(sockets[0].fd == server_socket->get_tcp_socket_descriptor());
 	}
 
-	void PollingServer::create_pollfds_entry(int socket, pollfd& fds)
-	{
-		fds.fd = socket;
-		fds.events = POLLIN | POLLOUT;
-		fds.revents = 0;
-	}
-
 	void PollingServer::accept_new_connection(std::vector<pollfd>& sockets)
 	{
 		if (sockets[0].revents & POLLIN)
@@ -123,14 +116,21 @@ namespace nimlib::Server
 		});
 	}
 
-	bool PollingServer::allowed_to_read(ConnectionState state) const
+	void PollingServer::create_pollfds_entry(int socket, pollfd& fds)
+	{
+		fds.fd = socket;
+		fds.events = POLLIN | POLLOUT;
+		fds.revents = 0;
+	}
+
+	bool PollingServer::allowed_to_read(ConnectionState state)
 	{
 		return (state == ConnectionState::STARTING
 			|| state == ConnectionState::READING
 			|| state == ConnectionState::PENDING);
 	}
 
-	bool PollingServer::allowed_to_write(ConnectionState state) const
+	bool PollingServer::allowed_to_write(ConnectionState state)
 	{
 		return state == ConnectionState::WRITING;
 	}
