@@ -31,27 +31,14 @@ namespace nimlib::Server
         void setup_fds(std::vector<pollfd>&);
         void create_pollfds_entry(int, pollfd&);
         void accept_new_connection(std::vector<pollfd>&);
-        void queue_connections(
-            short, std::vector<pollfd>&,
-            const std::vector<ConnectionState>&,
-            std::queue<connection_ptr>&);
-        void handle_queue(std::queue<connection_ptr>&, const std::vector<ConnectionState>&, bool);
+        void handle_connections(std::vector<pollfd>& socket);
+        bool allowed_to_read(ConnectionState state) const;
+        bool allowed_to_write(ConnectionState state) const;
 
     private:
         const std::string& port;
         std::unique_ptr<TcpSocketInterface> server_socket;
-        pollfd server_fd;
-        std::unordered_map<int, connection_ptr> connections;
-        std::queue<connection_ptr> read_queue;
-        std::queue<connection_ptr> write_queue;
-
-        const std::vector<ConnectionState> allowed_states_for_read{
-            ConnectionState::STARTING,
-            ConnectionState::READING,
-            ConnectionState::PENDING
-        };
-        const std::vector<ConnectionState> allowed_states_for_write{
-            ConnectionState::WRITING
-        };
+        std::vector<connection_ptr> connections{};
+        pollfd server_fd{};
     };
 };

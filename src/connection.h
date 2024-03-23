@@ -38,7 +38,7 @@ namespace nimlib::Server
         ConnectionState handle_incoming_data();
 
     private:
-        connection_id id;
+        const connection_id id;
         StateManager<ConnectionState> sm;
         std::stringstream request_stream;
         std::stringstream response_stream;
