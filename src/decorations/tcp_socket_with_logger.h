@@ -62,7 +62,7 @@ namespace nimlib::Server::Sockets
 
             if (new_socket)
             {
-                log_agent->error(std::format("TCP socket {} failed to accept new connection", tcp_socket_descriptor));
+                log_agent->info(std::format("TCP socket {} accepted new connection", tcp_socket_descriptor));
             }
             else
             {
