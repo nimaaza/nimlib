@@ -15,7 +15,7 @@ namespace nimlib::Server::Protocols
 		TlsLayer(std::stringstream& in, std::stringstream& out, std::shared_ptr<ProtocolInterface> next);
 		~TlsLayer();
 
-		ParseResult parse() override;
+		void parse(ConnectionInterface& connection) override;
 
 	private:
 		std::unique_ptr<Botan::TLS::Server> tls_server;

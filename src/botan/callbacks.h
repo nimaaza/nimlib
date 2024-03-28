@@ -4,12 +4,18 @@
 
 #include <botan/tls_callbacks.h>
 
+#include "../types.h"
+
+using nimlib::Server::Types::ProtocolInterface;
+
 namespace nimlib::Server::Protocols::BotanSpec
 {
 	class Callbacks : public Botan::TLS::Callbacks
 	{
 	public:
-		Callbacks(const std::stringstream& in, std::stringstream& out);
+		Callbacks(const std::stringstream& in,
+			std::stringstream& out,
+			std::shared_ptr<ProtocolInterface> next);
 		~Callbacks() = default;
 
 		void tls_emit_data(std::span<const uint8_t> data) override;
@@ -20,5 +26,6 @@ namespace nimlib::Server::Protocols::BotanSpec
 	private:
 		std::stringstream& out;
 		const std::stringstream& in;
+		std::shared_ptr<ProtocolInterface> next;
 	};
 }

@@ -18,7 +18,7 @@ namespace nimlib::Server
     void ConnectionPool::record_connection(connection_ptr c)
     {
         assert(connections[c->get_id()] == nullptr);
-        connections[c->get_id()] = c;
+        connections[c->get_id()] = c;  // TODO: maybe I can use at here.
     }
 
     void ConnectionPool::record_connection(socket_ptr s)

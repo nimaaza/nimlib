@@ -4,6 +4,8 @@
 
 #include "types.h"
 
+using nimlib::Server::Types::ConnectionInterface;
+
 namespace nimlib::Server::Protocols
 {
 	using nimlib::Server::Types::ProtocolInterface;
@@ -15,6 +17,6 @@ namespace nimlib::Server::Protocols
 		explicit Protocol(std::stringstream& in, std::stringstream& out);
 		~Protocol();
 
-		ParseResult parse() override;
+		void parse(ConnectionInterface& connection) override;
 	};
 };

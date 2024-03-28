@@ -10,12 +10,12 @@
 
 namespace nimlib::Server
 {
-	using nimlib::Server::Types::ConnectionInterface;
-	using nimlib::Server::Types::ProtocolInterface;
+    using nimlib::Server::Types::ConnectionInterface;
+    using nimlib::Server::Types::ProtocolInterface;
     using nimlib::Server::Constants::ConnectionState;
     using nimlib::Server::Constants::ParseResult;
 
-	class Connection : public ConnectionInterface
+    class Connection : public ConnectionInterface
     {
     public:
         Connection(std::unique_ptr<Socket>, connection_id);
@@ -29,12 +29,12 @@ namespace nimlib::Server
         ConnectionState read() override;
         ConnectionState write() override;
         void halt() override;
+        void set_parse_state(ParseResult pr) override;
+        // Connection& operator<<(uint8_t c) override;
+        // Connection& operator<<(std::string& s) override;
         void set_protocol(std::shared_ptr<ProtocolInterface>) override;
         std::pair<ConnectionState, long> get_state() const override;
         const int get_id() const override;
-
-    private:
-        ConnectionState handle_incoming_data();
 
     private:
         const connection_id id;
@@ -44,6 +44,6 @@ namespace nimlib::Server
         std::unique_ptr<Socket> socket;
         ParseResult parse_result;
         std::shared_ptr<ProtocolInterface> protocol;
-//        nimlib::Server::Metrics::Measurements::Duration<long> response_timer;
+        // nimlib::Server::Metrics::Measurements::Duration<long> response_timer;
     };
 };

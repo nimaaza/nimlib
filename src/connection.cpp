@@ -1,6 +1,5 @@
 #include "connection.h"
-#include "state_manager.h"
-//#include "tls_layer.h"
+#include "tls_layer.h"
 #include "protocol.h"
 
 #include <memory>
@@ -26,8 +25,8 @@ namespace nimlib::Server
             sm.set_state(ConnectionState::CON_ERROR);
         }
 
-        protocol = std::make_shared<nimlib::Server::Protocols::Protocol>(request_stream, response_stream);
-        // protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(request_stream, response_stream, http_protocol);
+        auto http_protocol = std::make_shared<nimlib::Server::Protocols::Protocol>(request_stream, response_stream);
+        protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(request_stream, response_stream, http_protocol);
     }
 
     Connection::~Connection()
@@ -51,35 +50,15 @@ namespace nimlib::Server
                 request_stream << buff[i];
             }
 
-            return handle_incoming_data();
+            sm.set_state(ConnectionState::HANDLING);
+            protocol->parse(*this);
+            return sm.get_state().first;
         }
         else if (bytes_count == 0)
         {
             // TODO: still no data to read, what to do here?
             // This may never happen because when poll returns
             // there must be something to read.
-            return sm.reset_state();
-        }
-        else
-        {
-            return sm.set_state(ConnectionState::CON_ERROR);
-        }
-    }
-
-    ConnectionState Connection::handle_incoming_data()
-    {
-        if (sm.get_state().first == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
-
-        sm.set_state(ConnectionState::HANDLING);
-        parse_result = protocol->parse();
-
-        if (parse_result == ParseResult::WRITE_AND_DIE || parse_result == ParseResult::WRITE_AND_WAIT)
-        {
-            return sm.set_state(ConnectionState::WRITING);
-        }
-        else if (parse_result == ParseResult::INCOMPLETE)
-        {
-            sm.set_state(ConnectionState::READING);
             return sm.reset_state();
         }
         else
@@ -136,6 +115,29 @@ namespace nimlib::Server
     {
         sm.set_state(ConnectionState::CON_ERROR);
     }
+
+    void Connection::set_parse_state(ParseResult pr)
+    {
+        parse_result = pr;
+
+        if (parse_result == ParseResult::WRITE_AND_DIE || parse_result == ParseResult::WRITE_AND_WAIT)
+        {
+            sm.set_state(ConnectionState::WRITING);
+        }
+        else if (parse_result == ParseResult::INCOMPLETE)
+        {
+            sm.set_state(ConnectionState::READING);
+            sm.reset_state();
+        }
+        else
+        {
+            sm.set_state(ConnectionState::CON_ERROR);
+        }
+    }
+
+    // Connection& Connection::operator<<(uint8_t c) {}
+
+    // Connection& Connection::operator<<(std::string& s) {}
 
     void Connection::set_protocol(std::shared_ptr<ProtocolInterface> p)
     {

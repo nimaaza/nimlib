@@ -4,8 +4,11 @@
 
 namespace nimlib::Server::Protocols::BotanSpec
 {
-	Callbacks::Callbacks(const std::stringstream& in, std::stringstream& out)
-		: in{ in }, out{ out }
+	Callbacks::Callbacks(
+		const std::stringstream& in,
+		std::stringstream& out,
+		std::shared_ptr<ProtocolInterface> next)
+		: in{ in }, out{ out }, next{ next }
 	{}
 
 	void Callbacks::tls_emit_data(std::span<const uint8_t> data)

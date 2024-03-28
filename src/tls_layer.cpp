@@ -6,26 +6,26 @@
 namespace nimlib::Server::Protocols
 {
 	TlsLayer::TlsLayer(std::stringstream& in, std::stringstream& out, std::shared_ptr<ProtocolInterface> next)
-		: ProtocolInterface {in, out, next}
+		: ProtocolInterface{ in, out, next }
 	{
-		tls_server = nimlib::Server::Protocols::BotanSpec::get_tls_server(in, out);
+		tls_server = nimlib::Server::Protocols::BotanSpec::get_tls_server(in, out, next);
 	}
 
 	TlsLayer::~TlsLayer() = default;
 
-	ParseResult TlsLayer::parse()
+	void TlsLayer::parse(ConnectionInterface& connection)
 	{
 		try
 		{
-			std::string s{ in.str() };
-			auto a = reinterpret_cast<uint8_t*>(s.data());
-			auto b = tls_server->received_data(a, s.size());
-			return ParseResult::WRITE_AND_WAIT;
+			std::string in_string{ in.str() };
+			auto in_string_ptr = reinterpret_cast<uint8_t*>(in_string.data());
+			auto bytes_needed = tls_server->received_data(in_string_ptr, in_string.size());
+			connection.set_parse_state(ParseResult::WRITE_AND_WAIT);
 		}
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
-			return ParseResult::WRITE_AND_WAIT;
+			connection.set_parse_state(ParseResult::WRITE_AND_DIE);
 		}
 	}
 }

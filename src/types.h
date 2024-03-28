@@ -10,6 +10,8 @@ namespace nimlib::Server::Types
 	using nimlib::Server::Constants::ConnectionState;
 	using nimlib::Server::Constants::ParseResult;
 
+	class ConnectionInterface;
+
 	struct PollingServerInterface
 	{
 		virtual ~PollingServerInterface() = default;
@@ -50,7 +52,7 @@ namespace nimlib::Server::Types
 		{};
 		virtual ~ProtocolInterface() = default;
 
-		virtual ParseResult parse() = 0;
+		virtual void parse(ConnectionInterface& connection) = 0;
 
 	protected:
 		std::stringstream& in;
@@ -66,6 +68,9 @@ namespace nimlib::Server::Types
 		virtual ConnectionState read() = 0;
 		virtual ConnectionState write() = 0;
 		virtual void halt() = 0;
+		virtual void set_parse_state(ParseResult pr) = 0;
+		// virtual ConnectionInterface& operator<<(uint8_t c) = 0;
+		// virtual ConnectionInterface& operator<<(std::string& s) = 0;
 		virtual void set_protocol(std::shared_ptr<ProtocolInterface>) = 0;
 		virtual std::pair<ConnectionState, long> get_state() const = 0;
 		virtual const int get_id() const = 0;
