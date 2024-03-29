@@ -30,7 +30,7 @@ namespace nimlib::Server
     private:
         void setup_fds(std::vector<pollfd>&);
         void accept_new_connection(std::vector<pollfd>&);
-        void handle_connections(std::vector<pollfd>& socket);
+        void handle_connections(std::vector<pollfd>&);
 		void clear_connections();
 
         static void create_pollfds_entry(int, pollfd&);

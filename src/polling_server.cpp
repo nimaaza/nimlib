@@ -77,23 +77,19 @@ namespace nimlib::Server
 	void PollingServer::handle_connections(std::vector<pollfd>& sockets)
 	{
 		std::for_each(sockets.begin() + 1, sockets.end(), [&](const auto& socket) {
+			auto connection = connection_pool.find(socket.fd);
+			auto [state, _] = connection->get_state();
 			if (socket.revents & POLLIN)
 			{
-				auto connection = connection_pool.find(socket.fd);
-				auto [state, _] = connection->get_state();
-				if (allowed_to_read(state))
-				{
-					connection->read();
-				}
+				if (allowed_to_read(state)) connection->read();
 			}
 			else if (socket.revents & POLLOUT)
 			{
-				auto connection = connection_pool.find(socket.fd);
-				auto [state, _] = connection->get_state();
-				if (allowed_to_write(state))
-				{
-					connection->write();
-				}
+				if (allowed_to_write(state)) connection->write();
+			}
+			else
+			{
+				// TODO: socket might be in a state which we don't handle?
 			}
 		});
 	}
