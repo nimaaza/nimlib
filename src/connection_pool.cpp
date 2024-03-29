@@ -25,8 +25,8 @@ namespace nimlib::Server
     {
         assert(connections[s->get_tcp_socket_descriptor()] == nullptr);
         connection_id id = s->get_tcp_socket_descriptor();
-        auto socket_wrapper = std::make_unique<TcpSocketAdapter>(std::move(s));
-        auto connection = std::make_shared<Connection>(std::move(socket_wrapper), id);
+        // auto socket_wrapper = std::make_unique<TcpSocket>(std::move(s));
+        auto connection = std::make_shared<Connection>(std::move(s), id);
         connections[id] = connection;
     }
 

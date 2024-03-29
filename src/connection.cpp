@@ -9,7 +9,7 @@
 
 namespace nimlib::Server
 {
-    Connection::Connection(std::unique_ptr<Socket> s, connection_id id)
+    Connection::Connection(std::unique_ptr<TcpSocketInterface> s, connection_id id)
         : id{ id },
         sm{ ConnectionState::STARTING, ConnectionState::CON_ERROR, nimlib::Server::Constants::MAX_RESET_COUNT },
         socket{ std::move(s) },
@@ -25,8 +25,8 @@ namespace nimlib::Server
             sm.set_state(ConnectionState::CON_ERROR);
         }
 
-        auto http_protocol = std::make_shared<nimlib::Server::Protocols::Protocol>(request_stream, response_stream);
-        protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(request_stream, response_stream, http_protocol);
+        protocol = std::make_shared<nimlib::Server::Protocols::Protocol>(request_stream, response_stream);
+        // protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(request_stream, response_stream, http_protocol);
     }
 
     Connection::~Connection()
@@ -41,7 +41,7 @@ namespace nimlib::Server
         sm.set_state(ConnectionState::READING);
 
         std::array<uint8_t, nimlib::Server::Constants::BUFFER_SIZE> buff{};
-        int bytes_count = socket->read(buff);
+        int bytes_count = socket->tcp_read(buff, MSG_DONTWAIT);
 
         if (bytes_count > 0)
         {
@@ -79,7 +79,7 @@ namespace nimlib::Server
 
         while (bytes_to_send > 0)
         {
-            int sent = socket->send(response_view.substr(total_bytes_sent, nimlib::Server::Constants::BUFFER_SIZE));
+            int sent = socket->tcp_send(response_view.substr(total_bytes_sent, nimlib::Server::Constants::BUFFER_SIZE));
 
             if (sent < 0) break;
 
