@@ -1,12 +1,12 @@
-#include <array>
-
 #include "protocol.h"
+
+#include <sstream>
 
 namespace nimlib::Server::Protocols
 {
-	Protocol::Protocol() {}
+	Protocol::Protocol() = default;
 
-	Protocol::~Protocol() {}
+	Protocol::~Protocol() = default;
 
 	void Protocol::parse(ConnectionInterface& connection)
 	{
