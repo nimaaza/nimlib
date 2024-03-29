@@ -5,8 +5,8 @@
 
 namespace nimlib::Server::Protocols
 {
-	TlsLayer::TlsLayer(std::stringstream& in, std::stringstream& out, std::shared_ptr<ProtocolInterface> next)
-		: ProtocolInterface{ in, out, next }
+	TlsLayer::TlsLayer(ConnectionInterface& connection, std::shared_ptr<ProtocolInterface> next)
+		: in{ connection.get_input_stream() }, out{ connection.get_output_stream() }
 	{
 		tls_server = nimlib::Server::Protocols::BotanSpec::get_tls_server(in, out, next);
 	}

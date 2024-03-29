@@ -44,20 +44,9 @@ namespace nimlib::Server::Types
 
 	struct ProtocolInterface
 	{
-		ProtocolInterface(
-			std::stringstream& in,
-			std::stringstream& out,
-			std::shared_ptr<ProtocolInterface> next = nullptr
-		) : in{ in }, out{ out }, next{ next }
-		{};
 		virtual ~ProtocolInterface() = default;
 
 		virtual void parse(ConnectionInterface& connection) = 0;
-
-	protected:
-		std::stringstream& in;
-		std::stringstream& out;
-		std::shared_ptr<ProtocolInterface> next;
 	};
 
 	struct ConnectionInterface
@@ -71,6 +60,8 @@ namespace nimlib::Server::Types
 		virtual void set_parse_state(ParseResult pr) = 0;
 		// virtual ConnectionInterface& operator<<(uint8_t c) = 0;
 		// virtual ConnectionInterface& operator<<(std::string& s) = 0;
+		virtual std::stringstream& get_input_stream() = 0;
+		virtual std::stringstream& get_output_stream() = 0;
 		virtual void set_protocol(std::shared_ptr<ProtocolInterface>) = 0;
 		virtual std::pair<ConnectionState, long> get_state() const = 0;
 		virtual const int get_id() const = 0;

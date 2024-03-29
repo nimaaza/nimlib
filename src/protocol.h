@@ -14,7 +14,7 @@ namespace nimlib::Server::Protocols
 	class Protocol : public ProtocolInterface
 	{
 	public:
-		explicit Protocol(std::stringstream& in, std::stringstream& out);
+		explicit Protocol();
 		~Protocol();
 
 		void parse(ConnectionInterface& connection) override;

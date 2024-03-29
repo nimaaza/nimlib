@@ -25,7 +25,7 @@ namespace nimlib::Server
             sm.set_state(ConnectionState::CON_ERROR);
         }
 
-        protocol = std::make_shared<nimlib::Server::Protocols::Protocol>(request_stream, response_stream);
+        protocol = std::make_shared<nimlib::Server::Protocols::Protocol>();
         // protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(request_stream, response_stream, http_protocol);
     }
 
@@ -139,19 +139,13 @@ namespace nimlib::Server
 
     // Connection& Connection::operator<<(std::string& s) {}
 
-    void Connection::set_protocol(std::shared_ptr<ProtocolInterface> p)
-    {
-        protocol = p;
-    }
+    std::stringstream& Connection::get_input_stream() { return request_stream; }
 
+    std::stringstream& Connection::get_output_stream() { return response_stream; }
 
-    std::pair<ConnectionState, long> Connection::get_state() const
-    {
-        return sm.get_state();
-    }
+    void Connection::set_protocol(std::shared_ptr<ProtocolInterface> p) { protocol = p; }
 
-    const int Connection::get_id() const
-    {
-        return id;
-    }
+    std::pair<ConnectionState, long> Connection::get_state() const { return sm.get_state(); }
+
+    const int Connection::get_id() const { return id; }
 }
