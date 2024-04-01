@@ -5,20 +5,11 @@
 
 namespace nimlib::Server::Constants
 {
-    enum ConnectionState
-    {
-        STARTING, READING, HANDLING, WRITING, PENDING, DONE, CON_ERROR
-    };
+    enum ConnectionState { STARTING, READING, HANDLING, WRITING, PENDING, DONE, CON_ERROR };
 
-    enum ParseResult
-    {
-        WRITE_AND_DIE, WRITE_AND_WAIT, INCOMPLETE
-    };
+    enum ParseResult { WRITE_AND_DIE, WRITE_AND_WAIT, INCOMPLETE };
 
-    enum LogLevel
-    {
-        INFO, DEBUG, WARN, ERROR, CRITICAL
-    };
+    enum LogLevel { INFO, DEBUG, WARN, ERROR, CRITICAL };
 
     const std::unordered_map<LogLevel, std::string_view> level_to_string_translation = {
             {LogLevel::INFO,     "info"},

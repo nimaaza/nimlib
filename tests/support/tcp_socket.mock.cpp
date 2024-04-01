@@ -9,9 +9,21 @@
 
 namespace nimlib::Server::Sockets
 {
-    MockTcpSocket::MockTcpSocket(int tcp_socket, const std::string& port) : TcpSocketInterface{ port, tcp_socket } {}
-
-    MockTcpSocket::MockTcpSocket(const std::string& port) : TcpSocketInterface{ port , 0 } {}
+    MockTcpSocket::MockTcpSocket(
+        int tcp_socket,
+        int max_bytes_to_read,
+        int max_bytes_to_write
+    )
+        : TcpSocketInterface{ "", tcp_socket },
+        max_bytes_to_read{ max_bytes_to_read },
+        max_bytes_to_write{ max_bytes_to_write }
+    {
+        std::srand(std::time(nullptr));
+        for (int i = 0; i < max_bytes_to_read; i++)
+        {
+            read_buffer += 'a' + rand() % 26;;
+        }
+    }
 
     MockTcpSocket::~MockTcpSocket() {}
 
@@ -25,45 +37,45 @@ namespace nimlib::Server::Sockets
     {
         static int last_accepted_socket{ 10 };
         last_accepted_socket += 1;
-        return std::make_unique<MockTcpSocket>(last_accepted_socket);
+        return std::make_unique<MockTcpSocket>(last_accepted_socket, max_bytes_to_read, max_bytes_to_write);
     }
 
     void MockTcpSocket::tcp_get_host_name(const sockaddr& socket_address, std::string& host_name) { host_name = "hostname"; }
 
     int MockTcpSocket::tcp_read(std::span<uint8_t> buffer, int flags)
     {
-        const static int MAX_BYTES_TO_READ{ 1000 };
-        static int total_socket_read_cout{ 0 };
-
-        std::srand(std::time(nullptr));
-
-        if (total_socket_read_cout >= MAX_BYTES_TO_READ) return -1;
-
-        int i{ 0 };
-        while (i < buffer.size())
+        if (total_socket_read_count >= max_bytes_to_read)
         {
-            uint8_t rand_char = 'a' + rand() % 26;
-            buffer[i] = rand_char;
-            read_result << rand_char;
-            i++;
-            total_socket_read_cout++;
-
-            if (total_socket_read_cout >= MAX_BYTES_TO_READ) break;
+            read_sequence++;
+            return -1;
         }
 
+        size_t bytes = byte_counts_to_read.size() > read_sequence
+            ? byte_counts_to_read[read_sequence]
+            : buffer.size();
+
+        int i{ 0 };
+        while (i < buffer.size() && i < bytes)
+        {
+            buffer[i] = read_buffer[i];
+            read_result << read_buffer[i];
+            i++;
+            total_socket_read_count++;
+
+            if (total_socket_read_count >= max_bytes_to_read) break;
+        }
+
+        read_sequence++;
         return i;
     }
 
     int MockTcpSocket::tcp_send(std::span<uint8_t> buffer)
     {
-        const static int MAX_BYTES_TO_WRITE_IN_ONE_CALL{ 10'000 };
-        static int total_socket_write_count{ 0 };
+        if (total_socket_write_count > max_bytes_to_write * 4) return -1;
 
-        if (total_socket_write_count > MAX_BYTES_TO_WRITE_IN_ONE_CALL * 4) return -1;
-
-        int bytes_to_send = buffer.size() <= MAX_BYTES_TO_WRITE_IN_ONE_CALL
+        int bytes_to_send = buffer.size() <= max_bytes_to_write
             ? buffer.size()
-            : MAX_BYTES_TO_WRITE_IN_ONE_CALL;
+            : max_bytes_to_write;
 
         for (int i = 0; i < bytes_to_send; i++)
         {

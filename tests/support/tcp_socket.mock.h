@@ -9,8 +9,7 @@ namespace nimlib::Server::Sockets
 {
     struct MockTcpSocket : public TcpSocketInterface
     {
-        MockTcpSocket(int tcp_socket, const std::string& port = "");
-        MockTcpSocket(const std::string& port);
+        MockTcpSocket(int tcp_socket, int max_bytes_to_read, int max_bytes_to_write);
         ~MockTcpSocket();
 
         MockTcpSocket(const MockTcpSocket&) = delete;
@@ -30,7 +29,20 @@ namespace nimlib::Server::Sockets
         const int get_tcp_socket_descriptor() const override;
         const std::string& get_port() const override;
 
+        std::string read_buffer{};
         std::stringstream read_result{};
         std::stringstream write_result{};
+        int total_socket_read_count{ 0 };
+        int total_socket_write_count{ 0 };
+        // How many times the tcp_read() method was called.
+        int read_sequence{ 0 };
+        // Reading and writing more bytes than the values below will cause
+        // the socket to return an error code. This is used to mimick when
+        // the socket fails.
+        const int max_bytes_to_read;
+        const int max_bytes_to_write;
+        // The vector below can be used to mimick the scenario of reading
+        // different bytes count on each call to the tcp_read method.
+        std::vector<int> byte_counts_to_read{};
     };
 };

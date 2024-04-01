@@ -9,9 +9,10 @@
 
 namespace nimlib::Server
 {
-    Connection::Connection(std::unique_ptr<TcpSocketInterface> s, connection_id id)
+    Connection::Connection(std::unique_ptr<TcpSocketInterface> s, connection_id id, size_t buffer_size)
         : id{ id },
-        sm{ ConnectionState::STARTING, ConnectionState::CON_ERROR, nimlib::Server::Constants::MAX_RESET_COUNT },
+        buffer_size{ buffer_size },
+        connection_state{ ConnectionState::STARTING, ConnectionState::CON_ERROR, nimlib::Server::Constants::MAX_RESET_COUNT },
         socket{ std::move(s) },
         request_stream{},
         response_stream{},
@@ -22,7 +23,7 @@ namespace nimlib::Server
 
         if (!this->socket)
         {
-            sm.set_state(ConnectionState::CON_ERROR);
+            connection_state.set_state(ConnectionState::CON_ERROR);
         }
 
         protocol = std::make_shared<nimlib::Server::Protocols::Protocol>();
@@ -36,40 +37,40 @@ namespace nimlib::Server
 
     ConnectionState Connection::read()
     {
-        if (sm.get_state().first == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
+        if (connection_state.get_state().first == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
 
-        sm.set_state(ConnectionState::READING);
+        connection_state.set_state(ConnectionState::READING);
 
-        std::array<uint8_t, nimlib::Server::Constants::BUFFER_SIZE> buff{};
+        std::vector<uint8_t> buff(buffer_size, 0);
         int bytes_count = socket->tcp_read(buff, MSG_DONTWAIT);
 
         if (bytes_count > 0)
         {
-            for (int i = 0; i < bytes_count && i < nimlib::Server::Constants::BUFFER_SIZE; i++)
+            for (int i = 0; i < bytes_count && i < buffer_size; i++)
             {
                 request_stream << buff[i];
             }
 
-            sm.set_state(ConnectionState::HANDLING);
+            connection_state.set_state(ConnectionState::HANDLING);
             protocol->parse(*this);
-            return sm.get_state().first;
+            return connection_state.get_state().first;
         }
         else if (bytes_count == 0)
         {
             // TODO: still no data to read, what to do here?
             // This may never happen because when poll returns
             // there must be something to read.
-            return sm.reset_state();
+            return connection_state.reset_state();
         }
         else
         {
-            return sm.set_state(ConnectionState::CON_ERROR);
+            return connection_state.set_state(ConnectionState::CON_ERROR);
         }
     }
 
     ConnectionState Connection::write()
     {
-        if (sm.get_state().first == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
+        if (connection_state.get_state().first == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
 
         // TODO: trim response string?
         std::string response_str{ response_stream.str() };
@@ -79,7 +80,7 @@ namespace nimlib::Server
 
         while (bytes_to_send > 0)
         {
-            int sent = socket->tcp_send(response_view.substr(total_bytes_sent, nimlib::Server::Constants::BUFFER_SIZE));
+            int sent = socket->tcp_send(response_view.substr(total_bytes_sent, buffer_size));
 
             if (sent < 0) break;
 
@@ -89,49 +90,55 @@ namespace nimlib::Server
 
         if (bytes_to_send == 0 && parse_result == ParseResult::WRITE_AND_DIE)
         {
-            return sm.set_state(ConnectionState::DONE);
+            return connection_state.set_state(ConnectionState::DONE);
         }
         else if (bytes_to_send == 0 && parse_result == ParseResult::WRITE_AND_WAIT)
         {
             // TODO: reset connection variables or use state callbacks for clean up
             request_stream = std::stringstream();
             response_stream = std::stringstream();
-            return sm.set_state(ConnectionState::PENDING);
+            return connection_state.set_state(ConnectionState::PENDING);
         }
         else if (bytes_to_send > 0)
         {
             // TODO: erase might be faster
             response_stream.str(response_str.substr(total_bytes_sent));
-            return sm.reset_state();
+            return connection_state.reset_state();
         }
         else
         {
             //TODO: crash? bytes_to_send cannot be negative
-            return sm.set_state(ConnectionState::CON_ERROR);
+            return connection_state.set_state(ConnectionState::CON_ERROR);
         }
     }
 
     void Connection::halt()
     {
-        sm.set_state(ConnectionState::CON_ERROR);
+        connection_state.set_state(ConnectionState::CON_ERROR);
     }
 
     void Connection::set_parse_state(ParseResult pr)
     {
         parse_result = pr;
 
+        // No assumption is made about how the streams will be used by the
+        // application layer. The clear() method is being called in case
+        // the application puts the streams in an error state.
+        request_stream.clear();
+        response_stream.clear();
+
         if (parse_result == ParseResult::WRITE_AND_DIE || parse_result == ParseResult::WRITE_AND_WAIT)
         {
-            sm.set_state(ConnectionState::WRITING);
+            connection_state.set_state(ConnectionState::WRITING);
         }
         else if (parse_result == ParseResult::INCOMPLETE)
         {
-            sm.set_state(ConnectionState::READING);
-            sm.reset_state();
+            connection_state.set_state(ConnectionState::READING);
+            connection_state.reset_state();
         }
         else
         {
-            sm.set_state(ConnectionState::CON_ERROR);
+            connection_state.set_state(ConnectionState::CON_ERROR);
         }
     }
 
@@ -145,7 +152,7 @@ namespace nimlib::Server
 
     void Connection::set_protocol(std::shared_ptr<ProtocolInterface> p) { protocol = p; }
 
-    std::pair<ConnectionState, long> Connection::get_state() const { return sm.get_state(); }
+    std::pair<ConnectionState, long> Connection::get_state() const { return connection_state.get_state(); }
 
     const int Connection::get_id() const { return id; }
 }

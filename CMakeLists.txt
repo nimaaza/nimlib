@@ -16,6 +16,7 @@ add_executable(test_run
         src/decorators.h
         src/tcp_socket.cpp
         src/polling_server.cpp
+        src/connection_pool.cpp
         src/connection.cpp
         src/protocol.cpp
         src/metrics/timer.cpp
@@ -42,16 +43,16 @@ enable_testing()
 
 add_executable(unit_tests
         tests/polling_server.test.cpp
-        tests/connection.test.cpp
         tests/state_manager.test.cpp
         tests/metrics/timer.test.cpp
         tests/metrics/aggregations.test.cpp
         tests/metrics/metric_store.test.cpp
         tests/metrics/metric.test.cpp
         tests/metrics/measurements.test.cpp
-        tests/support/tcp_socket.mock.cpp
+        src/tcp_socket.cpp
         src/polling_server.cpp
         src/connection.cpp
+        src/connection_pool.cpp
         src/protocol.cpp
         src/metrics/timer.cpp
         src/logger/logger.cpp
@@ -66,21 +67,19 @@ target_link_libraries(unit_tests GTest::gtest_main Botan::Botan)
 
 add_executable(unit_tests_connection
         tests/connection.test.cpp
+        tests/support/tcp_socket.mock.cpp
         src/connection.cpp
-        src/tcp_socket.cpp
-        src/protocol.cpp
-        src/logger/logger.cpp
-        src/logger/factory.cpp
-        src/logger/agent.cpp)
+        src/protocol.cpp) # TODO: should be eventually removed.
 target_include_directories(unit_tests_connection PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_connection GTest::gtest_main Botan::Botan)
 
 add_executable(unit_tests_polling_server
         tests/polling_server.test.cpp
         src/polling_server.cpp
+        src/connection_pool.cpp
         src/tcp_socket.cpp
         src/connection.cpp
-        src/protocol.cpp)
+        src/protocol.cpp) # this should be removed from the dependecies
 target_include_directories(unit_tests_polling_server PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_polling_server GTest::gtest_main Botan::Botan)
 

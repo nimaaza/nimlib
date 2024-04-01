@@ -20,6 +20,8 @@ public:
     T set_state(T);
     T reset_state();
     const std::pair<T, long> get_state() const;
+	// TODO: a method to return only state, not a pair, to avoid .get_state().first
+
 private:
     T state;
     T error_state;

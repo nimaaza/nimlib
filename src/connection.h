@@ -18,7 +18,7 @@ namespace nimlib::Server
     class Connection : public ConnectionInterface
     {
     public:
-        Connection(std::unique_ptr<TcpSocketInterface>, connection_id);
+        Connection(std::unique_ptr<TcpSocketInterface>, connection_id, size_t buffer_size = 10240);
         ~Connection();
 
         Connection(const Connection&) = delete;
@@ -40,7 +40,8 @@ namespace nimlib::Server
 
     private:
         const connection_id id;
-        StateManager<ConnectionState> sm;
+        size_t buffer_size;
+        StateManager<ConnectionState> connection_state;
         std::stringstream request_stream;
         std::stringstream response_stream;
         std::unique_ptr<TcpSocketInterface> socket;
