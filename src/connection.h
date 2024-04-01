@@ -32,7 +32,7 @@ namespace nimlib::Server
         // Connection& operator<<(std::string& s) override;
         std::stringstream& get_input_stream() override;
         std::stringstream& get_output_stream() override;
-        void notify() override;
+        void notify(ProtocolInterface& protocol) override;
         void set_protocol(std::shared_ptr<ProtocolInterface>) override;
         std::pair<ConnectionState, long> get_state() const override;
         const int get_id() const override;
@@ -40,9 +40,14 @@ namespace nimlib::Server
     private:
         const connection_id id;
         size_t buffer_size;
-        StateManager<ConnectionState> connection_state;
-        std::stringstream request_stream;
-        std::stringstream response_stream;
+        bool keep_alive{ false };
+        StateManager<ConnectionState> connection_state{
+            ConnectionState::STARTING,
+            ConnectionState::CON_ERROR,
+            nimlib::Server::Constants::MAX_RESET_COUNT
+        };
+        std::stringstream request_stream{};
+        std::stringstream response_stream{};
         std::unique_ptr<TcpSocketInterface> socket;
         std::shared_ptr<ProtocolInterface> protocol;
         // nimlib::Server::Metrics::Measurements::Duration<long> response_timer;

@@ -64,7 +64,7 @@ namespace nimlib::Server::Types
 		virtual ConnectionState read() = 0;
 		virtual ConnectionState write() = 0;
 		virtual void halt() = 0;
-		virtual void notify() = 0;
+		virtual void notify(ProtocolInterface& protocol) = 0;
 		// virtual ConnectionInterface& operator<<(uint8_t c) = 0;
 		// virtual ConnectionInterface& operator<<(std::string& s) = 0;
 		virtual std::stringstream& get_input_stream() = 0;

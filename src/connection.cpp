@@ -12,10 +12,7 @@ namespace nimlib::Server
     Connection::Connection(std::unique_ptr<TcpSocketInterface> s, connection_id id, size_t buffer_size)
         : id{ id },
         buffer_size{ buffer_size },
-        connection_state{ ConnectionState::STARTING, ConnectionState::CON_ERROR, nimlib::Server::Constants::MAX_RESET_COUNT },
-        socket{ std::move(s) },
-        request_stream{},
-        response_stream{}
+        socket{ std::move(s) }
         //        response_timer{ nimlib::Server::Constants::TIME_TO_RESPONSE }
     {
         //        response_timer.start();
@@ -91,7 +88,7 @@ namespace nimlib::Server
 
         if (bytes_to_send == 0)
         {
-            if (protocol->wants_to_live())
+            if (keep_alive)
             {
                 //  TODO: reset connection variables or use state callbacks for clean up
                 request_stream = std::stringstream();
@@ -121,7 +118,7 @@ namespace nimlib::Server
         connection_state.set_state(ConnectionState::CON_ERROR);
     }
 
-    void Connection::notify()
+    void Connection::notify(ProtocolInterface& protocol)
     {
         // No assumption is made about how the streams will be used by the
         // application layer. The clear() method is being called in case
@@ -129,11 +126,13 @@ namespace nimlib::Server
         request_stream.clear();
         response_stream.clear();
 
-        if (protocol->wants_to_write())
+        keep_alive = protocol.wants_to_live();
+
+        if (protocol.wants_to_write())
         {
             connection_state.set_state(ConnectionState::WRITING);
         }
-        else if (protocol->wants_more_bytes())
+        else if (protocol.wants_more_bytes())
         {
             connection_state.set_state(ConnectionState::READING);
         }

@@ -12,7 +12,7 @@ namespace nimlib::Server::Protocols
 	{
 		std::stringstream& out{ connection.get_output_stream() };
 		out << "done";
-		connection.notify();
+		connection.notify(*this);
 	}
 
 	bool Protocol::wants_more_bytes() { return false; }

@@ -20,12 +20,12 @@ namespace nimlib::Server::Protocols
 			std::string in_string{ in.str() };
 			auto in_string_ptr = reinterpret_cast<uint8_t*>(in_string.data());
 			auto bytes_needed = tls_server->received_data(in_string_ptr, in_string.size());
-            connection.notify();
+            connection.notify(*this);
 		}
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
-            connection.notify();
+            connection.notify(*this);
 		}
 	}
 

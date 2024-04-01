@@ -40,7 +40,7 @@ struct MockProtocolParser : public ProtocolInterface
             internal_input += c;
         }
 
-        connection.notify();
+        connection.notify(*this);
     }
 
     bool wants_more_bytes() override { return tries_so_far != total_tries; }
