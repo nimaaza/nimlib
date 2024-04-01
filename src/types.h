@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 
 #include "common.h"
+#include "state_manager.h"
 
 namespace nimlib::Server::Types
 {
@@ -46,7 +47,13 @@ namespace nimlib::Server::Types
 	{
 		virtual ~ProtocolInterface() = default;
 
-		virtual void parse(ConnectionInterface& connection) = 0;
+		virtual void notify(ConnectionInterface& connection) = 0;
+		virtual bool wants_more_bytes() = 0;
+		virtual bool wants_to_write() = 0;
+		virtual bool wants_to_live() = 0;
+
+	protected:
+		StateManager<ParseResult> state_manager{ ParseResult::P_STARTING, ParseResult::P_ERROR, 1024 };
 	};
 
 	struct ConnectionInterface
@@ -57,7 +64,7 @@ namespace nimlib::Server::Types
 		virtual ConnectionState read() = 0;
 		virtual ConnectionState write() = 0;
 		virtual void halt() = 0;
-		virtual void set_parse_state(ParseResult pr) = 0;
+		virtual void notify() = 0;
 		// virtual ConnectionInterface& operator<<(uint8_t c) = 0;
 		// virtual ConnectionInterface& operator<<(std::string& s) = 0;
 		virtual std::stringstream& get_input_stream() = 0;

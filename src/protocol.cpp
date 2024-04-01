@@ -8,10 +8,16 @@ namespace nimlib::Server::Protocols
 
 	Protocol::~Protocol() = default;
 
-	void Protocol::parse(ConnectionInterface& connection)
+	void Protocol::notify(ConnectionInterface& connection)
 	{
-		std::stringstream& out { connection.get_output_stream() };
+		std::stringstream& out{ connection.get_output_stream() };
 		out << "done";
-		connection.set_parse_state(ParseResult::WRITE_AND_DIE);
+		connection.notify();
 	}
+
+	bool Protocol::wants_more_bytes() { return false; }
+
+	bool Protocol::wants_to_write() { return true; }
+
+	bool Protocol::wants_to_live() { return false; }
 }

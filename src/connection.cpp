@@ -15,8 +15,7 @@ namespace nimlib::Server
         connection_state{ ConnectionState::STARTING, ConnectionState::CON_ERROR, nimlib::Server::Constants::MAX_RESET_COUNT },
         socket{ std::move(s) },
         request_stream{},
-        response_stream{},
-        parse_result{ ParseResult::INCOMPLETE }
+        response_stream{}
         //        response_timer{ nimlib::Server::Constants::TIME_TO_RESPONSE }
     {
         //        response_timer.start();
@@ -52,7 +51,7 @@ namespace nimlib::Server
             }
 
             connection_state.set_state(ConnectionState::HANDLING);
-            protocol->parse(*this);
+            protocol->notify(*this);
             return connection_state.get_state().first;
         }
         else if (bytes_count == 0)
@@ -64,6 +63,8 @@ namespace nimlib::Server
         }
         else
         {
+            // TODO: read has returned a negative value.
+            // This means we might need some error handling here.
             return connection_state.set_state(ConnectionState::CON_ERROR);
         }
     }
@@ -82,22 +83,25 @@ namespace nimlib::Server
         {
             int sent = socket->tcp_send(response_view.substr(total_bytes_sent, buffer_size));
 
-            if (sent < 0) break;
+            if (sent < 0) break; // TODO: handle the socket error when sent < 0
 
             bytes_to_send -= sent;
             total_bytes_sent += sent;
         }
 
-        if (bytes_to_send == 0 && parse_result == ParseResult::WRITE_AND_DIE)
+        if (bytes_to_send == 0)
         {
-            return connection_state.set_state(ConnectionState::DONE);
-        }
-        else if (bytes_to_send == 0 && parse_result == ParseResult::WRITE_AND_WAIT)
-        {
-            // TODO: reset connection variables or use state callbacks for clean up
-            request_stream = std::stringstream();
-            response_stream = std::stringstream();
-            return connection_state.set_state(ConnectionState::PENDING);
+            if (protocol->wants_to_live())
+            {
+                //  TODO: reset connection variables or use state callbacks for clean up
+                request_stream = std::stringstream();
+                response_stream = std::stringstream();
+                return connection_state.set_state(ConnectionState::PENDING);
+            }
+            else
+            {
+                return connection_state.set_state(ConnectionState::DONE);
+            }
         }
         else if (bytes_to_send > 0)
         {
@@ -117,24 +121,21 @@ namespace nimlib::Server
         connection_state.set_state(ConnectionState::CON_ERROR);
     }
 
-    void Connection::set_parse_state(ParseResult pr)
+    void Connection::notify()
     {
-        parse_result = pr;
-
         // No assumption is made about how the streams will be used by the
         // application layer. The clear() method is being called in case
         // the application puts the streams in an error state.
         request_stream.clear();
         response_stream.clear();
 
-        if (parse_result == ParseResult::WRITE_AND_DIE || parse_result == ParseResult::WRITE_AND_WAIT)
+        if (protocol->wants_to_write())
         {
             connection_state.set_state(ConnectionState::WRITING);
         }
-        else if (parse_result == ParseResult::INCOMPLETE)
+        else if (protocol->wants_more_bytes())
         {
             connection_state.set_state(ConnectionState::READING);
-            connection_state.reset_state();
         }
         else
         {

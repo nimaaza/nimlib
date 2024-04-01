@@ -13,19 +13,25 @@ namespace nimlib::Server::Protocols
 
 	TlsLayer::~TlsLayer() = default;
 
-	void TlsLayer::parse(ConnectionInterface& connection)
+	void TlsLayer::notify(ConnectionInterface& connection)
 	{
 		try
 		{
 			std::string in_string{ in.str() };
 			auto in_string_ptr = reinterpret_cast<uint8_t*>(in_string.data());
 			auto bytes_needed = tls_server->received_data(in_string_ptr, in_string.size());
-			connection.set_parse_state(ParseResult::WRITE_AND_WAIT);
+            connection.notify();
 		}
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
-			connection.set_parse_state(ParseResult::WRITE_AND_DIE);
+            connection.notify();
 		}
 	}
+
+	bool TlsLayer::wants_more_bytes() { return true; }
+
+	bool TlsLayer::wants_to_write() { return true; }
+
+	bool TlsLayer::wants_to_live() { return false; }
 }

@@ -13,7 +13,6 @@ namespace nimlib::Server
     using nimlib::Server::Types::TcpSocketInterface;
     using nimlib::Server::Types::ProtocolInterface;
     using nimlib::Server::Constants::ConnectionState;
-    using nimlib::Server::Constants::ParseResult;
 
     class Connection : public ConnectionInterface
     {
@@ -33,7 +32,7 @@ namespace nimlib::Server
         // Connection& operator<<(std::string& s) override;
         std::stringstream& get_input_stream() override;
         std::stringstream& get_output_stream() override;
-        void set_parse_state(ParseResult pr) override;
+        void notify() override;
         void set_protocol(std::shared_ptr<ProtocolInterface>) override;
         std::pair<ConnectionState, long> get_state() const override;
         const int get_id() const override;
@@ -45,7 +44,6 @@ namespace nimlib::Server
         std::stringstream request_stream;
         std::stringstream response_stream;
         std::unique_ptr<TcpSocketInterface> socket;
-        ParseResult parse_result;
         std::shared_ptr<ProtocolInterface> protocol;
         // nimlib::Server::Metrics::Measurements::Duration<long> response_timer;
     };

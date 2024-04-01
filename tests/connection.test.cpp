@@ -29,7 +29,7 @@ struct MockProtocolParser : public ProtocolInterface
     {};
     ~MockProtocolParser() = default;
 
-    void parse(ConnectionInterface& connection) override
+    void notify(ConnectionInterface& connection) override
     {
         tries_so_far++;
 
@@ -40,10 +40,14 @@ struct MockProtocolParser : public ProtocolInterface
             internal_input += c;
         }
 
-        (tries_so_far == total_tries)
-            ? connection.set_parse_state(parse_result)
-            : connection.set_parse_state(ParseResult::INCOMPLETE);
+        connection.notify();
     }
+
+    bool wants_more_bytes() override { return tries_so_far != total_tries; }
+
+    bool wants_to_write() override { return tries_so_far == total_tries; }
+
+    bool wants_to_live() override { return parse_result == ParseResult::WRITE_AND_WAIT; }
 
     std::stringstream& in;
     std::stringstream& out;
@@ -204,6 +208,11 @@ TEST(ConnectionTests, Read_WithSmallBuffer)
     EXPECT_EQ(state_4, ConnectionState::DONE);
 }
 
+TEST(ConnectionTests, Write_ConnectionKeptAlive)
+{
+
+}
+
 TEST(ConnectionTests, Read_ConnectionStateWhenSocketNotReady)
 {
     // Socket not in ready state is mocked by setting 0 as the max number of
@@ -220,11 +229,15 @@ TEST(ConnectionTests, Read_ConnectionStateWhenSocketNotReady)
 TEST(ConnectionTests, Read_ConnectionStateWhenConnectionInErrorState)
 {
     auto s = std::make_unique<MockTcpSocket>(1, 1024, 1024);
+    auto pointer_to_socket = s.get();
     Connection c{ std::move(s), 1 };
     c.halt(); // This forces connection in error state.
 
+    auto socket_read_result_before = pointer_to_socket->read_result.str();
     auto read_result = c.read();
+    auto socket_read_result_after = pointer_to_socket->read_result.str();
     EXPECT_EQ(read_result, ConnectionState::CON_ERROR);
+    EXPECT_EQ(socket_read_result_before, socket_read_result_after);
 }
 
 TEST(ConnectionTests, ConnectionState_WhenJustCreated)

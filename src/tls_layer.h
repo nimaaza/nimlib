@@ -18,7 +18,10 @@ namespace nimlib::Server::Protocols
 		TlsLayer(ConnectionInterface& connection, std::shared_ptr<ProtocolInterface> next = nullptr);
 		~TlsLayer();
 
-		void parse(ConnectionInterface& connection) override;
+		void notify(ConnectionInterface& connection) override;
+		bool wants_more_bytes() override;
+		bool wants_to_write() override;
+		bool wants_to_live() override;
 
 	private:
 		std::stringstream& in;
