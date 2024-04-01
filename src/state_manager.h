@@ -19,13 +19,16 @@ public:
 
     T set_state(T);
     T reset_state();
-    const std::pair<T, long> get_state() const;
-	// TODO: a method to return only state, not a pair, to avoid .get_state().first
+    const std::pair<T, long> get_state_pair() const;
+    const T get_state() const;
+    bool starting() const;
+    bool in_error() const;
 
 private:
     T state;
-    T error_state;
-    int max_reset_count;
+    const T initial_state;
+    const T error_state;
+    const int max_reset_count;
     int reset_count;
     state_change_point last_state_change;
 };
@@ -33,6 +36,7 @@ private:
 template<typename T>
 StateManager<T>::StateManager(T initial_state, T error_state, int max_reset_count)
     : state{ initial_state },
+    initial_state{ initial_state },
     error_state{ error_state },
     max_reset_count{ max_reset_count },
     reset_count{},
@@ -71,9 +75,18 @@ T StateManager<T>::reset_state()
 }
 
 template<typename T>
-const std::pair<T, long> StateManager<T>::get_state() const
+const std::pair<T, long> StateManager<T>::get_state_pair() const
 {
     auto now = std::chrono::steady_clock::now();
     long elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(now - last_state_change).count();
     return { state, elapsed };
 }
+
+template<typename T>
+const T StateManager<T>::get_state() const { return state; }
+
+template<typename T>
+bool StateManager<T>::starting() const { return state == initial_state; }
+
+template<typename T>
+bool StateManager<T>::in_error() const { return state == error_state; }

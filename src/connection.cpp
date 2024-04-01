@@ -36,7 +36,7 @@ namespace nimlib::Server
 
     ConnectionState Connection::read()
     {
-        if (connection_state.get_state().first == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
+        if (connection_state.get_state() == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
 
         connection_state.set_state(ConnectionState::READING);
 
@@ -52,7 +52,7 @@ namespace nimlib::Server
 
             connection_state.set_state(ConnectionState::HANDLING);
             protocol->notify(*this);
-            return connection_state.get_state().first;
+            return connection_state.get_state();
         }
         else if (bytes_count == 0)
         {
@@ -71,7 +71,7 @@ namespace nimlib::Server
 
     ConnectionState Connection::write()
     {
-        if (connection_state.get_state().first == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
+        if (connection_state.get_state() == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
 
         // TODO: trim response string?
         std::string response_str{ response_stream.str() };
@@ -153,7 +153,7 @@ namespace nimlib::Server
 
     void Connection::set_protocol(std::shared_ptr<ProtocolInterface> p) { protocol = p; }
 
-    std::pair<ConnectionState, long> Connection::get_state() const { return connection_state.get_state(); }
+    std::pair<ConnectionState, long> Connection::get_state() const { return connection_state.get_state_pair(); }
 
     const int Connection::get_id() const { return id; }
 }
