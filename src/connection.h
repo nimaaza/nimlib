@@ -9,12 +9,13 @@
 
 namespace nimlib::Server
 {
+    using nimlib::Server::Types::StreamsProviderInterface;
     using nimlib::Server::Types::ConnectionInterface;
     using nimlib::Server::Types::TcpSocketInterface;
     using nimlib::Server::Types::ProtocolInterface;
     using nimlib::Server::Constants::ConnectionState;
 
-    class Connection : public ConnectionInterface
+    class Connection : public ConnectionInterface, public StreamsProviderInterface
     {
     public:
         Connection(std::unique_ptr<TcpSocketInterface>, connection_id, size_t buffer_size = 10240);
@@ -30,12 +31,13 @@ namespace nimlib::Server
         void halt() override;
         // Connection& operator<<(uint8_t c) override;
         // Connection& operator<<(std::string& s) override;
-        std::stringstream& get_input_stream() override;
-        std::stringstream& get_output_stream() override;
         void notify(ProtocolInterface& protocol) override;
         void set_protocol(std::shared_ptr<ProtocolInterface>) override;
         std::pair<ConnectionState, long> get_state() const override;
         const int get_id() const override;
+
+        std::stringstream& get_input_stream() override;
+        std::stringstream& get_output_stream() override;
 
     private:
         const connection_id id;

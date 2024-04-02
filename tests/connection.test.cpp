@@ -11,19 +11,20 @@ using nimlib::Server::Connection;
 using nimlib::Server::Sockets::MockTcpSocket;
 using nimlib::Server::Types::ProtocolInterface;
 using nimlib::Server::Types::ConnectionInterface;
+using nimlib::Server::Types::StreamsProviderInterface;
 using nimlib::Server::Constants::ParseResult;
 using nimlib::Server::Constants::ConnectionState;
 
 struct MockProtocolParser : public ProtocolInterface
 {
     MockProtocolParser(
-        ConnectionInterface& connection,
+        StreamsProviderInterface& streams,
         int tries = 1,
         ParseResult parse_result = ParseResult::WRITE_AND_DIE
     )
         :
-        in{ connection.get_input_stream() },
-        out{ connection.get_output_stream() },
+        in{ streams.get_input_stream() },
+        out{ streams.get_output_stream() },
         total_tries{ tries },
         parse_result{ parse_result }
     {};
@@ -208,11 +209,6 @@ TEST(ConnectionTests, Read_WithSmallBuffer)
     EXPECT_EQ(state_4, ConnectionState::DONE);
 }
 
-TEST(ConnectionTests, Write_ConnectionKeptAlive)
-{
-
-}
-
 TEST(ConnectionTests, Read_ConnectionStateWhenSocketNotReady)
 {
     // Socket not in ready state is mocked by setting 0 as the max number of
@@ -238,6 +234,16 @@ TEST(ConnectionTests, Read_ConnectionStateWhenConnectionInErrorState)
     auto socket_read_result_after = pointer_to_socket->read_result.str();
     EXPECT_EQ(read_result, ConnectionState::CON_ERROR);
     EXPECT_EQ(socket_read_result_before, socket_read_result_after);
+}
+
+TEST(ConnectionTests, Write_NoWriteWhenInError)
+{
+
+}
+
+TEST(ConnectionTests, Write_ConnectionKeptAlive)
+{
+
 }
 
 TEST(ConnectionTests, ConnectionState_WhenJustCreated)

@@ -4,13 +4,15 @@
 
 namespace nimlib::Server::Protocols
 {
-	Protocol::Protocol() = default;
+	Protocol::Protocol(ConnectionInterface& connection, StreamsProviderInterface& streams)
+		: connection{ connection }, streams{ streams }
+	{}
 
 	Protocol::~Protocol() = default;
 
 	void Protocol::notify(ConnectionInterface& connection)
 	{
-		std::stringstream& out{ connection.get_output_stream() };
+		std::stringstream& out{ streams.get_output_stream() };
 		out << "done";
 		connection.notify(*this);
 	}

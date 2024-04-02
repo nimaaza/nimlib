@@ -13,22 +13,22 @@ namespace nimlib::Server
         : id{ id },
         buffer_size{ buffer_size },
         socket{ std::move(s) }
-        //        response_timer{ nimlib::Server::Constants::TIME_TO_RESPONSE }
+        // response_timer{ nimlib::Server::Constants::TIME_TO_RESPONSE }
     {
-        //        response_timer.start();
+        // response_timer.start();
 
         if (!this->socket)
         {
             connection_state.set_state(ConnectionState::CON_ERROR);
         }
 
-        protocol = std::make_shared<nimlib::Server::Protocols::Protocol>();
-        // protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(request_stream, response_stream, http_protocol);
+        protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(*this, *this);
+        // protocol = std::make_shared<nimlib::Server::Protocols::Protocol>(*this, *this);
     }
 
     Connection::~Connection()
     {
-        //        response_timer.end();
+        // response_timer.end();
     }
 
     ConnectionState Connection::read()
@@ -146,13 +146,13 @@ namespace nimlib::Server
 
     // Connection& Connection::operator<<(std::string& s) {}
 
-    std::stringstream& Connection::get_input_stream() { return request_stream; }
-
-    std::stringstream& Connection::get_output_stream() { return response_stream; }
-
     void Connection::set_protocol(std::shared_ptr<ProtocolInterface> p) { protocol = p; }
 
     std::pair<ConnectionState, long> Connection::get_state() const { return connection_state.get_state_pair(); }
 
     const int Connection::get_id() const { return id; }
+
+    std::stringstream& Connection::get_input_stream() { return request_stream; }
+
+    std::stringstream& Connection::get_output_stream() { return response_stream; }
 }

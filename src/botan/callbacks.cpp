@@ -1,27 +1,33 @@
 #include "callbacks.h"
 
-#include "iostream"
-
 namespace nimlib::Server::Protocols::BotanSpec
 {
 	Callbacks::Callbacks(
-		const std::stringstream& in,
-		std::stringstream& out,
-		std::shared_ptr<ProtocolInterface> next)
-		: in{ in }, out{ out }, next{ next }
+		StreamsProviderInterface& source_streams,
+		StreamsProviderInterface& internal_streams,
+		std::shared_ptr<ProtocolInterface> next
+	) :
+		source_in{ source_streams.get_input_stream() },
+		source_out{ source_streams.get_output_stream() },
+		internal_in{ internal_streams.get_input_stream() },
+		internal_out{ internal_streams.get_output_stream() },
+		next{ next }
 	{}
 
 	void Callbacks::tls_emit_data(std::span<const uint8_t> data)
 	{
 		for (auto c : data)
 		{
-			out << c;
+			source_out << c;
 		}
 	}
 
 	void Callbacks::tls_record_received(uint64_t seq_no, std::span<const uint8_t> data)
 	{
-		for (auto c : data) std::cout << c;
+		for (auto c : data)
+		{
+			internal_in << c;
+		}
 	}
 
 	void Callbacks::tls_alert(Botan::TLS::Alert alert) {}

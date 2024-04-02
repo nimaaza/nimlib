@@ -43,6 +43,14 @@ namespace nimlib::Server::Types
 		int tcp_socket_descriptor;
 	};
 
+	struct StreamsProviderInterface
+	{
+		virtual ~StreamsProviderInterface() = default;
+
+		virtual std::stringstream& get_input_stream() = 0;
+		virtual std::stringstream& get_output_stream() = 0;
+	};
+
 	struct ProtocolInterface
 	{
 		virtual ~ProtocolInterface() = default;
@@ -67,8 +75,8 @@ namespace nimlib::Server::Types
 		virtual void notify(ProtocolInterface& protocol) = 0;
 		// virtual ConnectionInterface& operator<<(uint8_t c) = 0;
 		// virtual ConnectionInterface& operator<<(std::string& s) = 0;
-		virtual std::stringstream& get_input_stream() = 0;
-		virtual std::stringstream& get_output_stream() = 0;
+		// virtual std::stringstream& get_input_stream() = 0;
+		// virtual std::stringstream& get_output_stream() = 0;
 		virtual void set_protocol(std::shared_ptr<ProtocolInterface>) = 0;
 		virtual std::pair<ConnectionState, long> get_state() const = 0;
 		virtual const int get_id() const = 0;
