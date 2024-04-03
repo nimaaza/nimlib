@@ -18,7 +18,7 @@ add_executable(test_run
         src/polling_server.cpp
         src/connection_pool.cpp
         src/connection.cpp
-        src/protocol.cpp
+        src/http.cpp
         src/metrics/timer.cpp
         src/logger/logger.cpp
         src/logger/agent.cpp
@@ -53,7 +53,7 @@ add_executable(unit_tests
         src/polling_server.cpp
         src/connection.cpp
         src/connection_pool.cpp
-        src/protocol.cpp
+        src/http.cpp
         src/metrics/timer.cpp
         src/logger/logger.cpp
         src/logger/agent.cpp
@@ -73,7 +73,7 @@ add_executable(unit_tests_connection
         src/botan/callbacks.cpp # TODO: should be eventually removed.
         src/botan/credentials.cpp # TODO: should be eventually removed.
         src/botan/tls_server.cpp # TODO: should be eventually removed.
-        src/protocol.cpp) # TODO: should be eventually removed.
+        src/http.cpp) # TODO: should be eventually removed.
 target_include_directories(unit_tests_connection PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_connection GTest::gtest_main Botan::Botan)
 
@@ -83,7 +83,7 @@ add_executable(unit_tests_polling_server
         src/connection_pool.cpp
         src/tcp_socket.cpp
         src/connection.cpp
-        src/protocol.cpp) # this should be removed from the dependecies
+        src/http.cpp) # this should be removed from the dependecies
 target_include_directories(unit_tests_polling_server PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_polling_server GTest::gtest_main Botan::Botan)
 

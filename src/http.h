@@ -10,15 +10,15 @@ namespace nimlib::Server::Protocols
 	using nimlib::Server::Types::ProtocolInterface;
 	using ParseResult = nimlib::Server::Constants::ParseResult;
 
-	class Protocol : public ProtocolInterface
+	class Http : public ProtocolInterface
 	{
 	public:
-		Protocol(
+		Http(
 			ConnectionInterface& connection,
 			ProtocolInterface& tls_layer,
 			StreamsProviderInterface& tls_decrypted_streams
 		);
-		~Protocol();
+		~Http();
 
 		void notify(ConnectionInterface& connection, StreamsProviderInterface& streams) override;
 		void notify(ProtocolInterface& protocol, StreamsProviderInterface& streams) override;

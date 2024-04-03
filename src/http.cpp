@@ -1,11 +1,11 @@
-#include "protocol.h"
+#include "http.h"
 
 #include <sstream>
 #include <iostream>
 
 namespace nimlib::Server::Protocols
 {
-	Protocol::Protocol(
+	Http::Http(
 		ConnectionInterface& connection,
 		ProtocolInterface& tls_layer,
 		StreamsProviderInterface& tls_decrypted_streams
@@ -13,24 +13,24 @@ namespace nimlib::Server::Protocols
 		: connection{ connection }, tls_layer{ tls_layer }, decrypted_streams{ tls_decrypted_streams }
 	{}
 
-	Protocol::~Protocol() = default;
+	Http::~Http() = default;
 
-	void Protocol::notify(ConnectionInterface& connection, StreamsProviderInterface& streams)
+	void Http::notify(ConnectionInterface& connection, StreamsProviderInterface& streams)
 	{
 		std::stringstream& out{ streams.get_output_stream() };
 		out << "done";
 		connection.notify(*this);
 	}
 
-	void Protocol::notify(ProtocolInterface& protocol, StreamsProviderInterface& streams)
+	void Http::notify(ProtocolInterface& protocol, StreamsProviderInterface& streams)
 	{
 		std::stringstream& input_from_tls{ streams.get_input_stream() };
 		std::cout << input_from_tls.str();
 	}
 
-	bool Protocol::wants_more_bytes() { return false; }
+	bool Http::wants_more_bytes() { return false; }
 
-	bool Protocol::wants_to_write() { return true; }
+	bool Http::wants_to_write() { return true; }
 
-	bool Protocol::wants_to_live() { return false; }
+	bool Http::wants_to_live() { return false; }
 }

@@ -1,6 +1,6 @@
 #include "connection.h"
 #include "tls_layer.h"
-#include "protocol.h"
+#include "http.h"
 
 #include <memory>
 #include <utility>
@@ -23,7 +23,7 @@ namespace nimlib::Server
         }
 
         protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(*this, *this);
-        // protocol = std::make_shared<nimlib::Server::Protocols::Protocol>(*this, *tls_protocol, *tls_protocol);
+        // protocol = std::make_shared<nimlib::Server::Protocols::Http>(*this, *tls_protocol, *tls_protocol);
     }
 
     Connection::~Connection()

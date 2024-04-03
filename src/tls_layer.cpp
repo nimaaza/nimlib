@@ -7,11 +7,11 @@ namespace nimlib::Server::Protocols
 {
 	TlsLayer::TlsLayer(
 		ConnectionInterface& connection,
-		StreamsProviderInterface& connection_streams,
+		StreamsProviderInterface& connection_encrypted_streams,
 		std::shared_ptr<ProtocolInterface> next
-	) : connection_encrypted_streams{ connection_streams }
+	) : connection_encrypted_streams{ connection_encrypted_streams }
 	{
-		next = std::make_shared<Protocol>(connection, *this, *this);
+		next = std::make_shared<Http>(connection, *this, *this);
 		tls_server = nimlib::Server::Protocols::BotanSpec::get_tls_server(
 			*this,
 			connection_encrypted_streams,

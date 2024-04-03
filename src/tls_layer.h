@@ -5,7 +5,7 @@
 
 #include <botan/tls_server.h>
 
-#include "protocol.h"
+#include "http.h"
 #include "types.h"
 
 using nimlib::Server::Types::StreamsProviderInterface;
@@ -18,7 +18,7 @@ namespace nimlib::Server::Protocols
 	public:
 		TlsLayer(
 			ConnectionInterface& connection,
-			StreamsProviderInterface& connection_streams,
+			StreamsProviderInterface& connection_encrypted_streams,
 			std::shared_ptr<ProtocolInterface> next = nullptr
 		);
 		~TlsLayer();
