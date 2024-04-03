@@ -55,7 +55,8 @@ namespace nimlib::Server::Types
 	{
 		virtual ~ProtocolInterface() = default;
 
-		virtual void notify(ConnectionInterface& connection) = 0;
+		virtual void notify(ConnectionInterface& connection, StreamsProviderInterface& streams) = 0;
+		virtual void notify(ProtocolInterface& protocol, StreamsProviderInterface& streams) = 0;
 		virtual bool wants_more_bytes() = 0;
 		virtual bool wants_to_write() = 0;
 		virtual bool wants_to_live() = 0;

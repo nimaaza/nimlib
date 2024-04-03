@@ -15,8 +15,9 @@ namespace nimlib::Server::Protocols::BotanSpec
 	{
 	public:
 		Callbacks(
-			StreamsProviderInterface& source_streams,
-			StreamsProviderInterface& internal_streams,
+			ProtocolInterface& tls_layer,
+			StreamsProviderInterface& encrypted_streams,
+			StreamsProviderInterface& decrypted_streams,
 			std::shared_ptr<ProtocolInterface> next
 		);
 		~Callbacks() = default;
@@ -27,10 +28,9 @@ namespace nimlib::Server::Protocols::BotanSpec
 		void tls_session_established(const Botan::TLS::Session_Summary& session) override;
 
 	private:
-		std::stringstream& internal_out;
-		std::stringstream& internal_in;
-		std::stringstream& source_out;
-		std::stringstream& source_in;
+		ProtocolInterface& tls_layer;
+		StreamsProviderInterface& encrypted_streams;
+		StreamsProviderInterface& decrypted_streams;
 		std::shared_ptr<ProtocolInterface> next;
 	};
 }

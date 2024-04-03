@@ -18,12 +18,13 @@ namespace nimlib::Server::Protocols
 	public:
 		TlsLayer(
 			ConnectionInterface& connection,
-			StreamsProviderInterface& streams,
+			StreamsProviderInterface& connection_streams,
 			std::shared_ptr<ProtocolInterface> next = nullptr
 		);
 		~TlsLayer();
 
-		void notify(ConnectionInterface& connection) override;
+		void notify(ConnectionInterface& connection, StreamsProviderInterface& streams) override;
+		void notify(ProtocolInterface& protocol, StreamsProviderInterface& streams) override;
 		bool wants_more_bytes() override;
 		bool wants_to_write() override;
 		bool wants_to_live() override;
@@ -32,10 +33,9 @@ namespace nimlib::Server::Protocols
 		std::stringstream& get_output_stream() override;
 
 	private:
-		std::stringstream internal_in{};
-		std::stringstream internal_out{};
-		std::stringstream& in;
-		std::stringstream& out;
+		StreamsProviderInterface& connection_encrypted_streams;
+		std::stringstream decrypted_input{};
+		std::stringstream decrypted_output{};
 		std::unique_ptr<Botan::TLS::Server> tls_server;
 	};
 };

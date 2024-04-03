@@ -12,7 +12,8 @@ using nimlib::Server::Types::StreamsProviderInterface;
 namespace nimlib::Server::Protocols::BotanSpec
 {
     std::unique_ptr<Botan::TLS::Server> get_tls_server(
-        StreamsProviderInterface& source_streams,
-        StreamsProviderInterface& internal_streams,
+        ProtocolInterface& tls_layer,
+        StreamsProviderInterface& encrypted_streams,
+        StreamsProviderInterface& decrypted_streams,
         std::shared_ptr<ProtocolInterface> next);
 };

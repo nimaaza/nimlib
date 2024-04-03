@@ -3,31 +3,37 @@
 namespace nimlib::Server::Protocols::BotanSpec
 {
 	Callbacks::Callbacks(
-		StreamsProviderInterface& source_streams,
-		StreamsProviderInterface& internal_streams,
+		ProtocolInterface& tls_layer,
+		StreamsProviderInterface& encrypted_streams,
+		StreamsProviderInterface& decrypted_streams,
 		std::shared_ptr<ProtocolInterface> next
 	) :
-		source_in{ source_streams.get_input_stream() },
-		source_out{ source_streams.get_output_stream() },
-		internal_in{ internal_streams.get_input_stream() },
-		internal_out{ internal_streams.get_output_stream() },
+		tls_layer{ tls_layer },
+		encrypted_streams{ encrypted_streams },
+		decrypted_streams{ decrypted_streams },
 		next{ next }
 	{}
 
 	void Callbacks::tls_emit_data(std::span<const uint8_t> data)
 	{
+		std::stringstream& encrypted_output{ encrypted_streams.get_output_stream() };
+
 		for (auto c : data)
 		{
-			source_out << c;
+			encrypted_output << c;
 		}
 	}
 
 	void Callbacks::tls_record_received(uint64_t seq_no, std::span<const uint8_t> data)
 	{
+		std::stringstream& decrypted_input{ decrypted_streams.get_input_stream() };
+
 		for (auto c : data)
 		{
-			internal_in << c;
+			decrypted_input << c;
 		}
+
+		next->notify(tls_layer, decrypted_streams);
 	}
 
 	void Callbacks::tls_alert(Botan::TLS::Alert alert) {}

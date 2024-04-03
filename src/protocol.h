@@ -13,16 +13,22 @@ namespace nimlib::Server::Protocols
 	class Protocol : public ProtocolInterface
 	{
 	public:
-		Protocol(ConnectionInterface& connection, StreamsProviderInterface& streams);
+		Protocol(
+			ConnectionInterface& connection,
+			ProtocolInterface& tls_layer,
+			StreamsProviderInterface& tls_decrypted_streams
+		);
 		~Protocol();
 
-		void notify(ConnectionInterface& connection) override;
+		void notify(ConnectionInterface& connection, StreamsProviderInterface& streams) override;
+		void notify(ProtocolInterface& protocol, StreamsProviderInterface& streams) override;
 		bool wants_more_bytes() override;
 		bool wants_to_write() override;
 		bool wants_to_live() override;
 
 	private:
 		ConnectionInterface& connection;
-		StreamsProviderInterface& streams;
+		ProtocolInterface& tls_layer;
+		StreamsProviderInterface& decrypted_streams;
 	};
 };

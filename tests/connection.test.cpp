@@ -30,7 +30,7 @@ struct MockProtocolParser : public ProtocolInterface
     {};
     ~MockProtocolParser() = default;
 
-    void notify(ConnectionInterface& connection) override
+    void notify(ConnectionInterface& connection, StreamsProviderInterface& streams) override
     {
         tries_so_far++;
 
@@ -43,6 +43,8 @@ struct MockProtocolParser : public ProtocolInterface
 
         connection.notify(*this);
     }
+
+    void notify(ProtocolInterface& protocol, StreamsProviderInterface& streams) override {}
 
     bool wants_more_bytes() override { return tries_so_far != total_tries; }
 

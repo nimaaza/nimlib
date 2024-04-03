@@ -69,6 +69,10 @@ add_executable(unit_tests_connection
         tests/connection.test.cpp
         tests/support/tcp_socket.mock.cpp
         src/connection.cpp
+        src/tls_layer.cpp # TODO: should be eventually removed (when protocol is injected).
+        src/botan/callbacks.cpp # TODO: should be eventually removed.
+        src/botan/credentials.cpp # TODO: should be eventually removed.
+        src/botan/tls_server.cpp # TODO: should be eventually removed.
         src/protocol.cpp) # TODO: should be eventually removed.
 target_include_directories(unit_tests_connection PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_connection GTest::gtest_main Botan::Botan)

@@ -23,7 +23,7 @@ namespace nimlib::Server
         }
 
         protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(*this, *this);
-        // protocol = std::make_shared<nimlib::Server::Protocols::Protocol>(*this, *this);
+        // protocol = std::make_shared<nimlib::Server::Protocols::Protocol>(*this, *tls_protocol, *tls_protocol);
     }
 
     Connection::~Connection()
@@ -48,7 +48,7 @@ namespace nimlib::Server
             }
 
             connection_state.set_state(ConnectionState::HANDLING);
-            protocol->notify(*this);
+            protocol->notify(*this, *this);
             return connection_state.get_state();
         }
         else if (bytes_count == 0)
@@ -120,9 +120,9 @@ namespace nimlib::Server
 
     void Connection::notify(ProtocolInterface& protocol)
     {
-        // No assumption is made about how the streams will be used by the
+        // No assumption is made about how the decrypted_streams will be used by the
         // application layer. The clear() method is being called in case
-        // the application puts the streams in an error state.
+        // the application puts the decrypted_streams in an error state.
         request_stream.clear();
         response_stream.clear();
 
