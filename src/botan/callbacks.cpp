@@ -25,7 +25,7 @@ namespace nimlib::Server::Protocols::BotanSpec
 			encrypted_output << c;
 		}
 
-        connection.notify(tls_layer);
+		connection.notify(tls_layer);
 	}
 
 	void Callbacks::tls_record_received(uint64_t seq_no, std::span<const uint8_t> data)

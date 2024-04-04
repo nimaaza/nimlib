@@ -1,7 +1,6 @@
 #include "http.h"
 
 #include <sstream>
-#include <iostream>
 
 namespace nimlib::Server::Protocols
 {
@@ -31,7 +30,9 @@ namespace nimlib::Server::Protocols
 	)
 	{
 		std::stringstream& input_from_tls{ streams.get_input_stream() };
-		std::cout << input_from_tls.str();
+		std::stringstream& output_to_tls{ decrypted_streams.get_output_stream() };
+		output_to_tls << "done_all";
+		tls_layer.notify(*this, connection, decrypted_streams);
 	}
 
 	bool Http::wants_more_bytes() { return false; }

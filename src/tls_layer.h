@@ -40,6 +40,7 @@ namespace nimlib::Server::Protocols
 		std::stringstream& get_output_stream() override;
 
 	private:
+		bool tls_continue{ true };
 		StreamsProviderInterface& connection_encrypted_streams;
 		std::stringstream decrypted_input{};
 		std::stringstream decrypted_output{};

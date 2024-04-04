@@ -1,8 +1,8 @@
 #include "connection.h"
 #include "tls_layer.h"
-#include "http.h"
 
 #include <memory>
+#include <cassert>
 #include <utility>
 #include <string_view>
 #include <vector>
@@ -23,7 +23,6 @@ namespace nimlib::Server
         }
 
         protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(*this, *this);
-        // protocol = std::make_shared<nimlib::Server::Protocols::Http>(*this, *tls_protocol, *tls_protocol);
     }
 
     Connection::~Connection()
@@ -46,6 +45,9 @@ namespace nimlib::Server
             {
                 input_stream << buff[i];
             }
+
+            // Protocol must not be null.
+            assert(protocol);
 
             connection_state.set_state(ConnectionState::HANDLING);
             protocol->notify(*this, *this);
