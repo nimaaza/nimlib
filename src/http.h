@@ -20,8 +20,15 @@ namespace nimlib::Server::Protocols
 		);
 		~Http();
 
-		void notify(ConnectionInterface& connection, StreamsProviderInterface& streams) override;
-		void notify(ProtocolInterface& protocol, StreamsProviderInterface& streams) override;
+		void notify(
+			ConnectionInterface& connection,
+			StreamsProviderInterface& streams
+		) override;
+		void notify(
+			ProtocolInterface& protocol,
+			ConnectionInterface& connection,
+			StreamsProviderInterface& streams
+		) override;
 		bool wants_more_bytes() override;
 		bool wants_to_write() override;
 		bool wants_to_live() override;

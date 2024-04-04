@@ -10,7 +10,9 @@ namespace nimlib::Server::Protocols
 		ProtocolInterface& tls_layer,
 		StreamsProviderInterface& tls_decrypted_streams
 	)
-		: connection{ connection }, tls_layer{ tls_layer }, decrypted_streams{ tls_decrypted_streams }
+		: connection{ connection },
+		tls_layer{ tls_layer },
+		decrypted_streams{ tls_decrypted_streams }
 	{}
 
 	Http::~Http() = default;
@@ -22,7 +24,11 @@ namespace nimlib::Server::Protocols
 		connection.notify(*this);
 	}
 
-	void Http::notify(ProtocolInterface& protocol, StreamsProviderInterface& streams)
+	void Http::notify(
+		ProtocolInterface& protocol,
+		ConnectionInterface& connection,
+		StreamsProviderInterface& streams
+	)
 	{
 		std::stringstream& input_from_tls{ streams.get_input_stream() };
 		std::cout << input_from_tls.str();

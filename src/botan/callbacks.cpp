@@ -3,11 +3,13 @@
 namespace nimlib::Server::Protocols::BotanSpec
 {
 	Callbacks::Callbacks(
+		ConnectionInterface& connection,
 		ProtocolInterface& tls_layer,
 		StreamsProviderInterface& encrypted_streams,
 		StreamsProviderInterface& decrypted_streams,
 		std::shared_ptr<ProtocolInterface> next
 	) :
+		connection{ connection },
 		tls_layer{ tls_layer },
 		encrypted_streams{ encrypted_streams },
 		decrypted_streams{ decrypted_streams },
@@ -22,6 +24,8 @@ namespace nimlib::Server::Protocols::BotanSpec
 		{
 			encrypted_output << c;
 		}
+
+        connection.notify(tls_layer);
 	}
 
 	void Callbacks::tls_record_received(uint64_t seq_no, std::span<const uint8_t> data)
@@ -33,7 +37,7 @@ namespace nimlib::Server::Protocols::BotanSpec
 			decrypted_input << c;
 		}
 
-		next->notify(tls_layer, decrypted_streams);
+		next->notify(tls_layer, connection, decrypted_streams);
 	}
 
 	void Callbacks::tls_alert(Botan::TLS::Alert alert) {}

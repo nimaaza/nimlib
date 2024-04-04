@@ -7,6 +7,7 @@
 #include "../types.h"
 
 using nimlib::Server::Types::ProtocolInterface;
+using nimlib::Server::Types::ConnectionInterface;
 using nimlib::Server::Types::StreamsProviderInterface;
 
 namespace nimlib::Server::Protocols::BotanSpec
@@ -15,6 +16,7 @@ namespace nimlib::Server::Protocols::BotanSpec
 	{
 	public:
 		Callbacks(
+			ConnectionInterface& connection,
 			ProtocolInterface& tls_layer,
 			StreamsProviderInterface& encrypted_streams,
 			StreamsProviderInterface& decrypted_streams,
@@ -28,6 +30,7 @@ namespace nimlib::Server::Protocols::BotanSpec
 		void tls_session_established(const Botan::TLS::Session_Summary& session) override;
 
 	private:
+		ConnectionInterface& connection;
 		ProtocolInterface& tls_layer;
 		StreamsProviderInterface& encrypted_streams;
 		StreamsProviderInterface& decrypted_streams;

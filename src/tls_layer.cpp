@@ -8,11 +8,12 @@ namespace nimlib::Server::Protocols
 	TlsLayer::TlsLayer(
 		ConnectionInterface& connection,
 		StreamsProviderInterface& connection_encrypted_streams,
-		std::shared_ptr<ProtocolInterface> next
+		std::shared_ptr<ProtocolInterface> /* next */
 	) : connection_encrypted_streams{ connection_encrypted_streams }
 	{
 		next = std::make_shared<Http>(connection, *this, *this);
 		tls_server = nimlib::Server::Protocols::BotanSpec::get_tls_server(
+			connection,
 			*this,
 			connection_encrypted_streams,
 			*this,
@@ -39,7 +40,14 @@ namespace nimlib::Server::Protocols
 		}
 	}
 
-	void TlsLayer::notify(ProtocolInterface& protocol, StreamsProviderInterface& streams) {}
+	void TlsLayer::notify(
+		ProtocolInterface& protocol,
+		ConnectionInterface& connection,
+		StreamsProviderInterface& streams
+	)
+	{
+		tls_server->send(streams.get_output_stream().str());
+	}
 
 	bool TlsLayer::wants_more_bytes() { return true; }
 

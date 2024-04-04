@@ -23,8 +23,15 @@ namespace nimlib::Server::Protocols
 		);
 		~TlsLayer();
 
-		void notify(ConnectionInterface& connection, StreamsProviderInterface& streams) override;
-		void notify(ProtocolInterface& protocol, StreamsProviderInterface& streams) override;
+		void notify(
+			ConnectionInterface& connection,
+			StreamsProviderInterface& streams
+		) override;
+		void notify(
+			ProtocolInterface& protocol,
+			ConnectionInterface& connection,
+			StreamsProviderInterface& streams
+		) override;
 		bool wants_more_bytes() override;
 		bool wants_to_write() override;
 		bool wants_to_live() override;
@@ -37,5 +44,6 @@ namespace nimlib::Server::Protocols
 		std::stringstream decrypted_input{};
 		std::stringstream decrypted_output{};
 		std::unique_ptr<Botan::TLS::Server> tls_server;
+		std::shared_ptr<Http> next;
 	};
 };
