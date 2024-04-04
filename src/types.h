@@ -74,13 +74,11 @@ namespace nimlib::Server::Types
 		virtual ConnectionState write() = 0;
 		virtual void halt() = 0;
 		virtual void notify(ProtocolInterface& protocol) = 0;
-		// virtual ConnectionInterface& operator<<(uint8_t c) = 0;
-		// virtual ConnectionInterface& operator<<(std::string& s) = 0;
-		// virtual std::stringstream& get_input_stream() = 0;
-		// virtual std::stringstream& get_output_stream() = 0;
 		virtual void set_protocol(std::shared_ptr<ProtocolInterface>) = 0;
 		virtual std::pair<ConnectionState, long> get_state() const = 0;
 		virtual const int get_id() const = 0;
+		// virtual ConnectionInterface& operator<<(uint8_t c) = 0;
+		// virtual ConnectionInterface& operator<<(std::string& s) = 0;
 	};
 };
 
