@@ -48,8 +48,8 @@ namespace nimlib::Server
             ConnectionState::CON_ERROR,
             nimlib::Server::Constants::MAX_RESET_COUNT
         };
-        std::stringstream request_stream{};
-        std::stringstream response_stream{};
+        std::stringstream input_stream{};
+        std::stringstream output_stream{};
         std::unique_ptr<TcpSocketInterface> socket;
         std::shared_ptr<ProtocolInterface> protocol;
         // nimlib::Server::Metrics::Measurements::Duration<long> response_timer;

@@ -44,7 +44,7 @@ namespace nimlib::Server
         {
             for (int i = 0; i < bytes_count && i < buffer_size; i++)
             {
-                request_stream << buff[i];
+                input_stream << buff[i];
             }
 
             connection_state.set_state(ConnectionState::HANDLING);
@@ -71,7 +71,7 @@ namespace nimlib::Server
         if (connection_state.get_state() == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
 
         // TODO: trim response string?
-        std::string response_str{ response_stream.str() };
+        std::string response_str{ output_stream.str() };
         std::string_view response_view{ response_str };
         size_t bytes_to_send{ response_str.size() };
         size_t total_bytes_sent{};
@@ -91,8 +91,8 @@ namespace nimlib::Server
             if (keep_alive)
             {
                 //  TODO: reset connection variables or use state callbacks for clean up
-                request_stream = std::stringstream();
-                response_stream = std::stringstream();
+                input_stream = std::stringstream();
+                output_stream = std::stringstream();
                 return connection_state.set_state(ConnectionState::PENDING);
             }
             else
@@ -103,7 +103,7 @@ namespace nimlib::Server
         else if (bytes_to_send > 0)
         {
             // TODO: erase might be faster
-            response_stream.str(response_str.substr(total_bytes_sent));
+            output_stream.str(response_str.substr(total_bytes_sent));
             return connection_state.reset_state();
         }
         else
@@ -123,8 +123,8 @@ namespace nimlib::Server
         // No assumption is made about how the decrypted_streams will be used by the
         // application layer. The clear() method is being called in case
         // the application puts the decrypted_streams in an error state.
-        request_stream.clear();
-        response_stream.clear();
+        input_stream.clear();
+        output_stream.clear();
 
         keep_alive = protocol.wants_to_live();
 
@@ -152,7 +152,7 @@ namespace nimlib::Server
 
     const int Connection::get_id() const { return id; }
 
-    std::stringstream& Connection::get_input_stream() { return request_stream; }
+    std::stringstream& Connection::get_input_stream() { return input_stream; }
 
-    std::stringstream& Connection::get_output_stream() { return response_stream; }
+    std::stringstream& Connection::get_output_stream() { return output_stream; }
 }

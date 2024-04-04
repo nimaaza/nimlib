@@ -1,6 +1,4 @@
-#include <unordered_map>
 #include <string>
-#include <algorithm>
 #include <cassert>
 
 #include "polling_server.h"
