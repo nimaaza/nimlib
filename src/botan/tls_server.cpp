@@ -20,10 +20,10 @@ namespace nimlib::Server::Protocols::BotanSpec
 		const std::string key_path = "../cert/server.key";
 
 		auto callbacks = std::make_shared<Callbacks>(connection, tls_layer, encrypted_streams, decrypted_streams, next);
-		auto rng = std::make_shared<Botan::AutoSeeded_RNG>();
-		auto session_mgr = std::make_shared<Botan::TLS::Session_Manager_In_Memory>(rng);
-		auto credentials = std::make_shared<CredentialsProvider>(crt_path, key_path);
-		auto policy = std::make_shared<TLS_All_Policy>();
+		static auto rng = std::make_shared<Botan::AutoSeeded_RNG>();
+		static auto session_mgr = std::make_shared<Botan::TLS::Session_Manager_In_Memory>(rng);
+		static auto credentials = std::make_shared<CredentialsProvider>(crt_path, key_path);
+		static auto policy = std::make_shared<TLS_All_Policy>();
 		return std::move(std::make_unique<Botan::TLS::Server>(callbacks, session_mgr, credentials, policy, rng));
 	}
 }

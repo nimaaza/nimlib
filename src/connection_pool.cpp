@@ -1,5 +1,7 @@
 #include "connection_pool.h"
 #include "connection.h"
+#include "tls_layer.h"
+#include "http.h"
 
 #include <memory>
 #include <cassert>
@@ -26,6 +28,9 @@ namespace nimlib::Server
         assert(connections[s->get_tcp_socket_descriptor()] == nullptr);
         connection_id id = s->get_tcp_socket_descriptor();
         auto connection = std::make_shared<Connection>(std::move(s), id);
+        auto http_protocol = std::make_shared<nimlib::Server::Protocols::Http>(*connection);
+        auto protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(*connection, *connection, http_protocol);
+        connection->set_protocol(protocol);
         connections[id] = connection;
     }
 

@@ -6,10 +6,11 @@ namespace nimlib::Server::Protocols
 	TlsLayer::TlsLayer(
 		ConnectionInterface& connection,
 		StreamsProviderInterface& connection_encrypted_streams,
-		std::shared_ptr<ProtocolInterface> /* next */
-	) : connection_encrypted_streams{ connection_encrypted_streams }
+		std::shared_ptr<ProtocolInterface> next
+	) :
+		connection_encrypted_streams{ connection_encrypted_streams },
+		next{ next }
 	{
-		next = std::make_shared<Http>(connection, *this, *this);
 		tls_server = nimlib::Server::Protocols::BotanSpec::get_tls_server(
 			connection,
 			*this,
@@ -30,6 +31,7 @@ namespace nimlib::Server::Protocols
 			auto in_string_ptr = reinterpret_cast<uint8_t*>(in_string.data());
 			auto bytes_needed = tls_server->received_data(in_string_ptr, in_string.size());
 			tls_continue = bytes_needed > 0;
+			connection.notify(*this);
 		}
 		catch (const std::exception& e)
 		{

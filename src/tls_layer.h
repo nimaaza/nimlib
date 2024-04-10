@@ -5,10 +5,10 @@
 
 #include <botan/tls_server.h>
 
-#include "http.h"
 #include "types.h"
 
 using nimlib::Server::Types::StreamsProviderInterface;
+using nimlib::Server::Types::ProtocolInterface;
 using nimlib::Server::Types::ConnectionInterface;
 
 namespace nimlib::Server::Protocols
@@ -45,6 +45,6 @@ namespace nimlib::Server::Protocols
 		std::stringstream decrypted_input{};
 		std::stringstream decrypted_output{};
 		std::unique_ptr<Botan::TLS::Server> tls_server;
-		std::shared_ptr<Http> next;
+		std::shared_ptr<ProtocolInterface> next;
 	};
 };

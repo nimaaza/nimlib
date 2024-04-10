@@ -4,15 +4,7 @@
 
 namespace nimlib::Server::Protocols
 {
-	Http::Http(
-		ConnectionInterface& connection,
-		ProtocolInterface& tls_layer,
-		StreamsProviderInterface& tls_decrypted_streams
-	)
-		: connection{ connection },
-		tls_layer{ tls_layer },
-		decrypted_streams{ tls_decrypted_streams }
-	{}
+	Http::Http(ConnectionInterface& connection) : connection{ connection } {}
 
 	Http::~Http() = default;
 
@@ -30,9 +22,9 @@ namespace nimlib::Server::Protocols
 	)
 	{
 		std::stringstream& input_from_tls{ streams.get_input_stream() };
-		std::stringstream& output_to_tls{ decrypted_streams.get_output_stream() };
+		std::stringstream& output_to_tls{ streams.get_output_stream() };
 		output_to_tls << "done_all";
-		tls_layer.notify(*this, connection, decrypted_streams);
+		protocol.notify(*this, connection, streams);
 	}
 
 	bool Http::wants_more_bytes() { return false; }

@@ -14,9 +14,7 @@ namespace nimlib::Server::Protocols
 	{
 	public:
 		Http(
-			ConnectionInterface& connection,
-			ProtocolInterface& tls_layer,
-			StreamsProviderInterface& tls_decrypted_streams
+			ConnectionInterface& connection
 		);
 		~Http();
 
@@ -35,7 +33,5 @@ namespace nimlib::Server::Protocols
 
 	private:
 		ConnectionInterface& connection;
-		ProtocolInterface& tls_layer;
-		StreamsProviderInterface& decrypted_streams;
 	};
 };

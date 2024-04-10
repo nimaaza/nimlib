@@ -1,5 +1,4 @@
 #include "connection.h"
-#include "tls_layer.h"
 
 #include <memory>
 #include <cassert>
@@ -21,8 +20,6 @@ namespace nimlib::Server
         {
             connection_state.set_state(ConnectionState::CON_ERROR);
         }
-
-        protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(*this, *this);
     }
 
     Connection::~Connection()
@@ -118,6 +115,7 @@ namespace nimlib::Server
     void Connection::halt()
     {
         connection_state.set_state(ConnectionState::CON_ERROR);
+        // socket->tcp_close(); TODO: it's better to close the socket carefully.
     }
 
     void Connection::notify(ProtocolInterface& protocol)
