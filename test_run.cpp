@@ -1,8 +1,8 @@
 #include <iostream>
 
-#include "polling_server.h"
-#include "metrics/factory.h"
-#include "common/decorators.h"
+#include "src/polling_server.h"
+#include "src/metrics/factory.h"
+#include "src/common/decorators.h"
 
 int main()
 {

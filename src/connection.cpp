@@ -69,29 +69,32 @@ namespace nimlib::Server
     {
         if (connection_state.get_state() == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
 
-        // TODO: trim response string?
-        std::string response_str{ output_stream.str() };
-        std::string_view response_view{ response_str };
-        size_t bytes_to_send{ response_str.size() };
-        size_t total_bytes_sent{};
+        std::string response_str{ std::move(output_stream.str()) };
+        std::string_view response{ response_str };
+        long bytes_to_send = response_str.size();
+        long bytes_sent = 0;
 
-        while (bytes_to_send > 0)
+        while (bytes_sent < bytes_to_send)
         {
-            int sent = socket->tcp_send(response_view.substr(total_bytes_sent, buffer_size));
+            auto sent = socket->tcp_send(response.substr(bytes_sent));
 
-            if (sent < 0) break; // TODO: handle the socket error when sent < 0
-
-            bytes_to_send -= sent;
-            total_bytes_sent += sent;
+            if (sent < 0)
+            {
+                break;
+            }
+            else
+            {
+                bytes_sent += sent;
+            }
         }
 
-        if (bytes_to_send == 0)
+        if (bytes_sent == bytes_to_send)
         {
             if (keep_alive)
             {
                 //  TODO: reset connection variables or use state callbacks for clean up
-                input_stream = std::stringstream();
-                output_stream = std::stringstream();
+                input_stream.str("");
+                output_stream.str("");
                 return connection_state.set_state(ConnectionState::PENDING);
             }
             else
@@ -99,16 +102,16 @@ namespace nimlib::Server
                 return connection_state.set_state(ConnectionState::DONE);
             }
         }
-        else if (bytes_to_send > 0)
+        else if (bytes_sent < bytes_to_send)
         {
-            // TODO: erase might be faster
-            output_stream.str(response_str.substr(total_bytes_sent));
+            std::string remainder{ response.substr(bytes_sent) };
+            output_stream.str(remainder);
             return connection_state.reset_state();
         }
         else
         {
-            //TODO: crash? bytes_to_send cannot be negative
-            return connection_state.set_state(ConnectionState::CON_ERROR);
+            // There's a serious logic issue.
+            assert(false);
         }
     }
 
@@ -141,10 +144,6 @@ namespace nimlib::Server
             connection_state.set_state(ConnectionState::CON_ERROR);
         }
     }
-
-    // Connection& Connection::operator<<(uint8_t c) {}
-
-    // Connection& Connection::operator<<(std::string& s) {}
 
     void Connection::set_protocol(std::shared_ptr<ProtocolInterface> p) { protocol = p; }
 
