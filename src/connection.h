@@ -3,7 +3,7 @@
 #include <sstream>
 #include <chrono>
 
-#include "types.h"
+#include "common/types.h"
 #include "utils/state_manager.h"
 //#include "metrics/measurements.h"
 

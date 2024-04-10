@@ -3,7 +3,7 @@
 #include <memory>
 #include <concepts>
 
-#include "decorations/implementations.h"
+#include "../decorations/implementations.h"
 
 namespace nimlib::Server::Decorators
 {

@@ -3,7 +3,7 @@
 #include <sstream>
 #include <string>
 
-#include "../src/types.h"
+#include "../../src/common/types.h"
 
 namespace nimlib::Server::Sockets
 {

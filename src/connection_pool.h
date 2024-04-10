@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "types.h"
+#include "common/types.h"
 
 namespace nimlib::Server
 {

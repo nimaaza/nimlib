@@ -4,7 +4,7 @@
 #include <memory>
 #include <poll.h>
 
-#include "types.h"
+#include "common/types.h"
 #include "connection_pool.h"
 
 namespace nimlib::Server

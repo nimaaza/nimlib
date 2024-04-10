@@ -5,7 +5,7 @@
 #include "tcp_socket.h"
 
 #ifdef NO_TESTING
-#include "decorators.h"
+#include "common/decorators.h"
 #else
 #include "../tests/support/decorators.h"
 #endif

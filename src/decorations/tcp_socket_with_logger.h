@@ -3,7 +3,7 @@
 #include <format>
 #include <span>
 
-#include "../types.h"
+#include "../common/types.h"
 #include "../tcp_socket.h"
 #include "../logger/factory.h"
 

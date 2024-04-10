@@ -3,7 +3,7 @@
 #include <memory>
 #include "iostream"
 
-#include "../src/types.h"
+#include "../src/common/types.h"
 #include "../src/connection.h"
 #include "support/tcp_socket.mock.h"
 

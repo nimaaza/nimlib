@@ -3,7 +3,7 @@
 #include <span>
 #include <netdb.h>
 
-#include "types.h"
+#include "common/types.h"
 
 namespace nimlib::Server::Sockets
 {

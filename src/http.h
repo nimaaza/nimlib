@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "common/types.h"
 
 using nimlib::Server::Types::ConnectionInterface;
 using nimlib::Server::Types::StreamsProviderInterface;

@@ -5,7 +5,7 @@
 
 #include <botan/tls_server.h>
 
-#include "types.h"
+#include "common/types.h"
 
 using nimlib::Server::Types::StreamsProviderInterface;
 using nimlib::Server::Types::ProtocolInterface;

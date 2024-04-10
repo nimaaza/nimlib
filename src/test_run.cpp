@@ -2,7 +2,7 @@
 
 #include "polling_server.h"
 #include "metrics/factory.h"
-#include "decorators.h"
+#include "common/decorators.h"
 
 int main()
 {

@@ -2,7 +2,7 @@
 
 #include "logger.h"
 #include "agent.h"
-#include "../common.h"
+#include "../common/common.h"
 
 namespace nimlib::Server::Logging::Factory
 {

@@ -12,8 +12,8 @@ message("Using OpenSSL version: ${OPENSSL_VERSION}")
 
 add_executable(test_run
         src/test_run.cpp
-        src/types.h
-        src/decorators.h
+        src/common/types.h
+        src/common/decorators.h
         src/tcp_socket.cpp
         src/polling_server.cpp
         src/connection_pool.cpp

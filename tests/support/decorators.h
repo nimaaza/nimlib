@@ -3,7 +3,7 @@
 #include <memory>
 #include <concepts>
 
-#include "../../src/types.h"
+#include "../../src/common/types.h"
 #include "../../src/tcp_socket.h"
 #include "../../src/decorations/implementations.h"
 
