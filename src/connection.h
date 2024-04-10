@@ -29,8 +29,6 @@ namespace nimlib::Server
         ConnectionState read() override;
         ConnectionState write() override;
         void halt() override;
-        // Connection& operator<<(uint8_t c) override;
-        // Connection& operator<<(std::string& s) override;
         void notify(ProtocolInterface& protocol) override;
         void set_protocol(std::shared_ptr<ProtocolInterface>) override;
         std::pair<ConnectionState, long> get_state() const override;

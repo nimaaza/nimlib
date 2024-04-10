@@ -74,7 +74,6 @@ namespace nimlib::Server::Types
 
 	struct ConnectionInterface
 	{
-	public:
 		virtual ~ConnectionInterface() = default;
 
 		virtual ConnectionState read() = 0;
@@ -84,8 +83,6 @@ namespace nimlib::Server::Types
 		virtual void set_protocol(std::shared_ptr<ProtocolInterface>) = 0;
 		virtual std::pair<ConnectionState, long> get_state() const = 0;
 		virtual const int get_id() const = 0;
-		// virtual ConnectionInterface& operator<<(uint8_t c) = 0;
-		// virtual ConnectionInterface& operator<<(std::string& s) = 0;
 	};
 };
 

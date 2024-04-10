@@ -120,9 +120,9 @@ namespace nimlib::Server
 
     void Connection::notify(ProtocolInterface& protocol)
     {
-        // No assumption is made about how the decrypted_streams will be used by the
+        // No assumption is made about how the streams will be used by the
         // application layer. The clear() method is being called in case
-        // the application puts the decrypted_streams in an error state.
+        // the application puts the streams in an error state.
         input_stream.clear();
         output_stream.clear();
 

@@ -11,7 +11,7 @@ find_package(OpenSSL)
 message("Using OpenSSL version: ${OPENSSL_VERSION}")
 
 add_executable(test_run
-        src/test_run.cpp
+        test_run.cpp
         src/common/types.h
         src/common/decorators.h
         src/tcp_socket.cpp
@@ -68,12 +68,7 @@ target_link_libraries(unit_tests GTest::gtest_main Botan::Botan)
 add_executable(unit_tests_connection
         tests/connection.test.cpp
         tests/support/tcp_socket.mock.cpp
-        src/connection.cpp
-        src/tls_layer.cpp # TODO: should be eventually removed (when protocol is injected).
-        src/botan/callbacks.cpp # TODO: should be eventually removed.
-        src/botan/credentials.cpp # TODO: should be eventually removed.
-        src/botan/tls_server.cpp # TODO: should be eventually removed.
-        src/http.cpp) # TODO: should be eventually removed.
+        src/connection.cpp)
 target_include_directories(unit_tests_connection PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_connection GTest::gtest_main Botan::Botan)
 
