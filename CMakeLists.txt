@@ -65,6 +65,11 @@ add_executable(unit_tests
 target_include_directories(unit_tests PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests GTest::gtest_main Botan::Botan)
 
+add_executable(unit_tests_state_manager
+        tests/state_manager.test.cpp)
+target_include_directories(unit_tests_state_manager PUBLIC "${PROJECT_BINARY_DIR}")
+target_link_libraries(unit_tests_state_manager GTest::gtest_main)
+
 add_executable(unit_tests_connection
         tests/connection.test.cpp
         tests/support/tcp_socket.mock.cpp
@@ -75,10 +80,14 @@ target_link_libraries(unit_tests_connection GTest::gtest_main Botan::Botan)
 add_executable(unit_tests_polling_server
         tests/polling_server.test.cpp
         src/polling_server.cpp
-        src/connection_pool.cpp
         src/tcp_socket.cpp
         src/connection.cpp
-        src/http.cpp) # this should be removed from the dependecies
+        src/http.cpp
+        src/tls_layer.cpp
+        src/botan/callbacks.cpp
+        src/botan/credentials.cpp
+        src/botan/tls_server.cpp
+        src/connection_pool.cpp)
 target_include_directories(unit_tests_polling_server PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_polling_server GTest::gtest_main Botan::Botan)
 

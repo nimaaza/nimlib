@@ -44,6 +44,14 @@ namespace nimlib::Server
         StateManager<ConnectionState> connection_state{
             ConnectionState::STARTING,
             ConnectionState::CON_ERROR,
+            {
+                {ConnectionState::STARTING, {ConnectionState::READING}},
+                {ConnectionState::READING, {ConnectionState::READING, ConnectionState::HANDLING}},
+                {ConnectionState::HANDLING, {ConnectionState::READING, ConnectionState::WRITING}},
+                {ConnectionState::WRITING, {ConnectionState::WRITING, ConnectionState::DONE, ConnectionState::PENDING}},
+                {ConnectionState::PENDING, {ConnectionState::READING}},
+                {ConnectionState::DONE, {}}
+            },
             nimlib::Server::Constants::MAX_RESET_COUNT
         };
         std::stringstream input_stream{};

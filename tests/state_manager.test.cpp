@@ -2,18 +2,43 @@
 
 #include "../src/utils/state_manager.h"
 
-enum States { START, OK, CON_ERROR, SOME_STATE, ANOTHER_STATE };
+enum States { START, OK, ERROR_STATE, SOME_STATE, ANOTHER_STATE };
+
+std::unordered_map<States, std::vector<States>> transitions
+{
+    {States::START, {States::OK}},
+    {States::OK, {States::SOME_STATE, States::ANOTHER_STATE}},
+    {States::SOME_STATE, {States::ANOTHER_STATE}},
+    {States::ANOTHER_STATE, {}},
+};
+
+TEST(StateManagerTest_Transitions, AllStateTransitToError)
+{
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, 2 };
+
+    sm.set_state(States::START);
+    EXPECT_TRUE(sm.ready_to_transition(States::ERROR_STATE));
+
+    sm.set_state(States::SOME_STATE);
+    EXPECT_TRUE(sm.ready_to_transition(States::ERROR_STATE));
+
+    sm.set_state(States::ANOTHER_STATE);
+    EXPECT_TRUE(sm.ready_to_transition(States::ERROR_STATE));
+
+    sm.set_state(States::ERROR_STATE);
+    EXPECT_TRUE(sm.ready_to_transition(States::ERROR_STATE));
+}
 
 TEST(StateManagerTest_Construction, InitialState_SetToStart)
 {
-    StateManager<States> sm{ States::START, States::CON_ERROR, 2 };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, 2 };
 
     EXPECT_EQ(sm.get_state(), States::START);
 }
 
 TEST(StateManagerTest_SetState, StateChange)
 {
-    StateManager<States> sm{ States::START, States::CON_ERROR, 2 };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, 2 };
     sm.set_state(States::SOME_STATE);
 
     EXPECT_EQ(sm.get_state(), States::SOME_STATE);
@@ -21,7 +46,7 @@ TEST(StateManagerTest_SetState, StateChange)
 
 TEST(StateManagerTest_SetState, ResetCountZeroedOnStateChange)
 {
-    StateManager<States> sm{ States::START, States::CON_ERROR, 2 };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, 2 };
 
     sm.set_state(States::SOME_STATE);
     sm.set_state(States::SOME_STATE);
@@ -38,12 +63,12 @@ TEST(StateManagerTest_SetState, ResetCountZeroedOnStateChange)
 
     EXPECT_EQ(state1, States::SOME_STATE);
     EXPECT_EQ(state2, States::ANOTHER_STATE);
-    EXPECT_EQ(state3, States::CON_ERROR);
+    EXPECT_EQ(state3, States::ERROR_STATE);
 }
 
 TEST(StateManagerTest_SetState, StateNotNew)
 {
-    StateManager<States> sm{ States::START, States::CON_ERROR, 3 };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, 3 };
     sm.set_state(States::SOME_STATE);
 
     // The following will be considered state resets and are allowed
@@ -56,12 +81,12 @@ TEST(StateManagerTest_SetState, StateNotNew)
     auto state_after_limit = sm.get_state();
 
     EXPECT_EQ(state_before_limit, States::SOME_STATE);
-    EXPECT_EQ(state_after_limit, States::CON_ERROR);
+    EXPECT_EQ(state_after_limit, States::ERROR_STATE);
 }
 
 TEST(StateManagerTest_ResetState, StateShouldNotChange)
 {
-    StateManager<States> sm{ States::START, States::CON_ERROR, 2 };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, 2 };
 
     auto state_before = sm.get_state();
     sm.reset_state();
@@ -72,7 +97,7 @@ TEST(StateManagerTest_ResetState, StateShouldNotChange)
 
 TEST(StateManagerTest_ResetState, MaxResetCountReached)
 {
-    StateManager<States> sm{ States::START, States::CON_ERROR, 4 };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, 4 };
 
     sm.set_state(States::SOME_STATE);
     sm.reset_state();
@@ -84,5 +109,5 @@ TEST(StateManagerTest_ResetState, MaxResetCountReached)
     auto state_after_reached = sm.get_state();
 
     EXPECT_EQ(state_before_reached, States::SOME_STATE);
-    EXPECT_EQ(state_after_reached, States::CON_ERROR);
+    EXPECT_EQ(state_after_reached, States::ERROR_STATE);
 }
