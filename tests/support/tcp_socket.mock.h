@@ -9,7 +9,7 @@ namespace nimlib::Server::Sockets
 {
     struct MockTcpSocket : public TcpSocketInterface
     {
-        MockTcpSocket(int tcp_socket, int max_bytes_to_read, int max_bytes_to_write);
+        MockTcpSocket(int tcp_socket, int max_bytes_to_read = 1024, int max_bytes_to_write = 1024);
         ~MockTcpSocket();
 
         MockTcpSocket(const MockTcpSocket&) = delete;

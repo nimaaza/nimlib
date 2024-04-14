@@ -240,12 +240,28 @@ TEST(ConnectionTests, Read_ConnectionStateWhenConnectionInErrorState)
 
 TEST(ConnectionTests, Write_NoWriteWhenInError)
 {
+    auto s = std::make_unique<MockTcpSocket>(1);
+    auto pointer_to_socket = s.get();
+    Connection connection { std::move(s), 1 };
+    connection.halt(); // This forces connection in error state.
 
+    connection.write();
+
+    EXPECT_EQ(pointer_to_socket->write_result.str(), "");
+    EXPECT_EQ(pointer_to_socket->total_socket_write_count, 0);
 }
 
 TEST(ConnectionTests, Write_ConnectionKeptAlive)
 {
+    auto s = std::make_unique<MockTcpSocket>(1);
+    auto pointer_to_socket = s.get();
+    Connection connection{ std::move(s), 1 };
+    auto protocol = std::make_shared<MockProtocolParser>(connection, 1, ParseResult::WRITE_AND_WAIT);
+    connection.set_protocol(protocol);
 
+    connection.write();
+
+    EXPECT_EQ(connection.get_state().first, ConnectionState::PENDING);
 }
 
 TEST(ConnectionTests, ConnectionState_WhenJustCreated)
