@@ -2,6 +2,7 @@
 
 #include <span>
 #include <sys/socket.h>
+#include <functional>
 
 #include "common.h"
 #include "../utils/state_manager.h"
@@ -69,7 +70,7 @@ namespace nimlib::Server::Types
 		virtual bool wants_to_live() = 0;
 
 	protected:
-		StateManager<ParseResult> state_manager{ ParseResult::P_STARTING, ParseResult::P_ERROR, 1024 };
+		// StateManager<ParseResult> state_manager{ ParseResult::P_STARTING, ParseResult::P_ERROR, 1024 };
 	};
 
 	struct ConnectionInterface
@@ -89,3 +90,4 @@ namespace nimlib::Server::Types
 using connection_ptr = std::shared_ptr<nimlib::Server::Types::ConnectionInterface>;
 using socket_ptr = std::unique_ptr<nimlib::Server::Types::TcpSocketInterface>;
 using connection_id = int;
+using header_validator = const std::function<bool(const std::string&)>;
