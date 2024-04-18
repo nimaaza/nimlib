@@ -360,7 +360,7 @@ TEST(HttpParserTests, RepeatedHeaderField)
     EXPECT_EQ(parse_result.value().headers.find("connection")->second, std::vector<std::string> { "keep-alive" });
 }
 
-TEST(HttpParserTests, WhiteSpaceMustBeRemovedFromHeaderValues)
+TEST(HttpParserTests, WhiteSpaceRemovedFromHeaderValues)
 {
     std::stringstream input_stream{
         "GET /some/target/ HTTP/1.1\r\n"
@@ -376,4 +376,29 @@ TEST(HttpParserTests, WhiteSpaceMustBeRemovedFromHeaderValues)
     EXPECT_EQ(parse_result.value().headers.find("header1")->second, header_1);
     EXPECT_EQ(parse_result.value().headers.find("host")->second, std::vector<std::string> { "www.hostname.com" });
     EXPECT_EQ(parse_result.value().headers.find("connection")->second, std::vector<std::string> { "keep-alive" });
+}
+
+TEST(HttpParserTests, HeaderFieldValueSplit)
+{
+    std::stringstream input_stream{
+        "GET /some/target/ HTTP/1.1\r\n"
+        "Host: www.hostname.com\r\n"
+        "Header: value-1, value-2, \tvalue-3\r\n"
+        "Connection: keep-alive\r\n"
+        "Transfer-Encoding: gzip;q=0.5, chunked\r\n"
+        "\r\n"
+        "message_body" };
+    auto parse_result = parse_http_message(input_stream);
+
+    EXPECT_TRUE(parse_result);
+    EXPECT_EQ(parse_result.value().headers.size(), 4);
+    EXPECT_EQ(parse_result.value().headers.find("header")->second.size(), 3);
+    EXPECT_EQ(parse_result.value().headers.find("header")->second[0], "value-1");
+    EXPECT_EQ(parse_result.value().headers.find("header")->second[1], "value-2");
+    EXPECT_EQ(parse_result.value().headers.find("header")->second[2], "value-3");
+    EXPECT_EQ(parse_result.value().headers.find("transfer-encoding")->second.size(), 2);
+    EXPECT_EQ(parse_result.value().headers.find("transfer-encoding")->second[0], "gzip;q=0.5");
+    EXPECT_EQ(parse_result.value().headers.find("transfer-encoding")->second[1], "chunked");
+    EXPECT_EQ(parse_result.value().headers.find("host")->second[0], "www.hostname.com");
+    EXPECT_EQ(parse_result.value().headers.find("connection")->second[0], "keep-alive");
 }

@@ -1,5 +1,7 @@
 #include "http.h"
 
+#include "utils/helpers.h"
+
 #include <sstream>
 #include <iostream>
 
@@ -166,13 +168,12 @@ namespace nimlib::Server::Protocols
 					if (!it->second(value, headers)) return false;
 				}
 
-				if (auto existing_header = headers.find(header); existing_header != headers.end())
+				std::vector<std::string_view> values{};
+				split(value, ",", values);
+				for (auto v : values)
 				{
-					headers[header].push_back(value);
-				}
-				else
-				{
-					headers[header].push_back(value);
+					std::string value_string{ v };
+					headers[header].push_back(value_string);
 				}
 
 				return true;

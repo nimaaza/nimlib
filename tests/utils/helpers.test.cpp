@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../../src/utils/split.h"
+#include "../../src/utils/helpers.h"
 
 TEST(SplitTests, EmptyDelimiter)
 {

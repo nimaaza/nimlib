@@ -1,9 +1,4 @@
-#ifndef SPLIT_H
-#define SPLIT_H
-
-#include <vector>
-#include <string>
-#include <string_view>
+#include "helpers.h"
 
 void split(
     const std::string_view s,
@@ -35,5 +30,3 @@ void split(
         begin = end + delimiter.size();
     }
 }
-
-#endif //SPLIT_H

@@ -27,7 +27,7 @@ add_executable(test_run
         src/botan/credentials.cpp
         src/botan/callbacks.cpp
         src/botan/tls_server.cpp
-        src/utils/split.h)
+        src/utils/helpers.cpp)
 target_include_directories(test_run PUBLIC "${PROJECT_BINARY_DIR}")
 target_compile_definitions(test_run PRIVATE NO_TESTING)
 target_link_libraries(test_run Botan::Botan)
@@ -64,7 +64,8 @@ add_executable(unit_tests
         src/botan/callbacks.cpp
         src/botan/tls_server.cpp
         tests/http.test.cpp
-        tests/utils/split.test.cpp)
+        tests/utils/helpers.test.cpp
+        src/utils/helpers.cpp)
 target_include_directories(unit_tests PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests GTest::gtest_main Botan::Botan)
 
