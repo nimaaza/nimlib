@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27.8)
+cmake_minimum_required(VERSION 3.27.4)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
@@ -26,7 +26,8 @@ add_executable(test_run
         src/tls_layer.cpp
         src/botan/credentials.cpp
         src/botan/callbacks.cpp
-        src/botan/tls_server.cpp)
+        src/botan/tls_server.cpp
+        src/utils/split.h)
 target_include_directories(test_run PUBLIC "${PROJECT_BINARY_DIR}")
 target_compile_definitions(test_run PRIVATE NO_TESTING)
 target_link_libraries(test_run Botan::Botan)
@@ -61,7 +62,9 @@ add_executable(unit_tests
         src/tls_layer.cpp
         src/botan/credentials.cpp
         src/botan/callbacks.cpp
-        src/botan/tls_server.cpp)
+        src/botan/tls_server.cpp
+        tests/http.test.cpp
+        tests/utils/split.test.cpp)
 target_include_directories(unit_tests PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests GTest::gtest_main Botan::Botan)
 
