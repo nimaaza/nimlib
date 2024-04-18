@@ -3,6 +3,7 @@
 #include <span>
 #include <sys/socket.h>
 #include <functional>
+#include <vector>
 
 #include "common.h"
 #include "../utils/state_manager.h"
@@ -90,4 +91,4 @@ namespace nimlib::Server::Types
 using connection_ptr = std::shared_ptr<nimlib::Server::Types::ConnectionInterface>;
 using socket_ptr = std::unique_ptr<nimlib::Server::Types::TcpSocketInterface>;
 using connection_id = int;
-using header_validator = const std::function<bool(const std::string&)>;
+using header_validator = const std::function<bool(const std::string& value, const std::unordered_map<std::string, std::vector<std::string>>& headers)>;

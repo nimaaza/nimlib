@@ -61,17 +61,47 @@ namespace nimlib::Server::Protocols
 
 namespace nimlib::Server::Protocols
 {
-	header_validator Http::content_length_validator = [](const std::string& value) -> bool { return true; };
+	header_validator content_length_validator =
+		[](const std::string& value, const std::unordered_map<std::string, std::vector<std::string>>& headers) -> bool
+		{
+			// A sender MUST NOT send a Content-Length header field in any message
+			// that contains a Transfer-Encoding header field.
+			if (auto it = headers.find("transfer-encoding"); it != headers.end()) return false;
 
-	const std::unordered_map<std::string, header_validator> Http::header_validators{
-		{"content-length", content_length_validator}
+			// If a message is received without Transfer-Encoding and with
+			// either multiple Content-Length header fields having differing
+			// field-values or a single Content-Length header field having an
+			// invalid value, then the message framing is invalid and the
+			// recipient MUST treat it as an unrecoverable error.
+			if (auto it = headers.find("content-length"); it != headers.end()) return false;
+
+			// Content-Length must be an integer and only an integer.
+			std::stringstream content_length_s{ value };
+			int content_length_i;
+			content_length_s >> content_length_i;
+			return content_length_s.eof();
+		};
+
+	header_validator transfer_encoding_validator =
+		[](const std::string& value, const std::unordered_map<std::string, std::vector<std::string>>& headers) -> bool
+		{
+			// A sender MUST NOT send a Content-Length header field in any message
+			// that contains a Transfer-Encoding header field.
+			if (auto it = headers.find("content-length"); it != headers.end()) return false;
+			return true;
+		};
+
+	const std::unordered_map<std::string, header_validator> header_validators
+	{
+		{"content-length", content_length_validator},
+		{"transfer-encoding", transfer_encoding_validator}
 	};
 
 	HttpRequest::HttpRequest(
 		std::string method,
 		std::string target,
 		std::string version,
-		std::unordered_map<std::string, std::string> headers,
+		std::unordered_map<std::string, std::vector<std::string>> headers,
 		std::string body
 	) :
 		method{ std::move(method) },
@@ -83,19 +113,19 @@ namespace nimlib::Server::Protocols
 
 	HttpRequest::HttpRequest(HttpRequest&& other) noexcept
 		:
-		method{ std::move(other.method) },
-		target{ std::move(other.target) },
-		version{ std::move(other.version) },
-		headers{ std::move(other.headers) },
-		body{ std::move(other.body) }
+		method{ other.method },
+		target{ other.target },
+		version{ other.version },
+		headers{ other.headers },
+		body{ other.body }
 	{}
 
-	std::optional<HttpRequest> Http::parse_http_message(std::stringstream& input_stream)
+	std::optional<HttpRequest> parse_http_message(std::stringstream& input_stream)
 	{
 		std::string method;
 		std::string target;
 		std::string version;
-		std::unordered_map<std::string, std::string> headers;
+		std::unordered_map<std::string, std::vector<std::string>> headers;
 		std::string body;
 		std::string line;
 
@@ -103,7 +133,7 @@ namespace nimlib::Server::Protocols
 			{
 				std::stringstream first_line_stream{ line };
 				first_line_stream >> method >> target >> version;
-				return true; // validate_verb(method) && ...;
+				return first_line_stream.eof() && validate_method(method) && validate_target(target) && validate_version(version);
 			};
 
 		auto header_tokenizer = [&](const std::string& line) -> bool
@@ -116,15 +146,35 @@ namespace nimlib::Server::Protocols
 				}
 
 				auto header_end = colon_pos;
-				while (white_space(line[header_end])) header_end--;
 				auto header = line.substr(0, header_end);
-				for (auto& c : header) c = std::tolower(c);
+				// There should be no white space in header name
+				// Also, header names are case-insensitive
+				for (auto& c : header)
+				{
+					if (white_space(c)) return false;
+					c = std::tolower(c);
+				}
 
-				auto value_pos = colon_pos + 1;
-				while (white_space(line[value_pos])) value_pos++;
-				auto value = line.substr(value_pos);
+				auto value_pos_begin = colon_pos + 1;
+				auto value_pos_end = line.size() - 1;
+				while (white_space(line[value_pos_begin])) value_pos_begin++;
+				while (white_space(line[value_pos_end])) value_pos_end--;
+				auto value = line.substr(value_pos_begin, value_pos_end - value_pos_begin + 1);
 
-				headers[header] = value; // TODO: handle repeated headers
+				if (auto it = header_validators.find(header); it != header_validators.end())
+				{
+					if (!it->second(value, headers)) return false;
+				}
+
+				if (auto existing_header = headers.find(header); existing_header != headers.end())
+				{
+					headers[header].push_back(value);
+				}
+				else
+				{
+					headers[header].push_back(value);
+				}
+
 				return true;
 			};
 
@@ -138,7 +188,7 @@ namespace nimlib::Server::Protocols
 			return {};
 		}
 
-		request_line_tokenizer(line);
+		if (!request_line_tokenizer(line)) return {};
 
 		bool empty_line_found = false;
 		while (std::getline(input_stream, line, '\r'))
@@ -158,12 +208,13 @@ namespace nimlib::Server::Protocols
 				break;
 			}
 
-			header_tokenizer(line);
+			if (!header_tokenizer(line)) return {};
 		}
 
 		if (empty_line_found)
 		{
-			std::getline(input_stream, body, '\0'); // TODO: this can fail. A better solution when content-size is known.
+			// TODO: Look at Content-Length or Tansfer-Encoding headersto decide how many bytes to read into body.
+			std::getline(input_stream, body, '\0');
 			return HttpRequest(std::move(method), std::move(target), std::move(version), std::move(headers), std::move(body));
 		}
 		else
@@ -173,5 +224,22 @@ namespace nimlib::Server::Protocols
 		}
 	}
 
-	bool Http::white_space(char c) { return c == ' ' || c == '\t'; }
+	bool white_space(char c) { return c == ' ' || c == '\t'; }
+
+	bool validate_method(const std::string& method)
+	{
+		return method == "GET"
+			|| method == "POST"
+			|| method == "PUT"
+			|| method == "DELETE"
+			|| method == "PATCH"
+			|| method == "HEAD"
+			|| method == "OPTIONS"
+			|| method == "TRACE"
+			|| method == "CONNECT";
+	}
+
+	bool validate_target(const std::string& target) { return true; /* TODO */ }
+
+	bool validate_version(const std::string& version) { return version == "HTTP/1.1"; }
 }
