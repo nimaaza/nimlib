@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../src/utils/state_manager.h"
+#include "../../src/utils/state_manager.h"
 
 enum States { START, OK, ERROR_STATE, SOME_STATE, ANOTHER_STATE };
 

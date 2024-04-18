@@ -43,7 +43,7 @@ enable_testing()
 
 add_executable(unit_tests
         tests/polling_server.test.cpp
-        tests/state_manager.test.cpp
+        tests/utils/state_manager.test.cpp
         tests/metrics/timer.test.cpp
         tests/metrics/aggregations.test.cpp
         tests/metrics/metric_store.test.cpp
@@ -66,7 +66,7 @@ target_include_directories(unit_tests PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests GTest::gtest_main Botan::Botan)
 
 add_executable(unit_tests_state_manager
-        tests/state_manager.test.cpp)
+        tests/utils/state_manager.test.cpp)
 target_include_directories(unit_tests_state_manager PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_state_manager GTest::gtest_main)
 
