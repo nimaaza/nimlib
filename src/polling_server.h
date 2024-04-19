@@ -12,6 +12,7 @@ namespace nimlib::Server
     using nimlib::Server::Types::PollingServerInterface;
     using nimlib::Server::Types::ConnectionInterface;
     using nimlib::Server::Types::TcpSocketInterface;
+    using nimlib::Server::Constants::ServerDirective;
     using nimlib::Server::Constants::ConnectionState;
 
     class PollingServer : public PollingServerInterface

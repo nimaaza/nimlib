@@ -13,6 +13,7 @@ namespace nimlib::Server
     using nimlib::Server::Types::ConnectionInterface;
     using nimlib::Server::Types::TcpSocketInterface;
     using nimlib::Server::Types::ProtocolInterface;
+    using nimlib::Server::Constants::ServerDirective;
     using nimlib::Server::Constants::ConnectionState;
 
     class Connection : public ConnectionInterface, public StreamsProviderInterface
@@ -26,16 +27,19 @@ namespace nimlib::Server
         Connection(Connection&&) noexcept = delete;
         Connection& operator=(Connection&&) noexcept = delete;
 
-        ConnectionState read() override;
-        ConnectionState write() override;
-        void halt() override;
+        void notify(ServerDirective directive) override;
         void notify(ProtocolInterface& protocol) override;
         void set_protocol(std::shared_ptr<ProtocolInterface>) override;
+        void halt() override;
         std::pair<ConnectionState, long> get_state() const override;
         const int get_id() const override;
 
         std::stringstream& get_input_stream() override;
         std::stringstream& get_output_stream() override;
+
+    private:
+        ConnectionState read();
+        ConnectionState write();
 
     private:
         const connection_id id;

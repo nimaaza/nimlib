@@ -79,11 +79,11 @@ namespace nimlib::Server
 			auto [state, _] = connection->get_state();
 			if (socket.revents & POLLIN)
 			{
-				if (allowed_to_read(state)) connection->read();
+				if (allowed_to_read(state)) connection->notify(ServerDirective::READ_SOCKET);
 			}
 			else if (socket.revents & POLLOUT)
 			{
-				if (allowed_to_write(state)) connection->write();
+				if (allowed_to_write(state)) connection->notify(ServerDirective::WRITE_SOCKET);
 			}
 			else
 			{

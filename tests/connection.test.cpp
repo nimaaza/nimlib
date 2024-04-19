@@ -13,6 +13,7 @@ using nimlib::Server::Types::ProtocolInterface;
 using nimlib::Server::Types::ConnectionInterface;
 using nimlib::Server::Types::StreamsProviderInterface;
 using nimlib::Server::Constants::ParseResult;
+using nimlib::Server::Constants::ServerDirective;
 using nimlib::Server::Constants::ConnectionState;
 
 struct MockProtocolParser : public ProtocolInterface
@@ -81,7 +82,7 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_SingleRead)
     auto protocol = std::make_shared<MockProtocolParser>(connection, 1, ParseResult::WRITE_AND_DIE);
     connection.set_protocol(protocol);
 
-    connection.read();
+    connection.notify(ServerDirective::READ_SOCKET);
 
     auto [state_1, _] = connection.get_state();
     EXPECT_EQ(connection.get_input_stream().str().size(), 470);
@@ -89,7 +90,7 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_SingleRead)
     EXPECT_EQ(state_1, ConnectionState::WRITING);
 
     // When connection gets eventually picked for writing to socket...
-    connection.write();
+    connection.notify(ServerDirective::WRITE_SOCKET);
 
     auto [state_2, _2] = connection.get_state();
     EXPECT_EQ(state_2, ConnectionState::DONE);
@@ -114,28 +115,28 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_MultipleReads)
     auto protocol = std::make_shared<MockProtocolParser>(connection, 3, ParseResult::WRITE_AND_DIE);
     connection.set_protocol(protocol);
 
-    connection.read();
+    connection.notify(ServerDirective::READ_SOCKET);
 
     auto state_1 = connection.get_state().first;
     EXPECT_EQ(state_1, ConnectionState::READING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 129);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
-    connection.read();
+    connection.notify(ServerDirective::READ_SOCKET);
 
     auto state_2 = connection.get_state().first;
     EXPECT_EQ(state_2, ConnectionState::READING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 129 + 131);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
-    connection.read();
+    connection.notify(ServerDirective::READ_SOCKET);
 
     auto state_3 = connection.get_state().first;
     EXPECT_EQ(state_3, ConnectionState::WRITING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 129 + 131 + 257);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
-    connection.write();
+    connection.notify(ServerDirective::WRITE_SOCKET);
 
     auto state_4 = connection.get_state().first;
     EXPECT_EQ(state_4, ConnectionState::DONE);
@@ -156,7 +157,7 @@ TEST(ConnectionTests, Read_WithExactlyEnoughBuffer)
     auto protocol = std::make_shared<MockProtocolParser>(connection, 1, ParseResult::WRITE_AND_DIE);
     connection.set_protocol(protocol);
 
-    connection.read();
+    connection.notify(ServerDirective::READ_SOCKET);
 
     auto state = connection.get_state().first;
     EXPECT_EQ(state, ConnectionState::WRITING);
@@ -184,28 +185,28 @@ TEST(ConnectionTests, Read_WithSmallBuffer)
     auto protocol = std::make_shared<MockProtocolParser>(connection, 3, ParseResult::WRITE_AND_DIE);
     connection.set_protocol(protocol);
 
-    connection.read();
+    connection.notify(ServerDirective::READ_SOCKET);
 
     auto state_1 = connection.get_state().first;
     EXPECT_EQ(state_1, ConnectionState::READING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 167);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
-    connection.read();
+    connection.notify(ServerDirective::READ_SOCKET);
 
     auto state_2 = connection.get_state().first;
     EXPECT_EQ(state_2, ConnectionState::READING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 167 + 167);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
-    connection.read();
+    connection.notify(ServerDirective::READ_SOCKET);
 
     auto state_3 = connection.get_state().first;
     EXPECT_EQ(state_3, ConnectionState::WRITING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 470);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
-    connection.write();
+    connection.notify(ServerDirective::WRITE_SOCKET);
 
     auto state_4 = connection.get_state().first;
     EXPECT_EQ(state_4, ConnectionState::DONE);
@@ -218,7 +219,7 @@ TEST(ConnectionTests, Read_ConnectionStateWhenSocketNotReady)
     auto s = std::make_unique<MockTcpSocket>(1, 0, 0);
     Connection c{ std::move(s), 1 };
 
-    c.read();
+    c.notify(ServerDirective::READ_SOCKET);
 
     auto [state, _] = c.get_state();
     EXPECT_EQ(state, ConnectionState::CON_ERROR);
@@ -232,7 +233,8 @@ TEST(ConnectionTests, Read_ConnectionStateWhenConnectionInErrorState)
     c.halt(); // This forces connection in error state.
 
     auto socket_read_result_before = pointer_to_socket->read_result.str();
-    auto read_result = c.read();
+    c.notify(ServerDirective::READ_SOCKET);
+    auto read_result = c.get_state().first;
     auto socket_read_result_after = pointer_to_socket->read_result.str();
     EXPECT_EQ(read_result, ConnectionState::CON_ERROR);
     EXPECT_EQ(socket_read_result_before, socket_read_result_after);
@@ -245,7 +247,7 @@ TEST(ConnectionTests, Write_NoWriteWhenInError)
     Connection connection{ std::move(s), 1 };
     connection.halt(); // This forces connection in error state.
 
-    connection.write();
+    connection.notify(ServerDirective::WRITE_SOCKET);
 
     EXPECT_EQ(pointer_to_socket->write_result.str(), "");
     EXPECT_EQ(pointer_to_socket->total_socket_write_count, 0);
@@ -259,7 +261,7 @@ TEST(ConnectionTests, Write_ConnectionKeptAlive)
     auto protocol = std::make_shared<MockProtocolParser>(connection, 1, ParseResult::WRITE_AND_WAIT);
     connection.set_protocol(protocol);
 
-    connection.write();
+    connection.notify(ServerDirective::WRITE_SOCKET);
 
     EXPECT_EQ(connection.get_state().first, ConnectionState::PENDING);
 }

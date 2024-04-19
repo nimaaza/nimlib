@@ -5,6 +5,8 @@
 
 namespace nimlib::Server::Constants
 {
+    enum ServerDirective { READ_SOCKET, WRITE_SOCKET };
+
     enum ConnectionState { STARTING, READING, HANDLING, WRITING, PENDING, DONE, CON_ERROR };
 
     enum ParseResult { P_STARTING, P_ERROR, WRITE_AND_DIE, WRITE_AND_WAIT, INCOMPLETE };

@@ -11,6 +11,7 @@
 
 namespace nimlib::Server::Types
 {
+	using nimlib::Server::Constants::ServerDirective;
 	using nimlib::Server::Constants::ConnectionState;
 	using nimlib::Server::Constants::ParseResult;
 
@@ -78,12 +79,10 @@ namespace nimlib::Server::Types
 	struct ConnectionInterface
 	{
 		virtual ~ConnectionInterface() = default;
-
-		virtual ConnectionState read() = 0;
-		virtual ConnectionState write() = 0;
-		virtual void halt() = 0;
+		virtual void notify(ServerDirective directive) = 0;
 		virtual void notify(ProtocolInterface& protocol) = 0;
 		virtual void set_protocol(std::shared_ptr<ProtocolInterface>) = 0;
+		virtual void halt() = 0;
 		virtual std::pair<ConnectionState, long> get_state() const = 0;
 		virtual const int get_id() const = 0;
 	};

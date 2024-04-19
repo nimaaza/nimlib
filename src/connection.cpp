@@ -27,6 +27,51 @@ namespace nimlib::Server
         // response_timer.end();
     }
 
+    void Connection::notify(ServerDirective directive)
+    {
+        (directive == ServerDirective::READ_SOCKET) ? read() : write();
+    }
+
+    void Connection::notify(ProtocolInterface& protocol)
+    {
+        // No assumption is made about how the streams will be used by the
+        // application layer. The clear() method is being called in case
+        // the application puts the streams in an error state.
+        input_stream.clear();
+        output_stream.clear();
+
+        keep_alive = protocol.wants_to_live();
+
+        if (protocol.wants_to_write())
+        {
+            connection_state.set_state(ConnectionState::WRITING);
+        }
+        else if (protocol.wants_more_bytes())
+        {
+            connection_state.set_state(ConnectionState::READING);
+        }
+        else
+        {
+            connection_state.set_state(ConnectionState::CON_ERROR);
+        }
+    }
+
+    void Connection::set_protocol(std::shared_ptr<ProtocolInterface> p) { protocol = p; }
+
+    void Connection::halt()
+    {
+        connection_state.set_state(ConnectionState::CON_ERROR);
+        // socket->tcp_close(); TODO: it's better to close the socket carefully.
+    }
+
+    std::pair<ConnectionState, long> Connection::get_state() const { return connection_state.get_state_pair(); }
+
+    const int Connection::get_id() const { return id; }
+
+    std::stringstream& Connection::get_input_stream() { return input_stream; }
+
+    std::stringstream& Connection::get_output_stream() { return output_stream; }
+
     ConnectionState Connection::read()
     {
         if (connection_state.get_state() == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
@@ -114,44 +159,4 @@ namespace nimlib::Server
             assert(false);
         }
     }
-
-    void Connection::halt()
-    {
-        connection_state.set_state(ConnectionState::CON_ERROR);
-        // socket->tcp_close(); TODO: it's better to close the socket carefully.
-    }
-
-    void Connection::notify(ProtocolInterface& protocol)
-    {
-        // No assumption is made about how the streams will be used by the
-        // application layer. The clear() method is being called in case
-        // the application puts the streams in an error state.
-        input_stream.clear();
-        output_stream.clear();
-
-        keep_alive = protocol.wants_to_live();
-
-        if (protocol.wants_to_write())
-        {
-            connection_state.set_state(ConnectionState::WRITING);
-        }
-        else if (protocol.wants_more_bytes())
-        {
-            connection_state.set_state(ConnectionState::READING);
-        }
-        else
-        {
-            connection_state.set_state(ConnectionState::CON_ERROR);
-        }
-    }
-
-    void Connection::set_protocol(std::shared_ptr<ProtocolInterface> p) { protocol = p; }
-
-    std::pair<ConnectionState, long> Connection::get_state() const { return connection_state.get_state_pair(); }
-
-    const int Connection::get_id() const { return id; }
-
-    std::stringstream& Connection::get_input_stream() { return input_stream; }
-
-    std::stringstream& Connection::get_output_stream() { return output_stream; }
 }
