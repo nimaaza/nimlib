@@ -3,7 +3,7 @@
 #include <sstream>
 #include <vector>
 
-#include "../src/http.h"
+#include "../../src/http/http_parser.h"
 
 using nimlib::Server::Protocols::parse_http_message;
 

@@ -1,7 +1,7 @@
 #include "connection_pool.h"
 #include "connection.h"
 #include "tls_layer.h"
-#include "http.h"
+#include "http/http.h"
 
 #include <memory>
 #include <cassert>

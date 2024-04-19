@@ -18,7 +18,7 @@ add_executable(test_run
         src/polling_server.cpp
         src/connection_pool.cpp
         src/connection.cpp
-        src/http.cpp
+        src/http/http.cpp
         src/metrics/timer.cpp
         src/logger/logger.cpp
         src/logger/agent.cpp
@@ -27,7 +27,9 @@ add_executable(test_run
         src/botan/credentials.cpp
         src/botan/callbacks.cpp
         src/botan/tls_server.cpp
-        src/utils/helpers.cpp)
+        src/utils/helpers.cpp
+        src/http/http_parser.cpp
+        src/http/http_parser.h)
 target_include_directories(test_run PUBLIC "${PROJECT_BINARY_DIR}")
 target_compile_definitions(test_run PRIVATE NO_TESTING)
 target_link_libraries(test_run Botan::Botan)
@@ -56,7 +58,8 @@ add_executable(unit_tests
         src/polling_server.cpp
         src/connection.cpp
         src/connection_pool.cpp
-        src/http.cpp
+        src/http/http_parser.cpp
+        src/http/http.cpp
         src/metrics/timer.cpp
         src/logger/logger.cpp
         src/logger/agent.cpp
@@ -65,7 +68,7 @@ add_executable(unit_tests
         src/botan/credentials.cpp
         src/botan/callbacks.cpp
         src/botan/tls_server.cpp
-        tests/http.test.cpp
+        tests/http/http_parser.test.cpp
         tests/utils/helpers.test.cpp
         src/utils/helpers.cpp)
 target_include_directories(unit_tests PUBLIC "${PROJECT_BINARY_DIR}")
@@ -88,7 +91,7 @@ add_executable(unit_tests_polling_server
         src/polling_server.cpp
         src/tcp_socket.cpp
         src/connection.cpp
-        src/http.cpp
+        src/http/http.cpp
         src/tls_layer.cpp
         src/botan/callbacks.cpp
         src/botan/credentials.cpp
@@ -96,6 +99,13 @@ add_executable(unit_tests_polling_server
         src/connection_pool.cpp)
 target_include_directories(unit_tests_polling_server PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_polling_server GTest::gtest_main Botan::Botan)
+
+add_executable(unit_tests_http_parser
+        tests/http/http_parser.test.cpp
+        src/http/http_parser.cpp
+        src/utils/helpers.cpp)
+target_include_directories(unit_tests_http_parser PUBLIC "${PROJECT_BINARY_DIR}")
+target_link_libraries(unit_tests_http_parser GTest::gtest_main Botan::Botan)
 
 include(GoogleTest)
 gtest_discover_tests(unit_tests unit_tests_connection unit_tests_polling_server)
