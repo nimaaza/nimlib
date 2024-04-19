@@ -23,10 +23,10 @@ add_executable(test_run
         src/logger/logger.cpp
         src/logger/agent.cpp
         src/logger/factory.cpp
-        src/tls_layer.cpp
-        src/botan/credentials.cpp
-        src/botan/callbacks.cpp
-        src/botan/tls_server.cpp
+        src/tls/tls_layer.cpp
+        src/tls/botan/credentials.cpp
+        src/tls/botan/callbacks.cpp
+        src/tls/botan/tls_server.cpp
         src/utils/helpers.cpp
         src/http/http_parser.cpp
         src/http/http_parser.h)
@@ -64,10 +64,10 @@ add_executable(unit_tests
         src/logger/logger.cpp
         src/logger/agent.cpp
         src/logger/factory.cpp
-        src/tls_layer.cpp
-        src/botan/credentials.cpp
-        src/botan/callbacks.cpp
-        src/botan/tls_server.cpp
+        src/tls/tls_layer.cpp
+        src/tls/botan/credentials.cpp
+        src/tls/botan/callbacks.cpp
+        src/tls/botan/tls_server.cpp
         tests/http/http_parser.test.cpp
         tests/utils/helpers.test.cpp
         src/utils/helpers.cpp)
@@ -92,10 +92,10 @@ add_executable(unit_tests_polling_server
         src/tcp_socket.cpp
         src/connection.cpp
         src/http/http.cpp
-        src/tls_layer.cpp
-        src/botan/callbacks.cpp
-        src/botan/credentials.cpp
-        src/botan/tls_server.cpp
+        src/tls/tls_layer.cpp
+        src/tls/botan/callbacks.cpp
+        src/tls/botan/credentials.cpp
+        src/tls/botan/tls_server.cpp
         src/connection_pool.cpp)
 target_include_directories(unit_tests_polling_server PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_polling_server GTest::gtest_main Botan::Botan)

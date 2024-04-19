@@ -4,7 +4,7 @@
 
 #include <botan/tls_callbacks.h>
 
-#include "../common/types.h"
+#include "../../common/types.h"
 
 using nimlib::Server::Types::ProtocolInterface;
 using nimlib::Server::Types::ConnectionInterface;
