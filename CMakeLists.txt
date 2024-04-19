@@ -50,6 +50,7 @@ add_executable(unit_tests
         tests/metrics/metric.test.cpp
         tests/metrics/metric_store.test.cpp
         tests/metrics/timer.test.cpp
+        tests/support/tcp_socket.mock.cpp
         tests/utils/helpers.test.cpp
         tests/utils/state_manager.test.cpp
         tests/connection.test.cpp
@@ -90,11 +91,13 @@ add_executable(unit_tests_polling_server
         src/tcp_socket.cpp
         src/connection.cpp
         src/http/http.cpp
+        src/http/http_parser.cpp
         src/tls/tls_layer.cpp
         src/tls/botan/callbacks.cpp
         src/tls/botan/credentials.cpp
         src/tls/botan/tls_server.cpp
-        src/connection_pool.cpp)
+        src/connection_pool.cpp
+        src/utils/helpers.cpp)
 target_include_directories(unit_tests_polling_server PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_polling_server GTest::gtest_main Botan::Botan)
 
