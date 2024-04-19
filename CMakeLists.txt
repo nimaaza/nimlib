@@ -12,24 +12,21 @@ message("Using OpenSSL version: ${OPENSSL_VERSION}")
 
 add_executable(test_run
         test_run.cpp
-        src/common/types.h
-        src/common/decorators.h
-        src/tcp_socket.cpp
-        src/polling_server.cpp
-        src/connection_pool.cpp
-        src/connection.cpp
         src/http/http.cpp
-        src/metrics/timer.cpp
-        src/logger/logger.cpp
+        src/http/http_parser.cpp
         src/logger/agent.cpp
         src/logger/factory.cpp
-        src/tls/tls_layer.cpp
-        src/tls/botan/credentials.cpp
+        src/logger/logger.cpp
+        src/metrics/timer.cpp
         src/tls/botan/callbacks.cpp
+        src/tls/botan/credentials.cpp
         src/tls/botan/tls_server.cpp
+        src/tls/tls_layer.cpp
         src/utils/helpers.cpp
-        src/http/http_parser.cpp
-        src/http/http_parser.h)
+        src/connection.cpp
+        src/connection_pool.cpp
+        src/polling_server.cpp
+        src/tcp_socket.cpp)
 target_include_directories(test_run PUBLIC "${PROJECT_BINARY_DIR}")
 target_compile_definitions(test_run PRIVATE NO_TESTING)
 target_link_libraries(test_run Botan::Botan)
@@ -47,30 +44,31 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(unit_tests
-        tests/polling_server.test.cpp
-        tests/utils/state_manager.test.cpp
-        tests/metrics/timer.test.cpp
+        tests/http/http_parser.test.cpp
         tests/metrics/aggregations.test.cpp
-        tests/metrics/metric_store.test.cpp
-        tests/metrics/metric.test.cpp
         tests/metrics/measurements.test.cpp
-        src/tcp_socket.cpp
-        src/polling_server.cpp
-        src/connection.cpp
-        src/connection_pool.cpp
-        src/http/http_parser.cpp
+        tests/metrics/metric.test.cpp
+        tests/metrics/metric_store.test.cpp
+        tests/metrics/timer.test.cpp
+        tests/utils/helpers.test.cpp
+        tests/utils/state_manager.test.cpp
+        tests/connection.test.cpp
+        tests/polling_server.test.cpp
         src/http/http.cpp
-        src/metrics/timer.cpp
-        src/logger/logger.cpp
+        src/http/http_parser.cpp
         src/logger/agent.cpp
         src/logger/factory.cpp
-        src/tls/tls_layer.cpp
-        src/tls/botan/credentials.cpp
+        src/logger/logger.cpp
+        src/metrics/timer.cpp
         src/tls/botan/callbacks.cpp
+        src/tls/botan/credentials.cpp
         src/tls/botan/tls_server.cpp
-        tests/http/http_parser.test.cpp
-        tests/utils/helpers.test.cpp
-        src/utils/helpers.cpp)
+        src/tls/tls_layer.cpp
+        src/utils/helpers.cpp
+        src/connection.cpp
+        src/connection_pool.cpp
+        src/polling_server.cpp
+        src/tcp_socket.cpp)
 target_include_directories(unit_tests PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests GTest::gtest_main Botan::Botan)
 
