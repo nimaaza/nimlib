@@ -37,10 +37,10 @@ namespace nimlib::Server::Protocols
         };
 
     const std::unordered_map<std::string, header_validator> header_validators
-        {
-            {"content-length", content_length_validator},
-            {"transfer-encoding", transfer_encoding_validator}
-        };
+    {
+        {"content-length", content_length_validator},
+        {"transfer-encoding", transfer_encoding_validator}
+    };
 
     HttpRequest::HttpRequest(
         std::string method,
@@ -66,52 +66,52 @@ namespace nimlib::Server::Protocols
         std::string line;
 
         auto request_line_tokenizer = [&](const std::string& line) -> bool
-        {
-            std::stringstream first_line_stream{ line };
-            first_line_stream >> method >> target >> version;
-            return first_line_stream.eof() && validate_method(method) && validate_target(target) && validate_version(version);
-        };
+            {
+                std::stringstream first_line_stream{ line };
+                first_line_stream >> method >> target >> version;
+                return first_line_stream.eof() && validate_method(method) && validate_target(target) && validate_version(version);
+            };
 
         auto header_tokenizer = [&](const std::string& line) -> bool
-        {
-            auto colon_pos = line.find(':');
-            if (colon_pos > line.size())
             {
-                std::cout << "error in headers, no colon" << std::endl;
-                return false;
-            }
+                auto colon_pos = line.find(':');
+                if (colon_pos > line.size())
+                {
+                    std::cout << "error in headers, no colon" << std::endl;
+                    return false;
+                }
 
-            auto header_end = colon_pos;
-            auto header = line.substr(0, header_end);
-            // There should be no white space in header name
-            // Also, header names are case-insensitive
-            for (auto& c : header)
-            {
-                if (white_space(c)) return false;
-                c = std::tolower(c);
-            }
+                auto header_end = colon_pos;
+                auto header = line.substr(0, header_end);
+                // There should be no white space in header name
+                // Also, header names are case-insensitive
+                for (auto& c : header)
+                {
+                    if (white_space(c)) return false;
+                    c = std::tolower(c);
+                }
 
-            auto value_pos_begin = colon_pos + 1;
-            auto value_pos_end = line.size() - 1;
-            while (white_space(line[value_pos_begin])) value_pos_begin++;
-            while (white_space(line[value_pos_end])) value_pos_end--;
-            auto value = line.substr(value_pos_begin, value_pos_end - value_pos_begin + 1);
+                auto value_pos_begin = colon_pos + 1;
+                auto value_pos_end = line.size() - 1;
+                while (white_space(line[value_pos_begin])) value_pos_begin++;
+                while (white_space(line[value_pos_end])) value_pos_end--;
+                auto value = line.substr(value_pos_begin, value_pos_end - value_pos_begin + 1);
 
-            if (auto it = header_validators.find(header); it != header_validators.end())
-            {
-                if (!it->second(value, headers)) return false;
-            }
+                if (auto it = header_validators.find(header); it != header_validators.end())
+                {
+                    if (!it->second(value, headers)) return false;
+                }
 
-            std::vector<std::string_view> values{};
-            split(value, ",", values);
-            for (auto v : values)
-            {
-                std::string value_string{ v };
-                headers[header].push_back(value_string);
-            }
+                std::vector<std::string_view> values{};
+                split(value, ",", values);
+                for (auto v : values)
+                {
+                    std::string value_string{ v };
+                    headers[header].push_back(value_string);
+                }
 
-            return true;
-        };
+                return true;
+            };
 
         std::getline(input_stream, line, '\r');
         if (input_stream.peek() == '\n')

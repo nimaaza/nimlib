@@ -6,7 +6,7 @@ using namespace nimlib::Server::Metrics::Measurements;
 
 TEST(CountMeasurement, _)
 {
-    const std::string m_name {"metric"};
+    const std::string m_name{ "metric" };
 
-    Count<long> count {m_name};
+    Count<long> count{ m_name };
 }

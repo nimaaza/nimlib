@@ -8,7 +8,7 @@ using namespace nimlib::Server::Metrics;
 
 TEST(MetricStoreTest, ReturnNullWhenMetricStoreNotRegistered)
 {
-    MetricsStore<long>& metric_store{MetricsStore<long>::get_instance() };
+    MetricsStore<long>& metric_store{ MetricsStore<long>::get_instance() };
     std::string name{ "metric_1" };
 
     auto i = metric_store.get_metric(name);
@@ -18,7 +18,7 @@ TEST(MetricStoreTest, ReturnNullWhenMetricStoreNotRegistered)
 
 TEST(MetricStoreTest, ReturnPointerToMetricStore)
 {
-    MetricsStore<long>& metric_store{MetricsStore<long>::get_instance() };
+    MetricsStore<long>& metric_store{ MetricsStore<long>::get_instance() };
     std::string name_1{ "metric_1" };
     std::string name_2{ "metric_2" };
     auto ms_1 = std::make_shared<Metric<long>>(name_1);
@@ -35,7 +35,7 @@ TEST(MetricStoreTest, ReturnPointerToMetricStore)
 
 TEST(MetricStoreTest, AggregatorIsSingleton)
 {
-    MetricsStore<long>& metric_store{MetricsStore<long>::get_instance() };
+    MetricsStore<long>& metric_store{ MetricsStore<long>::get_instance() };
     std::string name_1{ "metric_1" };
     std::string name_2{ "metric_2" };
 

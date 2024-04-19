@@ -7,7 +7,7 @@
 
 namespace nimlib::Server::Sockets
 {
-	using nimlib::Server::Types::TcpSocketInterface;
+    using nimlib::Server::Types::TcpSocketInterface;
 
     struct TcpSocket : public TcpSocketInterface
     {
@@ -30,9 +30,9 @@ namespace nimlib::Server::Sockets
         int tcp_send(std::string_view buffer) override;
         void tcp_close() override;  // TODO: may never be used
         const int get_tcp_socket_descriptor() const override;
-		const std::string& get_port() const override;
+        const std::string& get_port() const override;
 
-		// TODO: the following operations on sockets might become necessary
+        // TODO: the following operations on sockets might become necessary
         // connectx(2)
         // disconnectx(2)
         // getsockopt(2)

@@ -11,7 +11,7 @@ namespace nimlib::Server::Sockets
 {
     using nimlib::Server::Types::TcpSocketInterface;
 
-	struct TcpSocketWithLogger : public TcpSocketInterface
+    struct TcpSocketWithLogger : public TcpSocketInterface
     {
         TcpSocketWithLogger(std::unique_ptr<TcpSocketInterface> tcp_socket)
             : TcpSocketInterface{ tcp_socket->get_port(), tcp_socket->get_tcp_socket_descriptor() },

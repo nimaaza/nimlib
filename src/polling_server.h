@@ -31,11 +31,11 @@ namespace nimlib::Server
         void setup_fds(std::vector<pollfd>&);
         void accept_new_connection(std::vector<pollfd>&);
         void handle_connections(std::vector<pollfd>&);
-		void clear_connections();
+        void clear_connections();
 
         static void create_pollfds_entry(int, pollfd&);
-		static bool allowed_to_read(ConnectionState state) ;
-        static bool allowed_to_write(ConnectionState state) ;
+        static bool allowed_to_read(ConnectionState state);
+        static bool allowed_to_write(ConnectionState state);
 
     private:
         const std::string& port;

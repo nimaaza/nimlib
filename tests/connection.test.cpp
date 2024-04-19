@@ -242,7 +242,7 @@ TEST(ConnectionTests, Write_NoWriteWhenInError)
 {
     auto s = std::make_unique<MockTcpSocket>(1);
     auto pointer_to_socket = s.get();
-    Connection connection { std::move(s), 1 };
+    Connection connection{ std::move(s), 1 };
     connection.halt(); // This forces connection in error state.
 
     connection.write();

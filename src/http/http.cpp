@@ -28,7 +28,7 @@ namespace nimlib::Server::Protocols
 	{
 		if (!http_request)
 		{
-            // This is a newly accepted request which has not been parsed.
+			// This is a newly accepted request which has not been parsed.
 			std::stringstream& input_from_tls{ streams.get_input_stream() };
 			http_request = std::move(parse_http_message(input_from_tls));
 			if (http_request)
@@ -39,11 +39,12 @@ namespace nimlib::Server::Protocols
 			{
 				// TODO: HTTP request is not valid. Maybe send an error response and close connection.
 			}
-		} else
-        {
-            // This is an existing connection that has more data to be processed.
-            // TODO
-        }
+		}
+		else
+		{
+			// This is an existing connection that has more data to be processed.
+			// TODO
+		}
 
 		std::stringstream& output_to_tls{ streams.get_output_stream() };
 		output_to_tls << "done_all";

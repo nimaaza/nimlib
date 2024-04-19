@@ -12,7 +12,7 @@ namespace nimlib::Server
     {
     public:
         explicit PollingServerWithLogger(std::unique_ptr<PollingServerInterface> polling_server)
-		: polling_server{ std::move(polling_server) },
+            : polling_server{ std::move(polling_server) },
             main_log_agent{ nimlib::Server::Logging::Factory::get_agent("main") }
         {};
 
@@ -26,15 +26,16 @@ namespace nimlib::Server
         PollingServerWithLogger(PollingServerWithLogger&&) noexcept = delete;
         PollingServerWithLogger& operator=(PollingServerWithLogger&&) noexcept = delete;
 
-        void run() override {
-        main_log_agent->log(
-            std::format("server version {}.{}.{} running",
-                nimlib_VERSION_MAJOR,
-                nimlib_VERSION_MINOR,
-                nimlib_VERSION_PATCH)
-        );
-        polling_server->run();
-    }
+        void run() override
+        {
+            main_log_agent->log(
+                std::format("server version {}.{}.{} running",
+                    nimlib_VERSION_MAJOR,
+                    nimlib_VERSION_MINOR,
+                    nimlib_VERSION_PATCH)
+            );
+            polling_server->run();
+        }
 
     private:
         std::unique_ptr<PollingServerInterface> polling_server;
