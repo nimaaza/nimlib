@@ -40,7 +40,7 @@ namespace nimlib::Server
 			poll_result = poll(sockets.data(), sockets.size(), 10); // TODO: timeout for polling
 			accept_new_connection(sockets);
 			handle_connections(sockets);
-            connection_pool.clear_connections();
+            connection_pool.clean_up();
 		}
 	}
 

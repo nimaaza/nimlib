@@ -19,12 +19,6 @@ namespace nimlib::Server
 
     ConnectionPool::~ConnectionPool() {}
 
-    void ConnectionPool::record_connection(connection_ptr c)
-    {
-        assert(connections[c->get_id()] == nullptr);
-        connections[c->get_id()] = c;  // TODO: maybe I can use at here.
-    }
-
     void ConnectionPool::record_connection(socket_ptr s)
     {
         assert(connections[s->get_tcp_socket_descriptor()] == nullptr);
@@ -50,7 +44,7 @@ namespace nimlib::Server
         return connections;
     }
 
-    void ConnectionPool::clear_connections()
+    void ConnectionPool::clean_up()
     {
         for (auto& connection : connections)
         {

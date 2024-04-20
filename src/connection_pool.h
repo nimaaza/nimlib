@@ -19,11 +19,10 @@ namespace nimlib::Server
         ConnectionPool(ConnectionPool&&) = delete;
         ConnectionPool& operator=(ConnectionPool&&) = delete;
 
-        void record_connection(connection_ptr c);
         void record_connection(socket_ptr s);
         connection_ptr find(connection_id id);
         std::vector<connection_ptr>& get_all();
-        void clear_connections();
+        void clean_up();
 
         static ConnectionPool& get_pool();
 
