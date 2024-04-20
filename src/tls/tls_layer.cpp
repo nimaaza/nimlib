@@ -46,11 +46,11 @@ namespace nimlib::Server::Protocols
 		StreamsProviderInterface& streams
 	)
 	{
-		tls_server->send(streams.get_output_stream().str());
-		if (!next->wants_to_live())
+		if (next->wants_to_write())
 		{
-			tls_server->close();
+			tls_server->send(streams.get_output_stream().str());
 		}
+		tls_server->close();
 	}
 
 	bool TlsLayer::wants_more_bytes() { return tls_continue || next->wants_more_bytes(); }

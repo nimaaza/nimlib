@@ -63,6 +63,23 @@ namespace nimlib::Server::Protocols
 
 	bool Http::wants_to_live()
 	{
-		return false;
+		if (http_request)
+		{
+			const auto& headers = http_request.value().headers;
+			auto it = headers.find("connection");
+			if (it != headers.end())
+			{
+				const auto& values = it->second;
+				return std::find(values.begin(), values.end(), "keep-alive") != values.end();
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return  false;
+		}
 	}
 };
