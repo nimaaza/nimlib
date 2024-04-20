@@ -37,11 +37,11 @@ namespace nimlib::Server::Sockets
         // How many times the tcp_read() method was called.
         int read_sequence{ 0 };
         // Reading and writing more bytes than the values below will cause
-        // the socket to return an error code. This is used to mimick when
+        // the socket to return an error code. This is used to mimic when
         // the socket fails.
         const int max_bytes_to_read;
         const int max_bytes_to_write;
-        // The vector below can be used to mimick the scenario of reading
+        // The vector below can be used to mimic the scenario of reading
         // different bytes count on each call to the tcp_read method.
         std::vector<int> byte_counts_to_read{};
     };

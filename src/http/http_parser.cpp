@@ -137,7 +137,7 @@ namespace nimlib::Server::Protocols
                 return {};
             }
 
-            if (line.size() == 0)
+            if (line.empty())
             {
                 empty_line_found = true;
                 break;
