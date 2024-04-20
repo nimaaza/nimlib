@@ -8,6 +8,25 @@
 
 namespace nimlib::Server
 {
+    const std::unordered_map<ConnectionState, std::vector<ConnectionState>> Connection::states_transition_map
+    {
+        {ConnectionState::STARTING, {ConnectionState::READING}},
+        {ConnectionState::READING, {ConnectionState::READING, ConnectionState::HANDLING}},
+        {ConnectionState::HANDLING, {ConnectionState::READING, ConnectionState::WRITING}},
+        {ConnectionState::WRITING, {ConnectionState::WRITING, ConnectionState::DONE, ConnectionState::PENDING}},
+        {ConnectionState::PENDING, {ConnectionState::READING}},
+        {ConnectionState::DONE, {}}
+    };
+
+    const std::unordered_map<ConnectionState, long> Connection::state_time_outs
+    {
+        {ConnectionState::STARTING, 10'000},
+        {ConnectionState::READING, 10'000},
+        {ConnectionState::HANDLING, 10'000},
+        {ConnectionState::WRITING, 10'000},
+        {ConnectionState::PENDING, 10'000}
+    };
+
     Connection::Connection(std::unique_ptr<TcpSocketInterface> s, connection_id id, size_t buffer_size)
         : id{ id },
         buffer_size{ buffer_size },
@@ -64,7 +83,7 @@ namespace nimlib::Server
         // socket->tcp_close(); TODO: it's better to close the socket carefully.
     }
 
-    std::pair<ConnectionState, long> Connection::get_state() const { return connection_state.get_state_pair(); }
+    ConnectionState Connection::get_state() { return connection_state.get_state(); }
 
     const int Connection::get_id() const { return id; }
 

@@ -21,9 +21,9 @@ namespace nimlib::Server
 
         void record_connection(connection_ptr c);
         void record_connection(socket_ptr s);
-        void stop_connection(connection_id id);
         connection_ptr find(connection_id id);
         std::vector<connection_ptr>& get_all();
+        void clear_connections();
 
         static ConnectionPool& get_pool();
 

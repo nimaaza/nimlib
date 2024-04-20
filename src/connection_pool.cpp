@@ -2,11 +2,13 @@
 #include "connection.h"
 #include "tls/tls_layer.h"
 #include "http/http.h"
+#include "common/common.h"
 
 #include <memory>
 #include <cassert>
 
 using nimlib::Server::Connection;
+using nimlib::Server::ConnectionState;
 
 namespace nimlib::Server
 {
@@ -29,17 +31,13 @@ namespace nimlib::Server
         connection_id id = s->get_tcp_socket_descriptor();
         auto connection = std::make_shared<Connection>(std::move(s), id);
         auto http_protocol = std::make_shared<nimlib::Server::Protocols::Http>(*connection);
-        auto protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(*connection, *connection, http_protocol);
+        auto protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(
+            *connection,
+            *connection,
+            http_protocol
+        );
         connection->set_protocol(protocol);
         connections[id] = connection;
-    }
-
-    void ConnectionPool::stop_connection(connection_id id)
-    {
-        if (connections[id])
-        {
-            connections[id]->halt();
-        }
     }
 
     connection_ptr ConnectionPool::find(connection_id id)
@@ -50,6 +48,22 @@ namespace nimlib::Server
     std::vector<connection_ptr>& ConnectionPool::get_all()
     {
         return connections;
+    }
+
+    void ConnectionPool::clear_connections()
+    {
+        for (auto& connection : connections)
+        {
+            if (connection)
+            {
+                auto connection_state = connection->get_state();
+                if (connection_state == ConnectionState::CON_ERROR || connection_state == ConnectionState::DONE)
+                {
+                    connection.reset();
+                    connection = nullptr;
+                }
+            }
+        }
     }
 
     ConnectionPool& ConnectionPool::get_pool()

@@ -4,7 +4,6 @@
 
 #include <string>
 #include <memory>
-#include <iostream>
 
 namespace nimlib::Server::Metrics::Measurements
 {

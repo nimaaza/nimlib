@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "src/polling_server.h"
 #include "src/metrics/factory.h"
 #include "src/common/decorators.h"

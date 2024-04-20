@@ -87,7 +87,7 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_SingleRead)
 
     connection.notify(ServerDirective::READ_SOCKET);
 
-    auto [state_1, _] = connection.get_state();
+    auto state_1 = connection.get_state();
     EXPECT_EQ(connection.get_input_stream().str().size(), 470);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
     EXPECT_EQ(state_1, ConnectionState::WRITING);
@@ -95,7 +95,7 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_SingleRead)
     // When connection gets eventually picked for writing to socket...
     connection.notify(ServerDirective::WRITE_SOCKET);
 
-    auto [state_2, _2] = connection.get_state();
+    auto state_2 = connection.get_state();
     EXPECT_EQ(state_2, ConnectionState::DONE);
 }
 
@@ -120,28 +120,28 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_MultipleReads)
 
     connection.notify(ServerDirective::READ_SOCKET);
 
-    auto state_1 = connection.get_state().first;
+    auto state_1 = connection.get_state();
     EXPECT_EQ(state_1, ConnectionState::READING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 129);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
     connection.notify(ServerDirective::READ_SOCKET);
 
-    auto state_2 = connection.get_state().first;
+    auto state_2 = connection.get_state();
     EXPECT_EQ(state_2, ConnectionState::READING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 129 + 131);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
     connection.notify(ServerDirective::READ_SOCKET);
 
-    auto state_3 = connection.get_state().first;
+    auto state_3 = connection.get_state();
     EXPECT_EQ(state_3, ConnectionState::WRITING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 129 + 131 + 257);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
     connection.notify(ServerDirective::WRITE_SOCKET);
 
-    auto state_4 = connection.get_state().first;
+    auto state_4 = connection.get_state();
     EXPECT_EQ(state_4, ConnectionState::DONE);
 }
 
@@ -162,7 +162,7 @@ TEST(ConnectionTests, Read_WithExactlyEnoughBuffer)
 
     connection.notify(ServerDirective::READ_SOCKET);
 
-    auto state = connection.get_state().first;
+    auto state = connection.get_state();
     EXPECT_EQ(state, ConnectionState::WRITING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 10);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
@@ -190,28 +190,28 @@ TEST(ConnectionTests, Read_WithSmallBuffer)
 
     connection.notify(ServerDirective::READ_SOCKET);
 
-    auto state_1 = connection.get_state().first;
+    auto state_1 = connection.get_state();
     EXPECT_EQ(state_1, ConnectionState::READING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 167);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
     connection.notify(ServerDirective::READ_SOCKET);
 
-    auto state_2 = connection.get_state().first;
+    auto state_2 = connection.get_state();
     EXPECT_EQ(state_2, ConnectionState::READING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 167 + 167);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
     connection.notify(ServerDirective::READ_SOCKET);
 
-    auto state_3 = connection.get_state().first;
+    auto state_3 = connection.get_state();
     EXPECT_EQ(state_3, ConnectionState::WRITING);
     EXPECT_EQ(connection.get_input_stream().str().size(), 470);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
     connection.notify(ServerDirective::WRITE_SOCKET);
 
-    auto state_4 = connection.get_state().first;
+    auto state_4 = connection.get_state();
     EXPECT_EQ(state_4, ConnectionState::DONE);
 }
 
@@ -224,7 +224,7 @@ TEST(ConnectionTests, Read_ConnectionStateWhenSocketNotReady)
 
     c.notify(ServerDirective::READ_SOCKET);
 
-    auto [state, _] = c.get_state();
+    auto state = c.get_state();
     EXPECT_EQ(state, ConnectionState::CON_ERROR);
 }
 
@@ -237,7 +237,7 @@ TEST(ConnectionTests, Read_ConnectionStateWhenConnectionInErrorState)
 
     auto socket_read_result_before = pointer_to_socket->read_result.str();
     c.notify(ServerDirective::READ_SOCKET);
-    auto read_result = c.get_state().first;
+    auto read_result = c.get_state();
     auto socket_read_result_after = pointer_to_socket->read_result.str();
     EXPECT_EQ(read_result, ConnectionState::CON_ERROR);
     EXPECT_EQ(socket_read_result_before, socket_read_result_after);
@@ -272,7 +272,7 @@ TEST(ConnectionTests, Write_ConnectionKeepAlive)
     connection.notify(ServerDirective::READ_SOCKET);
     connection.notify(ServerDirective::WRITE_SOCKET);
 
-    EXPECT_EQ(connection.get_state().first, ConnectionState::PENDING);
+    EXPECT_EQ(connection.get_state(), ConnectionState::PENDING);
     EXPECT_EQ(pointer_to_socket->total_socket_write_count, 22);
     EXPECT_EQ(pointer_to_socket->write_result.str(), "HTTP/1.1 404 Not Found");
 }
@@ -293,7 +293,7 @@ TEST(ConnectionTests, Write_ConnectionClose)
     connection.notify(ServerDirective::READ_SOCKET);
     connection.notify(ServerDirective::WRITE_SOCKET);
 
-    EXPECT_EQ(connection.get_state().first, ConnectionState::DONE);
+    EXPECT_EQ(connection.get_state(), ConnectionState::DONE);
     EXPECT_EQ(pointer_to_socket->total_socket_write_count, 22);
     EXPECT_EQ(pointer_to_socket->write_result.str(), "HTTP/1.1 404 Not Found");
 }
@@ -357,7 +357,7 @@ TEST(ConnectionTests, ConnectionState_WhenJustCreated)
     auto s = std::make_unique<MockTcpSocket>(1, 1024, 1024);
     Connection c{ std::move(s), 1 };
 
-    auto [state, _] = c.get_state();
+    auto state = c.get_state();
     EXPECT_EQ(state, ConnectionState::STARTING);
 }
 
@@ -365,7 +365,7 @@ TEST(ConnectionTests, ConnectionState_WhenCreatedWithNullSocket)
 {
     Connection c{ nullptr, 0 };
 
-    auto [state, elapsed] = c.get_state();
+    auto state = c.get_state();
     EXPECT_EQ(state, ConnectionState::CON_ERROR);
 }
 
@@ -376,6 +376,6 @@ TEST(ConnectionTests, ConnectionState_WhenHalted)
 
     c.halt();
 
-    auto [state, elapsed] = c.get_state();
+    auto state = c.get_state();
     EXPECT_EQ(state, ConnectionState::CON_ERROR);
 }

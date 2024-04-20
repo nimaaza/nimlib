@@ -49,7 +49,7 @@ namespace nimlib::Server::Sockets
 
     TcpSocket::~TcpSocket()
     {
-        freeaddrinfo(bind_address);
+        // freeaddrinfo(bind_address); // Commented out because address sanitizer complained.
         close(tcp_socket_descriptor);
     }
 

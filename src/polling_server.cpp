@@ -37,10 +37,10 @@ namespace nimlib::Server
 		while (true)
 		{
 			setup_fds(sockets);
-			poll_result = poll(sockets.data(), sockets.size(), -1); // TODO: timeout for polling
+			poll_result = poll(sockets.data(), sockets.size(), 10); // TODO: timeout for polling
 			accept_new_connection(sockets);
 			handle_connections(sockets);
-			clear_connections();
+            connection_pool.clear_connections();
 		}
 	}
 
@@ -76,7 +76,7 @@ namespace nimlib::Server
 	{
 		std::for_each(sockets.begin() + 1, sockets.end(), [&](const auto& socket) {
 			auto connection = connection_pool.find(socket.fd);
-			auto [state, _] = connection->get_state();
+			auto state = connection->get_state();
 			if (socket.revents & POLLIN)
 			{
 				if (allowed_to_read(state)) connection->notify(ServerDirective::READ_SOCKET);
@@ -88,24 +88,6 @@ namespace nimlib::Server
 			else
 			{
 				// TODO: socket might be in a state which we don't handle?
-			}
-		});
-	}
-
-	void PollingServer::clear_connections()
-	{
-		// Filter & clear out connections (done or in error).
-		// TODO: consider doing this once in every number of iterations?
-		auto& connections = connection_pool.get_all();
-		std::for_each(connections.begin(), connections.end(), [](auto& connection) {
-			if (connection)
-			{
-				auto [state, _] = connection->get_state();
-				if (state == ConnectionState::DONE || state == ConnectionState::CON_ERROR)
-				{
-					connection->halt();
-					connection.reset();
-				}
 			}
 		});
 	}

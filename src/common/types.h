@@ -83,7 +83,7 @@ namespace nimlib::Server::Types
 		virtual void notify(ProtocolInterface& protocol) = 0;
 		virtual void set_protocol(std::shared_ptr<ProtocolInterface>) = 0;
 		virtual void halt() = 0;
-		virtual std::pair<ConnectionState, long> get_state() const = 0;
+		virtual ConnectionState get_state() = 0;
 		virtual const int get_id() const = 0;
 	};
 };
