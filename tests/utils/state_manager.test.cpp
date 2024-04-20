@@ -7,12 +7,12 @@ enum States { START, OK, ERROR_STATE, SOME_STATE, ANOTHER_STATE };
 std::unordered_map<States, std::vector<States>> transitions
 {
     {States::START, {States::OK}},
-    {States::OK, {States::SOME_STATE, States::ANOTHER_STATE}},
-    {States::SOME_STATE, {States::ANOTHER_STATE}},
+    {States::OK, {States::SOME_STATE, States::ANOTHER_STATE, States::START}},
+    {States::SOME_STATE, {States::ANOTHER_STATE, States::SOME_STATE}},
     {States::ANOTHER_STATE, {}},
 };
 
-TEST(StateManagerTest_Transitions, AllStateTransitToError)
+TEST(StateManagerTest_Transitions, AllStatesTransitToError)
 {
     StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, 2 };
 
@@ -27,6 +27,35 @@ TEST(StateManagerTest_Transitions, AllStateTransitToError)
 
     sm.set_state(States::ERROR_STATE);
     EXPECT_TRUE(sm.ready_to_transition(States::ERROR_STATE));
+}
+
+TEST(StateManagerTest_Transitions, TransitionsCheck)
+{
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, 2 };
+
+    sm.set_state(States::START);
+    EXPECT_FALSE(sm.ready_to_transition(States::START));
+    EXPECT_TRUE(sm.ready_to_transition(States::OK));
+    EXPECT_FALSE(sm.ready_to_transition(States::SOME_STATE));
+    EXPECT_FALSE(sm.ready_to_transition(States::ANOTHER_STATE));
+
+    sm.set_state(States::OK);
+    EXPECT_TRUE(sm.ready_to_transition(States::START));
+    EXPECT_FALSE(sm.ready_to_transition(States::OK));
+    EXPECT_TRUE(sm.ready_to_transition(States::SOME_STATE));
+    EXPECT_TRUE(sm.ready_to_transition(States::ANOTHER_STATE));
+
+    sm.set_state(States::SOME_STATE);
+    EXPECT_FALSE(sm.ready_to_transition(States::START));
+    EXPECT_FALSE(sm.ready_to_transition(States::OK));
+    EXPECT_TRUE(sm.ready_to_transition(States::ANOTHER_STATE));
+    EXPECT_TRUE(sm.ready_to_transition(States::SOME_STATE));
+
+    sm.set_state(States::ANOTHER_STATE);
+    EXPECT_FALSE(sm.ready_to_transition(States::START));
+    EXPECT_FALSE(sm.ready_to_transition(States::OK));
+    EXPECT_FALSE(sm.ready_to_transition(States::ANOTHER_STATE));
+    EXPECT_FALSE(sm.ready_to_transition(States::SOME_STATE));
 }
 
 TEST(StateManagerTest_Construction, InitialState_SetToStart)
