@@ -89,7 +89,7 @@ namespace nimlib::Server
 			{
 				// TODO: socket might be in a state which we don't handle?
 			}
-			});
+        });
 	}
 
 	void PollingServer::create_pollfds_entry(int socket, pollfd& fds)
