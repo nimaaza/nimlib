@@ -51,8 +51,8 @@ namespace nimlib::Server::Types
 	{
 		virtual ~StreamsProvider() = default;
 
-		virtual std::stringstream& get_input_stream() = 0;
-		virtual std::stringstream& get_output_stream() = 0;
+		virtual std::stringstream& source() = 0;
+		virtual std::stringstream& sink() = 0;
 	};
 
 	struct Handler

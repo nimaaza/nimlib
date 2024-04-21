@@ -87,9 +87,9 @@ namespace nimlib::Server
 
     const int TcpConnection::get_id() const { return id; }
 
-    std::stringstream& TcpConnection::get_input_stream() { return input_stream; }
+    std::stringstream& TcpConnection::source() { return input_stream; }
 
-    std::stringstream& TcpConnection::get_output_stream() { return output_stream; }
+    std::stringstream& TcpConnection::sink() { return output_stream; }
 
     ConnectionState TcpConnection::read()
     {

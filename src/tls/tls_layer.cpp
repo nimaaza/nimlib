@@ -26,7 +26,7 @@ namespace nimlib::Server::Protocols
 	{
 		try
 		{
-			std::stringstream& encrypted_input{ connection_encrypted_streams.get_input_stream() };
+			std::stringstream& encrypted_input{ connection_encrypted_streams.source() };
 			std::string in_string{ encrypted_input.str() };
 			auto in_string_ptr = reinterpret_cast<uint8_t*>(in_string.data());
 			auto bytes_needed = tls_server->received_data(in_string_ptr, in_string.size());
@@ -44,7 +44,7 @@ namespace nimlib::Server::Protocols
 	{
 		if (next->wants_to_write())
 		{
-			tls_server->send(streams.get_output_stream().str());
+			tls_server->send(streams.sink().str());
 		}
 		tls_server->close();
 	}
@@ -55,7 +55,7 @@ namespace nimlib::Server::Protocols
 
 	bool TlsLayer::wants_to_live() { return tls_continue || next->wants_to_live(); }
 
-	std::stringstream& TlsLayer::get_input_stream() { return decrypted_input; }
+	std::stringstream& TlsLayer::source() { return decrypted_input; }
 
-	std::stringstream& TlsLayer::get_output_stream() { return decrypted_output; }
+	std::stringstream& TlsLayer::sink() { return decrypted_output; }
 }

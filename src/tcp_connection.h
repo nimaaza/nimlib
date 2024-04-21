@@ -34,8 +34,8 @@ namespace nimlib::Server
         ConnectionState get_state() override;
         const int get_id() const override;
 
-        std::stringstream& get_input_stream() override;
-        std::stringstream& get_output_stream() override;
+        std::stringstream& source() override;
+        std::stringstream& sink() override;
 
     private:
         ConnectionState read();

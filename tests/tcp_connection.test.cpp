@@ -24,8 +24,8 @@ struct MockHandler : public Handler
         std::string output_result = ""
     )
         :
-        in{ streams.get_input_stream() },
-        out{ streams.get_output_stream() },
+        in{ streams.source() },
+        out{ streams.sink() },
         total_tries{ tries },
         parse_result{ parse_result },
         output_result{ output_result }
@@ -88,7 +88,7 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_SingleRead)
     connection.notify(ServerDirective::READ_SOCKET);
 
     auto state_1 = connection.get_state();
-    EXPECT_EQ(connection.get_input_stream().str().size(), 470);
+    EXPECT_EQ(connection.source().str().size(), 470);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
     EXPECT_EQ(state_1, ConnectionState::WRITING);
 
@@ -122,21 +122,21 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_MultipleReads)
 
     auto state_1 = connection.get_state();
     EXPECT_EQ(state_1, ConnectionState::READING);
-    EXPECT_EQ(connection.get_input_stream().str().size(), 129);
+    EXPECT_EQ(connection.source().str().size(), 129);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
     connection.notify(ServerDirective::READ_SOCKET);
 
     auto state_2 = connection.get_state();
     EXPECT_EQ(state_2, ConnectionState::READING);
-    EXPECT_EQ(connection.get_input_stream().str().size(), 129 + 131);
+    EXPECT_EQ(connection.source().str().size(), 129 + 131);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
     connection.notify(ServerDirective::READ_SOCKET);
 
     auto state_3 = connection.get_state();
     EXPECT_EQ(state_3, ConnectionState::WRITING);
-    EXPECT_EQ(connection.get_input_stream().str().size(), 129 + 131 + 257);
+    EXPECT_EQ(connection.source().str().size(), 129 + 131 + 257);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
     connection.notify(ServerDirective::WRITE_SOCKET);
@@ -164,7 +164,7 @@ TEST(ConnectionTests, Read_WithExactlyEnoughBuffer)
 
     auto state = connection.get_state();
     EXPECT_EQ(state, ConnectionState::WRITING);
-    EXPECT_EQ(connection.get_input_stream().str().size(), 10);
+    EXPECT_EQ(connection.source().str().size(), 10);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 }
 
@@ -192,21 +192,21 @@ TEST(ConnectionTests, Read_WithSmallBuffer)
 
     auto state_1 = connection.get_state();
     EXPECT_EQ(state_1, ConnectionState::READING);
-    EXPECT_EQ(connection.get_input_stream().str().size(), 167);
+    EXPECT_EQ(connection.source().str().size(), 167);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
     connection.notify(ServerDirective::READ_SOCKET);
 
     auto state_2 = connection.get_state();
     EXPECT_EQ(state_2, ConnectionState::READING);
-    EXPECT_EQ(connection.get_input_stream().str().size(), 167 + 167);
+    EXPECT_EQ(connection.source().str().size(), 167 + 167);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
     connection.notify(ServerDirective::READ_SOCKET);
 
     auto state_3 = connection.get_state();
     EXPECT_EQ(state_3, ConnectionState::WRITING);
-    EXPECT_EQ(connection.get_input_stream().str().size(), 470);
+    EXPECT_EQ(connection.source().str().size(), 470);
     EXPECT_EQ(pointer_to_socket->read_result.str(), protocol->internal_input);
 
     connection.notify(ServerDirective::WRITE_SOCKET);
@@ -317,7 +317,7 @@ TEST(ConnectionTests, Write_SeveralWrites)
     connection.notify(ServerDirective::WRITE_SOCKET);
 
     EXPECT_EQ(pointer_to_socket->total_socket_write_count, 473);
-    EXPECT_EQ(pointer_to_socket->write_result.str(), connection_as_streams_provider.get_output_stream().str());
+    EXPECT_EQ(pointer_to_socket->write_result.str(), connection_as_streams_provider.sink().str());
 }
 
 TEST(ConnectionTests, Write_WithError)
@@ -340,7 +340,7 @@ TEST(ConnectionTests, Write_WithError)
     auto& connection_as_streams_provider = static_cast<StreamsProvider&>(connection);
 
     connection.notify(ServerDirective::READ_SOCKET);
-    std::string connection_output{ connection_as_streams_provider.get_output_stream().str() };
+    std::string connection_output{ connection_as_streams_provider.sink().str() };
     connection.notify(ServerDirective::WRITE_SOCKET);
     int total_bytes_written = pointer_to_socket->total_socket_write_count;
     // Reset the socket write count so that the socket can be written to again.

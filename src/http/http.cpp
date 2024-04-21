@@ -12,7 +12,7 @@ namespace nimlib::Server::Protocols
 
 	void Http::notify(Connection& connection, StreamsProvider& streams)
 	{
-		std::stringstream& out{ streams.get_output_stream() };
+		std::stringstream& out{ streams.sink() };
 		out << "done";
 		connection.notify(*this);
 	}
@@ -22,7 +22,7 @@ namespace nimlib::Server::Protocols
 		if (!http_request)
 		{
 			// This is a newly accepted request which has not been parsed.
-			std::stringstream& input_from_tls{ streams.get_input_stream() };
+			std::stringstream& input_from_tls{ streams.source() };
 			http_request = std::move(parse_http_request(input_from_tls));
 			if (http_request)
 			{
@@ -31,7 +31,7 @@ namespace nimlib::Server::Protocols
 				auto http_response = parse_http_response(router.route(http_request.value()));
 				if (http_response)
 				{
-					std::stringstream& output_to_tls{ streams.get_output_stream() };
+					std::stringstream& output_to_tls{ streams.sink() };
 					output_to_tls << http_response.value();
 					protocol.notify(*this, connection, streams);
 				}

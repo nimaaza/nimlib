@@ -29,8 +29,8 @@ namespace nimlib::Server::Protocols
 		bool wants_to_write() override;
 		bool wants_to_live() override;
 
-		std::stringstream& get_input_stream() override;
-		std::stringstream& get_output_stream() override;
+		std::stringstream& source() override;
+		std::stringstream& sink() override;
 
 	private:
 		bool tls_continue{ true };

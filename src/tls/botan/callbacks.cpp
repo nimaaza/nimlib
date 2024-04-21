@@ -18,7 +18,7 @@ namespace nimlib::Server::Protocols::BotanSpec
 
 	void Callbacks::tls_emit_data(std::span<const uint8_t> data)
 	{
-		std::stringstream& encrypted_output{ encrypted_streams.get_output_stream() };
+		std::stringstream& encrypted_output{ encrypted_streams.sink() };
 
 		for (auto c : data)
 		{
@@ -30,7 +30,7 @@ namespace nimlib::Server::Protocols::BotanSpec
 
 	void Callbacks::tls_record_received(uint64_t seq_no, std::span<const uint8_t> data)
 	{
-		std::stringstream& decrypted_input{ decrypted_streams.get_input_stream() };
+		std::stringstream& decrypted_input{ decrypted_streams.source() };
 
 		for (auto c : data)
 		{
