@@ -7,7 +7,7 @@
 #include "tls_policy.h"
 #include "callbacks.h"
 
-namespace nimlib::Server::Protocols::BotanSpec
+namespace nimlib::Server::Handlers::BotanSpec
 {
 	std::unique_ptr<Botan::TLS::Server> get_tls_server(
 		Connection& connection,

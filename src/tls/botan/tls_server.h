@@ -10,7 +10,7 @@ using nimlib::Server::Types::Connection;
 using nimlib::Server::Types::Handler;
 using nimlib::Server::Types::StreamsProvider;
 
-namespace nimlib::Server::Protocols::BotanSpec
+namespace nimlib::Server::Handlers::BotanSpec
 {
     std::unique_ptr<Botan::TLS::Server> get_tls_server(
         Connection& connection,

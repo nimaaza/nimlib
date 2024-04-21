@@ -6,7 +6,7 @@
 #include <vector>
 #include <optional>
 
-namespace nimlib::Server::Protocols
+namespace nimlib::Server::Handlers
 {
     struct HttpRequest
     {

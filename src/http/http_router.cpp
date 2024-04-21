@@ -3,7 +3,7 @@
 #include "fstream"
 #include "iostream"
 
-namespace nimlib::Server::Protocols
+namespace nimlib::Server::Handlers
 {
     HttpRouter::HttpRouter() = default;
 

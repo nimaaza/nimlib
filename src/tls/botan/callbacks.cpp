@@ -1,6 +1,6 @@
 #include "callbacks.h"
 
-namespace nimlib::Server::Protocols::BotanSpec
+namespace nimlib::Server::Handlers::BotanSpec
 {
 	Callbacks::Callbacks(
 		Connection& connection,

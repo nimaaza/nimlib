@@ -5,7 +5,7 @@
 
 #include "../../src/http/http_parser.h"
 
-using nimlib::Server::Protocols::parse_http_request;
+using nimlib::Server::Handlers::parse_http_request;
 
 TEST(HttpRequestParserTests, IncorrectStartLine)
 {

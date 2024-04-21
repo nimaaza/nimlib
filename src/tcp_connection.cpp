@@ -51,7 +51,7 @@ namespace nimlib::Server
         (directive == ServerDirective::READ_SOCKET) ? read() : write();
     }
 
-    void TcpConnection::notify(Handler& protocol)
+    void TcpConnection::notify(Handler& handler)
     {
         // No assumption is made about how the streams will be used by the
         // application layer. The clear() method is being called in case
@@ -59,13 +59,13 @@ namespace nimlib::Server
         input_stream.clear();
         output_stream.clear();
 
-        keep_alive = protocol.wants_to_live();
+        keep_alive = handler.wants_to_live();
 
-        if (protocol.wants_to_write())
+        if (handler.wants_to_write())
         {
             connection_state.set_state(ConnectionState::WRITING);
         }
-        else if (protocol.wants_more_bytes())
+        else if (handler.wants_more_bytes())
         {
             connection_state.set_state(ConnectionState::READING);
         }
@@ -75,7 +75,7 @@ namespace nimlib::Server
         }
     }
 
-    void TcpConnection::set_protocol(std::shared_ptr<Handler> p) { protocol = p; }
+    void TcpConnection::set_handler(std::shared_ptr<Handler> p) { handler = p; }
 
     void TcpConnection::halt()
     {
@@ -107,11 +107,11 @@ namespace nimlib::Server
                 input_stream << buff[i];
             }
 
-            // Protocol must not be null.
-            assert(protocol);
+            // Handler must not be null.
+            assert(handler);
 
             connection_state.set_state(ConnectionState::HANDLING);
-            protocol->notify(*this, *this);
+            handler->notify(*this, *this);
             return connection_state.get_state();
         }
         else if (bytes_count == 0)

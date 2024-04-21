@@ -4,7 +4,7 @@
 
 #include <botan/credentials_manager.h>
 
-namespace nimlib::Server::Protocols::BotanSpec
+namespace nimlib::Server::Handlers::BotanSpec
 {
 	class CredentialsProvider : public Botan::Credentials_Manager
 	{

@@ -4,7 +4,7 @@
 
 #include "iostream"
 
-namespace nimlib::Server::Protocols
+namespace nimlib::Server::Handlers
 {
     header_validator content_length_validator =
         [](const std::string& value, const std::unordered_map<std::string, std::vector<std::string>>& headers) -> bool

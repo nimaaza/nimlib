@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-namespace nimlib::Server::Protocols
+namespace nimlib::Server::Handlers
 {
 	Http::Http(Connection& connection)
 		: connection{ connection }, http_request{ std::nullopt }
@@ -17,7 +17,7 @@ namespace nimlib::Server::Protocols
 		connection.notify(*this);
 	}
 
-	void Http::notify(Handler& protocol, Connection& connection, StreamsProvider& streams)
+	void Http::notify(Handler& handler, Connection& connection, StreamsProvider& streams)
 	{
 		if (!http_request)
 		{
@@ -33,7 +33,7 @@ namespace nimlib::Server::Protocols
 				{
 					std::stringstream& output_to_tls{ streams.sink() };
 					output_to_tls << http_response.value();
-					protocol.notify(*this, connection, streams);
+					handler.notify(*this, connection, streams);
 				}
 			}
 			else

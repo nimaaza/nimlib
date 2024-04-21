@@ -24,13 +24,13 @@ namespace nimlib::Server
         assert(connections[s->get_tcp_socket_descriptor()] == nullptr);
         connection_id id = s->get_tcp_socket_descriptor();
         auto connection = std::make_shared<TcpConnection>(std::move(s), id);
-        auto http_protocol = std::make_shared<nimlib::Server::Protocols::Http>(*connection);
-        auto protocol = std::make_shared<nimlib::Server::Protocols::TlsLayer>(
+        auto http_handler = std::make_shared<nimlib::Server::Handlers::Http>(*connection);
+        auto tls_handler = std::make_shared<nimlib::Server::Handlers::TlsLayer>(
             *connection,
             *connection,
-            http_protocol
+            http_handler
         );
-        connection->set_protocol(protocol);
+        connection->set_handler(tls_handler);
         connections[id] = connection;
     }
 

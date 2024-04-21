@@ -10,7 +10,7 @@
 
 #include <vector>
 
-namespace nimlib::Server::Protocols::BotanSpec
+namespace nimlib::Server::Handlers::BotanSpec
 {
 	inline bool value_exists(const std::vector<std::string>& vec, const std::string& val)
 	{

@@ -1,7 +1,7 @@
 #include "tls_layer.h"
 #include "botan/tls_server.h"
 
-namespace nimlib::Server::Protocols
+namespace nimlib::Server::Handlers
 {
 	TlsLayer::TlsLayer(
 		Connection& connection,
@@ -11,7 +11,7 @@ namespace nimlib::Server::Protocols
 		connection_encrypted_streams{ connection_encrypted_streams },
 		next{ next }
 	{
-		tls_server = nimlib::Server::Protocols::BotanSpec::get_tls_server(
+		tls_server = nimlib::Server::Handlers::BotanSpec::get_tls_server(
 			connection,
 			*this,
 			connection_encrypted_streams,
@@ -40,7 +40,7 @@ namespace nimlib::Server::Protocols
 		}
 	}
 
-	void TlsLayer::notify(Handler& protocol, Connection& connection, StreamsProvider& streams)
+	void TlsLayer::notify(Handler& handler, Connection& connection, StreamsProvider& streams)
 	{
 		if (next->wants_to_write())
 		{

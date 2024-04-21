@@ -2,7 +2,7 @@
 
 #include "http_parser.h"
 
-namespace nimlib::Server::Protocols
+namespace nimlib::Server::Handlers
 {
     class HttpRouter
     {

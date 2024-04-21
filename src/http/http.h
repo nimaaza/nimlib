@@ -7,7 +7,7 @@
 using nimlib::Server::Types::Connection;
 using nimlib::Server::Types::StreamsProvider;
 
-namespace nimlib::Server::Protocols
+namespace nimlib::Server::Handlers
 {
     using nimlib::Server::Types::Handler;
     using ParseResult = nimlib::Server::Constants::ParseResult;
@@ -20,7 +20,7 @@ namespace nimlib::Server::Protocols
         ~Http();
 
         void notify(Connection& connection, StreamsProvider& streams) override;
-        void notify(Handler& protocol, Connection& connection, StreamsProvider& streams) override;
+        void notify(Handler& handler, Connection& connection, StreamsProvider& streams) override;
         bool wants_more_bytes() override;
         bool wants_to_write() override;
         bool wants_to_live() override;

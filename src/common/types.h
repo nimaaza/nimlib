@@ -60,7 +60,7 @@ namespace nimlib::Server::Types
 		virtual ~Handler() = default;
 
 		virtual void notify(Connection& connection, StreamsProvider& streams) = 0;
-		virtual void notify(Handler& protocol, Connection& connection, StreamsProvider& streams) = 0;
+		virtual void notify(Handler& handler, Connection& connection, StreamsProvider& streams) = 0;
 
 		virtual bool wants_more_bytes() = 0;
 		virtual bool wants_to_write() = 0;
@@ -74,8 +74,8 @@ namespace nimlib::Server::Types
 	{
 		virtual ~Connection() = default;
 		virtual void notify(ServerDirective directive) = 0;
-		virtual void notify(Handler& protocol) = 0;
-		virtual void set_protocol(std::shared_ptr<Handler>) = 0;
+		virtual void notify(Handler& handler) = 0;
+		virtual void set_handler(std::shared_ptr<Handler>) = 0;
 		virtual void halt() = 0;
 		virtual ConnectionState get_state() = 0;
 		virtual const int get_id() const = 0;

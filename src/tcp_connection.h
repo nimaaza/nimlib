@@ -28,8 +28,8 @@ namespace nimlib::Server
         TcpConnection& operator=(TcpConnection&&) noexcept = delete;
 
         void notify(ServerDirective directive) override;
-        void notify(Handler& protocol) override;
-        void set_protocol(std::shared_ptr<Handler>) override;
+        void notify(Handler& handler) override;
+        void set_handler(std::shared_ptr<Handler>) override;
         void halt() override;
         ConnectionState get_state() override;
         const int get_id() const override;
@@ -55,7 +55,7 @@ namespace nimlib::Server
         std::stringstream input_stream{};
         std::stringstream output_stream{};
         std::unique_ptr<Socket> socket;
-        std::shared_ptr<Handler> protocol;
+        std::shared_ptr<Handler> handler;
         // nimlib::Server::Metrics::Measurements::Duration<long> response_timer;
 
         static const std::unordered_map<ConnectionState, std::vector<ConnectionState>> states_transition_map;

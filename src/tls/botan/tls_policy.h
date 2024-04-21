@@ -2,7 +2,7 @@
 
 #include <botan/tls_policy.h>
 
-namespace nimlib::Server::Protocols::BotanSpec
+namespace nimlib::Server::Handlers::BotanSpec
 {
 	class TLS_All_Policy final : public Botan::TLS::Policy
 	{

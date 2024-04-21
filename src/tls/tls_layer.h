@@ -11,7 +11,7 @@ using nimlib::Server::Types::StreamsProvider;
 using nimlib::Server::Types::Handler;
 using nimlib::Server::Types::Connection;
 
-namespace nimlib::Server::Protocols
+namespace nimlib::Server::Handlers
 {
 	class TlsLayer : public Handler, public StreamsProvider
 	{
@@ -24,7 +24,7 @@ namespace nimlib::Server::Protocols
 		~TlsLayer();
 
 		void notify(Connection& connection, StreamsProvider& streams) override;
-		void notify(Handler& protocol, Connection& connection, StreamsProvider& streams) override;
+		void notify(Handler& handler, Connection& connection, StreamsProvider& streams) override;
 		bool wants_more_bytes() override;
 		bool wants_to_write() override;
 		bool wants_to_live() override;
