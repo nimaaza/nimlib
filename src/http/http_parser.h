@@ -31,7 +31,25 @@ namespace nimlib::Server::Protocols
         std::string body;
     };
 
-    std::optional<HttpRequest> parse_http_message(std::stringstream& input_stream);
+    struct HttpResponse
+    {
+        HttpResponse() = default;
+        ~HttpResponse() = default;
+
+        HttpResponse(const HttpResponse&) = delete;
+        HttpResponse& operator=(const HttpResponse&) = delete;
+        HttpResponse(HttpResponse&& other) noexcept = default;
+        HttpResponse& operator=(HttpResponse&&) noexcept = default;
+
+        std::string version{ "HTTP/1.1" };
+        short status;
+        std::string reason;
+        headers_t headers;
+        std::string body;
+    };
+
+    std::optional<HttpRequest> parse_http_request(std::stringstream& input_stream);
+    std::optional<std::string> parse_http_response(const HttpResponse& http_response);
     bool white_space(char c);
     bool validate_method(const std::string& method);
     bool validate_target(const std::string& target);

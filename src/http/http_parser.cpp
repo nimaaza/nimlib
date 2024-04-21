@@ -56,7 +56,7 @@ namespace nimlib::Server::Protocols
         body{ std::move(body) }
     {}
 
-    std::optional<HttpRequest> parse_http_message(std::stringstream& input_stream)
+    std::optional<HttpRequest> parse_http_request(std::stringstream& input_stream)
     {
         std::string method;
         std::string target;
@@ -157,6 +157,40 @@ namespace nimlib::Server::Protocols
             std::cout << "http request has no empty line" << std::endl;
             return {};
         }
+    }
+
+    std::optional<std::string> parse_http_response(const HttpResponse& http_response)
+    {
+        std::stringstream response {};
+
+        response << http_response.version << " " << http_response.status << " " << http_response.reason << "\r\n";
+
+        for (const auto& it : http_response.headers)
+        {
+            response << it.first << ": ";
+            for (const auto& value : it.second)
+            {
+                response << value << ", ";
+            }
+
+            // Remove the last ', ' from value
+            response << "\r\n";
+        }
+
+        auto content_length_header = http_response.headers.find("content-length");
+        if (content_length_header == http_response.headers.end() && !http_response.body.empty())
+        {
+            response << "content-length: " << http_response.body.size() << "\r\n";
+        }
+
+        response << "\r\n";
+
+        if (!http_response.body.empty())
+        {
+            response << http_response.body;
+        }
+
+        return response.str();
     }
 
     bool white_space(char c) { return c == ' ' || c == '\t'; }

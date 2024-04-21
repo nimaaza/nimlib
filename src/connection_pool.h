@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/types.h"
+
 #include <vector>
 
 #include "common/types.h"
@@ -9,7 +11,8 @@ namespace nimlib::Server
     class ConnectionPool
     {
     private:
-        ConnectionPool(/* args */);
+        ConnectionPool();
+
     public:
 
         ~ConnectionPool();
@@ -20,8 +23,8 @@ namespace nimlib::Server
         ConnectionPool& operator=(ConnectionPool&&) = delete;
 
         void record_connection(socket_ptr s);
-        connection_ptr find(connection_id id);
-        std::vector<connection_ptr>& get_all();
+        connection_ptr find(connection_id id) const;
+        const std::vector<connection_ptr>& get_all() const;
         void clean_up();
 
         static ConnectionPool& get_pool();

@@ -12,12 +12,12 @@ using nimlib::Server::ConnectionState;
 
 namespace nimlib::Server
 {
-    ConnectionPool::ConnectionPool(/* args */)
+    ConnectionPool::ConnectionPool()
     {
         connections.resize(65'000);
     }
 
-    ConnectionPool::~ConnectionPool() {}
+    ConnectionPool::~ConnectionPool() = default;
 
     void ConnectionPool::record_connection(socket_ptr s)
     {
@@ -34,12 +34,12 @@ namespace nimlib::Server
         connections[id] = connection;
     }
 
-    connection_ptr ConnectionPool::find(connection_id id)
+    connection_ptr ConnectionPool::find(connection_id id) const
     {
         return connections[id];
     }
 
-    std::vector<connection_ptr>& ConnectionPool::get_all()
+    const std::vector<connection_ptr>& ConnectionPool::get_all() const
     {
         return connections;
     }

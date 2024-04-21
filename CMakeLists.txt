@@ -14,6 +14,7 @@ add_executable(test_run
         test_run.cpp
         src/http/http.cpp
         src/http/http_parser.cpp
+        src/http/http_router.cpp
         src/logger/agent.cpp
         src/logger/factory.cpp
         src/logger/logger.cpp
@@ -57,6 +58,7 @@ add_executable(unit_tests
         tests/polling_server.test.cpp
         src/http/http.cpp
         src/http/http_parser.cpp
+        src/http/http_router.cpp
         src/logger/agent.cpp
         src/logger/factory.cpp
         src/logger/logger.cpp
@@ -92,6 +94,7 @@ add_executable(unit_tests_polling_server
         src/connection.cpp
         src/http/http.cpp
         src/http/http_parser.cpp
+        src/http/http_router.cpp
         src/tls/tls_layer.cpp
         src/tls/botan/callbacks.cpp
         src/tls/botan/credentials.cpp
