@@ -3,11 +3,11 @@
 namespace nimlib::Server::Protocols::BotanSpec
 {
 	Callbacks::Callbacks(
-		ConnectionInterface& connection,
-		ProtocolInterface& tls_layer,
-		StreamsProviderInterface& encrypted_streams,
-		StreamsProviderInterface& decrypted_streams,
-		std::shared_ptr<ProtocolInterface> next
+		Connection& connection,
+		Handler& tls_layer,
+		StreamsProvider& encrypted_streams,
+		StreamsProvider& decrypted_streams,
+		std::shared_ptr<Handler> next
 	) :
 		connection{ connection },
 		tls_layer{ tls_layer },

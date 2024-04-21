@@ -8,10 +8,10 @@
 
 namespace nimlib::Server
 {
-    class PollingServerWithLogger : public PollingServerInterface
+    class PollingServerWithLogger : public Server
     {
     public:
-        explicit PollingServerWithLogger(std::unique_ptr<PollingServerInterface> polling_server)
+        explicit PollingServerWithLogger(std::unique_ptr<Server> polling_server)
             : polling_server{ std::move(polling_server) },
             main_log_agent{ nimlib::Server::Logging::Factory::get_agent("main") }
         {};
@@ -38,7 +38,7 @@ namespace nimlib::Server
         }
 
     private:
-        std::unique_ptr<PollingServerInterface> polling_server;
+        std::unique_ptr<Server> polling_server;
         std::shared_ptr<nimlib::Server::Logging::LoggerAgent> main_log_agent;
     };
 };

@@ -5,17 +5,17 @@
 #include <poll.h>
 
 #include "common/types.h"
-#include "connection_pool.h"
+#include "tcp_connection_pool.h"
 
 namespace nimlib::Server
 {
-    using nimlib::Server::Types::PollingServerInterface;
-    using nimlib::Server::Types::ConnectionInterface;
-    using nimlib::Server::Types::TcpSocketInterface;
+    using nimlib::Server::Types::Server;
+    using nimlib::Server::Types::Connection;
+    using nimlib::Server::Types::Socket;
     using nimlib::Server::Constants::ServerDirective;
     using nimlib::Server::Constants::ConnectionState;
 
-    class PollingServer : public PollingServerInterface
+    class PollingServer : public Server
     {
     public:
         PollingServer(const std::string& port);
@@ -39,8 +39,8 @@ namespace nimlib::Server
 
     private:
         const std::string& port;
-        std::unique_ptr<TcpSocketInterface> server_socket;
-        ConnectionPool& connection_pool;
+        std::unique_ptr<Socket> server_socket;
+        TcpConnectionPool& connection_pool;
         pollfd server_fd{};
     };
 };

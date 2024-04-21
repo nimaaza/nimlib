@@ -1,4 +1,4 @@
-#include "connection.h"
+#include "tcp_connection.h"
 
 #include <memory>
 #include <cassert>
@@ -8,7 +8,7 @@
 
 namespace nimlib::Server
 {
-    const std::unordered_map<ConnectionState, std::vector<ConnectionState>> Connection::states_transition_map
+    const std::unordered_map<ConnectionState, std::vector<ConnectionState>> TcpConnection::states_transition_map
     {
         {ConnectionState::STARTING, {ConnectionState::READING}},
         {ConnectionState::READING, {ConnectionState::READING, ConnectionState::HANDLING}},
@@ -18,7 +18,7 @@ namespace nimlib::Server
         {ConnectionState::DONE, {}}
     };
 
-    const std::unordered_map<ConnectionState, long> Connection::state_time_outs
+    const std::unordered_map<ConnectionState, long> TcpConnection::state_time_outs
     {
         {ConnectionState::STARTING, 10'000},
         {ConnectionState::READING, 10'000},
@@ -27,7 +27,7 @@ namespace nimlib::Server
         {ConnectionState::PENDING, 10'000}
     };
 
-    Connection::Connection(std::unique_ptr<TcpSocketInterface> s, connection_id id, size_t buffer_size)
+    TcpConnection::TcpConnection(std::unique_ptr<Socket> s, connection_id id, size_t buffer_size)
         : id{ id },
         buffer_size{ buffer_size },
         socket{ std::move(s) }
@@ -41,17 +41,17 @@ namespace nimlib::Server
         }
     }
 
-    Connection::~Connection()
+    TcpConnection::~TcpConnection()
     {
         // response_timer.end();
     }
 
-    void Connection::notify(ServerDirective directive)
+    void TcpConnection::notify(ServerDirective directive)
     {
         (directive == ServerDirective::READ_SOCKET) ? read() : write();
     }
 
-    void Connection::notify(ProtocolInterface& protocol)
+    void TcpConnection::notify(Handler& protocol)
     {
         // No assumption is made about how the streams will be used by the
         // application layer. The clear() method is being called in case
@@ -75,23 +75,23 @@ namespace nimlib::Server
         }
     }
 
-    void Connection::set_protocol(std::shared_ptr<ProtocolInterface> p) { protocol = p; }
+    void TcpConnection::set_protocol(std::shared_ptr<Handler> p) { protocol = p; }
 
-    void Connection::halt()
+    void TcpConnection::halt()
     {
         connection_state.set_state(ConnectionState::CON_ERROR);
         // socket->tcp_close(); TODO: it's better to close the socket carefully.
     }
 
-    ConnectionState Connection::get_state() { return connection_state.get_state(); }
+    ConnectionState TcpConnection::get_state() { return connection_state.get_state(); }
 
-    const int Connection::get_id() const { return id; }
+    const int TcpConnection::get_id() const { return id; }
 
-    std::stringstream& Connection::get_input_stream() { return input_stream; }
+    std::stringstream& TcpConnection::get_input_stream() { return input_stream; }
 
-    std::stringstream& Connection::get_output_stream() { return output_stream; }
+    std::stringstream& TcpConnection::get_output_stream() { return output_stream; }
 
-    ConnectionState Connection::read()
+    ConnectionState TcpConnection::read()
     {
         if (connection_state.get_state() == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
 
@@ -129,7 +129,7 @@ namespace nimlib::Server
         }
     }
 
-    ConnectionState Connection::write()
+    ConnectionState TcpConnection::write()
     {
         if (connection_state.get_state() == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
 

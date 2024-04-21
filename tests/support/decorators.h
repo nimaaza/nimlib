@@ -9,14 +9,14 @@
 
 namespace nimlib::Server::Decorators
 {
-	using nimlib::Server::Types::TcpSocketInterface;
+	using nimlib::Server::Types::Socket;
 	using nimlib::Server::Sockets::TcpSocketWithLogger;
 
 	template <typename T>
-	concept IsTcpSocket = std::derived_from<T, TcpSocketInterface>;
+	concept IsTcpSocket = std::derived_from<T, Socket>;
 
 	template <IsTcpSocket T = TcpSocketWithLogger>
-	std::unique_ptr<TcpSocketInterface> decorate(std::unique_ptr<TcpSocketInterface> socket)
+	std::unique_ptr<Socket> decorate(std::unique_ptr<Socket> socket)
 	{
 		return socket;
 	}

@@ -6,9 +6,9 @@
 
 #include "../../common/types.h"
 
-using nimlib::Server::Types::ProtocolInterface;
-using nimlib::Server::Types::ConnectionInterface;
-using nimlib::Server::Types::StreamsProviderInterface;
+using nimlib::Server::Types::Handler;
+using nimlib::Server::Types::Connection;
+using nimlib::Server::Types::StreamsProvider;
 
 namespace nimlib::Server::Protocols::BotanSpec
 {
@@ -16,11 +16,11 @@ namespace nimlib::Server::Protocols::BotanSpec
 	{
 	public:
 		Callbacks(
-			ConnectionInterface& connection,
-			ProtocolInterface& tls_layer,
-			StreamsProviderInterface& encrypted_streams,
-			StreamsProviderInterface& decrypted_streams,
-			std::shared_ptr<ProtocolInterface> next
+			Connection& connection,
+			Handler& tls_layer,
+			StreamsProvider& encrypted_streams,
+			StreamsProvider& decrypted_streams,
+			std::shared_ptr<Handler> next
 		);
 		~Callbacks() = default;
 
@@ -30,10 +30,10 @@ namespace nimlib::Server::Protocols::BotanSpec
 		void tls_session_established(const Botan::TLS::Session_Summary& session) override;
 
 	private:
-		ConnectionInterface& connection;
-		ProtocolInterface& tls_layer;
-		StreamsProviderInterface& encrypted_streams;
-		StreamsProviderInterface& decrypted_streams;
-		std::shared_ptr<ProtocolInterface> next;
+		Connection& connection;
+		Handler& tls_layer;
+		StreamsProvider& encrypted_streams;
+		StreamsProvider& decrypted_streams;
+		std::shared_ptr<Handler> next;
 	};
 }

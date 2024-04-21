@@ -15,25 +15,25 @@ namespace nimlib::Server::Types
 	using nimlib::Server::Constants::ConnectionState;
 	using nimlib::Server::Constants::ParseResult;
 
-	class ConnectionInterface;
+	class Connection;
 
-	struct PollingServerInterface
+	struct Server
 	{
-		virtual ~PollingServerInterface() = default;
+		virtual ~Server() = default;
 
 		virtual void run() = 0;
 	};
 
-	struct TcpSocketInterface
+	struct Socket
 	{
-		TcpSocketInterface(const std::string& port, int tcp_socket_descriptor)
+		Socket(const std::string& port, int tcp_socket_descriptor)
 			: port{ port }, tcp_socket_descriptor{ tcp_socket_descriptor }
 		{}
-		virtual ~TcpSocketInterface() = default;
+		virtual ~Socket() = default;
 
 		virtual int tcp_bind() = 0;
 		virtual int tcp_listen() = 0;
-		virtual std::unique_ptr<TcpSocketInterface> tcp_accept() = 0;
+		virtual std::unique_ptr<Socket> tcp_accept() = 0;
 		virtual void tcp_get_host_name(const sockaddr& socket_address, std::string& host_name) = 0;
 		virtual int tcp_read(std::span<uint8_t> buffer, int flags) = 0;
 		virtual int tcp_send(std::span<uint8_t> buffer) = 0;
@@ -47,27 +47,21 @@ namespace nimlib::Server::Types
 		int tcp_socket_descriptor;
 	};
 
-	struct StreamsProviderInterface
+	struct StreamsProvider
 	{
-		virtual ~StreamsProviderInterface() = default;
+		virtual ~StreamsProvider() = default;
 
 		virtual std::stringstream& get_input_stream() = 0;
 		virtual std::stringstream& get_output_stream() = 0;
 	};
 
-	struct ProtocolInterface
+	struct Handler
 	{
-		virtual ~ProtocolInterface() = default;
+		virtual ~Handler() = default;
 
-		virtual void notify(
-			ConnectionInterface& connection,
-			StreamsProviderInterface& streams
-		) = 0;
-		virtual void notify(
-			ProtocolInterface& protocol,
-			ConnectionInterface& connection,
-			StreamsProviderInterface& streams
-		) = 0;
+		virtual void notify(Connection& connection, StreamsProvider& streams) = 0;
+		virtual void notify(Handler& protocol, Connection& connection, StreamsProvider& streams) = 0;
+
 		virtual bool wants_more_bytes() = 0;
 		virtual bool wants_to_write() = 0;
 		virtual bool wants_to_live() = 0;
@@ -76,20 +70,20 @@ namespace nimlib::Server::Types
 		// StateManager<ParseResult> state_manager{ ParseResult::P_STARTING, ParseResult::P_ERROR, 1024 };
 	};
 
-	struct ConnectionInterface
+	struct Connection
 	{
-		virtual ~ConnectionInterface() = default;
+		virtual ~Connection() = default;
 		virtual void notify(ServerDirective directive) = 0;
-		virtual void notify(ProtocolInterface& protocol) = 0;
-		virtual void set_protocol(std::shared_ptr<ProtocolInterface>) = 0;
+		virtual void notify(Handler& protocol) = 0;
+		virtual void set_protocol(std::shared_ptr<Handler>) = 0;
 		virtual void halt() = 0;
 		virtual ConnectionState get_state() = 0;
 		virtual const int get_id() const = 0;
 	};
 };
 
-using connection_ptr = std::shared_ptr<nimlib::Server::Types::ConnectionInterface>;
-using socket_ptr = std::unique_ptr<nimlib::Server::Types::TcpSocketInterface>;
+using connection_ptr = std::shared_ptr<nimlib::Server::Types::Connection>;
+using socket_ptr = std::unique_ptr<nimlib::Server::Types::Socket>;
 using connection_id = int;
 using headers_t = std::unordered_map<std::string, std::vector<std::string>>;
 using header_validator = const std::function<bool(const std::string& value, const std::unordered_map<std::string, std::vector<std::string>>& headers)>;

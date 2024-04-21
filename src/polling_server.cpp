@@ -17,7 +17,7 @@ namespace nimlib::Server
 	PollingServer::PollingServer(const std::string& port)
 		: port{ port },
 		server_socket{ nimlib::Server::Decorators::decorate(std::make_unique<TcpSocket>(port)) },
-		connection_pool{ nimlib::Server::ConnectionPool::get_pool() }
+		connection_pool{ nimlib::Server::TcpConnectionPool::get_pool() }
 	{
 		server_socket->tcp_bind();
 		server_socket->tcp_listen();
@@ -40,7 +40,7 @@ namespace nimlib::Server
 			poll_result = poll(sockets.data(), sockets.size(), 10); // TODO: timeout for polling
 			accept_new_connection(sockets);
 			handle_connections(sockets);
-            connection_pool.clean_up();
+			connection_pool.clean_up();
 		}
 	}
 
@@ -89,7 +89,7 @@ namespace nimlib::Server
 			{
 				// TODO: socket might be in a state which we don't handle?
 			}
-		});
+			});
 	}
 
 	void PollingServer::create_pollfds_entry(int socket, pollfd& fds)

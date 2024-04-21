@@ -9,12 +9,12 @@
 
 namespace nimlib::Server::Sockets
 {
-    using nimlib::Server::Types::TcpSocketInterface;
+    using nimlib::Server::Types::Socket;
 
-    struct TcpSocketWithLogger : public TcpSocketInterface
+    struct TcpSocketWithLogger : public Socket
     {
-        TcpSocketWithLogger(std::unique_ptr<TcpSocketInterface> tcp_socket)
-            : TcpSocketInterface{ tcp_socket->get_port(), tcp_socket->get_tcp_socket_descriptor() },
+        TcpSocketWithLogger(std::unique_ptr<Socket> tcp_socket)
+            : Socket{ tcp_socket->get_port(), tcp_socket->get_tcp_socket_descriptor() },
             tcp_socket{ std::move(tcp_socket) },
             log_agent{ nimlib::Server::Logging::Factory::get_agent("socket") }
         {};
@@ -56,7 +56,7 @@ namespace nimlib::Server::Sockets
             return listen_result;
         };
 
-        std::unique_ptr<TcpSocketInterface> tcp_accept()
+        std::unique_ptr<Socket> tcp_accept()
         {
             auto new_socket = tcp_socket->tcp_accept();
 
@@ -115,7 +115,7 @@ namespace nimlib::Server::Sockets
         };
 
     private:
-        std::unique_ptr<TcpSocketInterface> tcp_socket;
+        std::unique_ptr<Socket> tcp_socket;
         std::shared_ptr<nimlib::Server::Logging::LoggerAgent> log_agent;
     };
 };

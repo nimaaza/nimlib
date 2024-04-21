@@ -1,30 +1,23 @@
 #include "http.h"
 
-#include "http_parser.h"
-#include "http_router.h"
-
 #include <sstream>
 
 namespace nimlib::Server::Protocols
 {
-	Http::Http(ConnectionInterface& connection)
+	Http::Http(Connection& connection)
 		: connection{ connection }, http_request{ std::nullopt }
 	{}
 
 	Http::~Http() = default;
 
-	void Http::notify(ConnectionInterface& connection, StreamsProviderInterface& streams)
+	void Http::notify(Connection& connection, StreamsProvider& streams)
 	{
 		std::stringstream& out{ streams.get_output_stream() };
 		out << "done";
 		connection.notify(*this);
 	}
 
-	void Http::notify(
-		ProtocolInterface& protocol,
-		ConnectionInterface& connection,
-		StreamsProviderInterface& streams
-	)
+	void Http::notify(Handler& protocol, Connection& connection, StreamsProvider& streams)
 	{
 		if (!http_request)
 		{

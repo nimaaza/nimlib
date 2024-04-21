@@ -24,9 +24,9 @@ add_executable(test_run
         src/tls/botan/tls_server.cpp
         src/tls/tls_layer.cpp
         src/utils/helpers.cpp
-        src/connection.cpp
-        src/connection_pool.cpp
         src/polling_server.cpp
+        src/tcp_connection.cpp
+        src/tcp_connection_pool.cpp
         src/tcp_socket.cpp)
 target_include_directories(test_run PUBLIC "${PROJECT_BINARY_DIR}")
 target_compile_definitions(test_run PRIVATE NO_TESTING)
@@ -54,7 +54,7 @@ add_executable(unit_tests
         tests/support/tcp_socket.mock.cpp
         tests/utils/helpers.test.cpp
         tests/utils/state_manager.test.cpp
-        tests/connection.test.cpp
+        tests/tcp_connection.test.cpp
         tests/polling_server.test.cpp
         src/http/http.cpp
         src/http/http_parser.cpp
@@ -68,9 +68,9 @@ add_executable(unit_tests
         src/tls/botan/tls_server.cpp
         src/tls/tls_layer.cpp
         src/utils/helpers.cpp
-        src/connection.cpp
-        src/connection_pool.cpp
         src/polling_server.cpp
+        src/tcp_connection.cpp
+        src/tcp_connection_pool.cpp
         src/tcp_socket.cpp)
 target_include_directories(unit_tests PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests GTest::gtest_main Botan::Botan)
@@ -80,18 +80,18 @@ add_executable(unit_tests_state_manager
 target_include_directories(unit_tests_state_manager PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_state_manager GTest::gtest_main)
 
-add_executable(unit_tests_connection
-        tests/connection.test.cpp
+add_executable(unit_tests_tcp_connection
+        tests/tcp_connection.test.cpp
         tests/support/tcp_socket.mock.cpp
-        src/connection.cpp)
-target_include_directories(unit_tests_connection PUBLIC "${PROJECT_BINARY_DIR}")
-target_link_libraries(unit_tests_connection GTest::gtest_main Botan::Botan)
+        src/tcp_connection.cpp)
+target_include_directories(unit_tests_tcp_connection PUBLIC "${PROJECT_BINARY_DIR}")
+target_link_libraries(unit_tests_tcp_connection GTest::gtest_main Botan::Botan)
 
 add_executable(unit_tests_polling_server
         tests/polling_server.test.cpp
         src/polling_server.cpp
         src/tcp_socket.cpp
-        src/connection.cpp
+        src/tcp_connection.cpp
         src/http/http.cpp
         src/http/http_parser.cpp
         src/http/http_router.cpp
@@ -99,7 +99,7 @@ add_executable(unit_tests_polling_server
         src/tls/botan/callbacks.cpp
         src/tls/botan/credentials.cpp
         src/tls/botan/tls_server.cpp
-        src/connection_pool.cpp
+        src/tcp_connection_pool.cpp
         src/utils/helpers.cpp)
 target_include_directories(unit_tests_polling_server PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_polling_server GTest::gtest_main Botan::Botan)
@@ -112,5 +112,9 @@ target_include_directories(unit_tests_http_parser PUBLIC "${PROJECT_BINARY_DIR}"
 target_link_libraries(unit_tests_http_parser GTest::gtest_main Botan::Botan)
 
 include(GoogleTest)
-gtest_discover_tests(unit_tests unit_tests_connection unit_tests_polling_server)
+gtest_discover_tests(unit_tests
+        unit_tests_state_manager
+        unit_tests_tcp_connection
+        unit_tests_polling_server
+        unit_tests_http_parser)
 # -------------------------------------------------------------------

@@ -14,12 +14,12 @@
 namespace nimlib::Server::Sockets
 {
     TcpSocket::TcpSocket(int tcp_socket, const std::string& port) :
-        TcpSocketInterface{ port, tcp_socket }
+        Socket{ port, tcp_socket }
     {
         // TODO: can I validate the socket instead of blindly accepting it?
     }
 
-    TcpSocket::TcpSocket(const std::string& port) : TcpSocketInterface{ port, 0 }
+    TcpSocket::TcpSocket(const std::string& port) : Socket{ port, 0 }
     {
         addrinfo hints;
         memset(&hints, 0, sizeof(hints));
@@ -108,7 +108,7 @@ namespace nimlib::Server::Sockets
         return listen(tcp_socket_descriptor, MAX_CONNECTIONS);
     }
 
-    std::unique_ptr<TcpSocketInterface> TcpSocket::tcp_accept()
+    std::unique_ptr<Socket> TcpSocket::tcp_accept()
     {
         sockaddr_storage client_address{};
         socklen_t client_len = sizeof(client_address);

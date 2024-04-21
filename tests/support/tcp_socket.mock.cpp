@@ -14,7 +14,7 @@ namespace nimlib::Server::Sockets
         int max_bytes_to_read,
         int max_bytes_to_write
     )
-        : TcpSocketInterface{ "", tcp_socket },
+        : Socket{ "", tcp_socket },
         max_bytes_to_read{ max_bytes_to_read },
         max_bytes_to_write{ max_bytes_to_write }
     {
@@ -33,7 +33,7 @@ namespace nimlib::Server::Sockets
 
     int MockTcpSocket::tcp_listen() { return 1; }
 
-    std::unique_ptr<TcpSocketInterface> MockTcpSocket::tcp_accept()
+    std::unique_ptr<Socket> MockTcpSocket::tcp_accept()
     {
         static int last_accepted_socket{ 10 };
         last_accepted_socket += 1;

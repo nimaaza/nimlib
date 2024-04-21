@@ -1,31 +1,32 @@
 #pragma once
 
 #include "http_parser.h"
+#include "http_router.h"
 #include "../common/types.h"
 
-using nimlib::Server::Types::ConnectionInterface;
-using nimlib::Server::Types::StreamsProviderInterface;
+using nimlib::Server::Types::Connection;
+using nimlib::Server::Types::StreamsProvider;
 
 namespace nimlib::Server::Protocols
 {
-    using nimlib::Server::Types::ProtocolInterface;
+    using nimlib::Server::Types::Handler;
     using ParseResult = nimlib::Server::Constants::ParseResult;
     class HttpRequest;
 
-    class Http : public ProtocolInterface
+    class Http : public Handler
     {
     public:
-        Http(ConnectionInterface& connection);
+        Http(Connection& connection);
         ~Http();
 
-        void notify(ConnectionInterface& connection, StreamsProviderInterface& streams) override;
-        void notify(ProtocolInterface& protocol, ConnectionInterface& connection, StreamsProviderInterface& streams) override;
+        void notify(Connection& connection, StreamsProvider& streams) override;
+        void notify(Handler& protocol, Connection& connection, StreamsProvider& streams) override;
         bool wants_more_bytes() override;
         bool wants_to_write() override;
         bool wants_to_live() override;
 
     private:
-        ConnectionInterface& connection;
+        Connection& connection;
         std::optional<HttpRequest> http_request{ std::nullopt };
     };
 };

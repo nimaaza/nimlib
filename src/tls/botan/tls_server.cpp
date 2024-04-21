@@ -10,11 +10,12 @@
 namespace nimlib::Server::Protocols::BotanSpec
 {
 	std::unique_ptr<Botan::TLS::Server> get_tls_server(
-		ConnectionInterface& connection,
-		ProtocolInterface& tls_layer,
-		StreamsProviderInterface& encrypted_streams,
-		StreamsProviderInterface& decrypted_streams,
-		std::shared_ptr<ProtocolInterface> next)
+		Connection& connection,
+		Handler& tls_layer,
+		StreamsProvider& encrypted_streams,
+		StreamsProvider& decrypted_streams,
+		std::shared_ptr<Handler> next
+	)
 	{
 		const std::string crt_path = "../cert/server.crt";
 		const std::string key_path = "../cert/server.key";

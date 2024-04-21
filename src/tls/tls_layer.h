@@ -7,31 +7,24 @@
 
 #include "../common/types.h"
 
-using nimlib::Server::Types::StreamsProviderInterface;
-using nimlib::Server::Types::ProtocolInterface;
-using nimlib::Server::Types::ConnectionInterface;
+using nimlib::Server::Types::StreamsProvider;
+using nimlib::Server::Types::Handler;
+using nimlib::Server::Types::Connection;
 
 namespace nimlib::Server::Protocols
 {
-	class TlsLayer : public ProtocolInterface, public StreamsProviderInterface
+	class TlsLayer : public Handler, public StreamsProvider
 	{
 	public:
 		TlsLayer(
-			ConnectionInterface& connection,
-			StreamsProviderInterface& connection_encrypted_streams,
-			std::shared_ptr<ProtocolInterface> next = nullptr
+			Connection& connection,
+			StreamsProvider& connection_encrypted_streams,
+			std::shared_ptr<Handler> next = nullptr
 		);
 		~TlsLayer();
 
-		void notify(
-			ConnectionInterface& connection,
-			StreamsProviderInterface& streams
-		) override;
-		void notify(
-			ProtocolInterface& protocol,
-			ConnectionInterface& connection,
-			StreamsProviderInterface& streams
-		) override;
+		void notify(Connection& connection, StreamsProvider& streams) override;
+		void notify(Handler& protocol, Connection& connection, StreamsProvider& streams) override;
 		bool wants_more_bytes() override;
 		bool wants_to_write() override;
 		bool wants_to_live() override;
@@ -41,10 +34,10 @@ namespace nimlib::Server::Protocols
 
 	private:
 		bool tls_continue{ true };
-		StreamsProviderInterface& connection_encrypted_streams;
+		StreamsProvider& connection_encrypted_streams;
 		std::stringstream decrypted_input{};
 		std::stringstream decrypted_output{};
 		std::unique_ptr<Botan::TLS::Server> tls_server;
-		std::shared_ptr<ProtocolInterface> next;
+		std::shared_ptr<Handler> next;
 	};
 };

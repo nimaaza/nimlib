@@ -7,9 +7,9 @@
 
 namespace nimlib::Server::Sockets
 {
-    using nimlib::Server::Types::TcpSocketInterface;
+    using nimlib::Server::Types::Socket;
 
-    struct TcpSocket : public TcpSocketInterface
+    struct TcpSocket : public Socket
     {
         TcpSocket(int tcp_socket, const std::string& port = "");
         TcpSocket(const std::string& port);
@@ -23,7 +23,7 @@ namespace nimlib::Server::Sockets
         // int tcp_connect(const std::string& addr, const std::string& port) override;
         int tcp_bind() override;
         int tcp_listen() override;
-        std::unique_ptr<TcpSocketInterface> tcp_accept() override;
+        std::unique_ptr<Socket> tcp_accept() override;
         void tcp_get_host_name(const sockaddr& socket_address, std::string& host_name) override;
         int tcp_read(std::span<uint8_t> buffer, int flags) override;
         int tcp_send(std::span<uint8_t> buffer) override;

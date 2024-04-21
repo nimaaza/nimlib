@@ -8,26 +8,26 @@
 
 namespace nimlib::Server
 {
-    class ConnectionPool
+    class TcpConnectionPool
     {
     private:
-        ConnectionPool();
+        TcpConnectionPool();
 
     public:
 
-        ~ConnectionPool();
+        ~TcpConnectionPool();
 
-        ConnectionPool(const ConnectionPool&) = delete;
-        ConnectionPool& operator=(const ConnectionPool&) = delete;
-        ConnectionPool(ConnectionPool&&) = delete;
-        ConnectionPool& operator=(ConnectionPool&&) = delete;
+        TcpConnectionPool(const TcpConnectionPool&) = delete;
+        TcpConnectionPool& operator=(const TcpConnectionPool&) = delete;
+        TcpConnectionPool(TcpConnectionPool&&) = delete;
+        TcpConnectionPool& operator=(TcpConnectionPool&&) = delete;
 
         void record_connection(socket_ptr s);
         connection_ptr find(connection_id id) const;
         const std::vector<connection_ptr>& get_all() const;
         void clean_up();
 
-        static ConnectionPool& get_pool();
+        static TcpConnectionPool& get_pool();
 
     private:
         std::vector<connection_ptr> connections{};

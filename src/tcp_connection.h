@@ -9,27 +9,27 @@
 
 namespace nimlib::Server
 {
-    using nimlib::Server::Types::StreamsProviderInterface;
-    using nimlib::Server::Types::ConnectionInterface;
-    using nimlib::Server::Types::TcpSocketInterface;
-    using nimlib::Server::Types::ProtocolInterface;
+    using nimlib::Server::Types::StreamsProvider;
+    using nimlib::Server::Types::Connection;
+    using nimlib::Server::Types::Socket;
+    using nimlib::Server::Types::Handler;
     using nimlib::Server::Constants::ServerDirective;
     using nimlib::Server::Constants::ConnectionState;
 
-    class Connection : public ConnectionInterface, public StreamsProviderInterface
+    class TcpConnection : public Connection, public StreamsProvider
     {
     public:
-        Connection(std::unique_ptr<TcpSocketInterface>, connection_id, size_t buffer_size = 10240);
-        ~Connection();
+        TcpConnection(std::unique_ptr<Socket>, connection_id, size_t buffer_size = 10240);
+        ~TcpConnection();
 
-        Connection(const Connection&) = delete;
-        Connection& operator=(const Connection&) = delete;
-        Connection(Connection&&) noexcept = delete;
-        Connection& operator=(Connection&&) noexcept = delete;
+        TcpConnection(const TcpConnection&) = delete;
+        TcpConnection& operator=(const TcpConnection&) = delete;
+        TcpConnection(TcpConnection&&) noexcept = delete;
+        TcpConnection& operator=(TcpConnection&&) noexcept = delete;
 
         void notify(ServerDirective directive) override;
-        void notify(ProtocolInterface& protocol) override;
-        void set_protocol(std::shared_ptr<ProtocolInterface>) override;
+        void notify(Handler& protocol) override;
+        void set_protocol(std::shared_ptr<Handler>) override;
         void halt() override;
         ConnectionState get_state() override;
         const int get_id() const override;
@@ -54,8 +54,8 @@ namespace nimlib::Server
         };
         std::stringstream input_stream{};
         std::stringstream output_stream{};
-        std::unique_ptr<TcpSocketInterface> socket;
-        std::shared_ptr<ProtocolInterface> protocol;
+        std::unique_ptr<Socket> socket;
+        std::shared_ptr<Handler> protocol;
         // nimlib::Server::Metrics::Measurements::Duration<long> response_timer;
 
         static const std::unordered_map<ConnectionState, std::vector<ConnectionState>> states_transition_map;

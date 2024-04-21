@@ -4,9 +4,9 @@
 namespace nimlib::Server::Protocols
 {
 	TlsLayer::TlsLayer(
-		ConnectionInterface& connection,
-		StreamsProviderInterface& connection_encrypted_streams,
-		std::shared_ptr<ProtocolInterface> next
+		Connection& connection,
+		StreamsProvider& connection_encrypted_streams,
+		std::shared_ptr<Handler> next
 	) :
 		connection_encrypted_streams{ connection_encrypted_streams },
 		next{ next }
@@ -22,7 +22,7 @@ namespace nimlib::Server::Protocols
 
 	TlsLayer::~TlsLayer() = default;
 
-	void TlsLayer::notify(ConnectionInterface& connection, StreamsProviderInterface& streams)
+	void TlsLayer::notify(Connection& connection, StreamsProvider& streams)
 	{
 		try
 		{
@@ -40,11 +40,7 @@ namespace nimlib::Server::Protocols
 		}
 	}
 
-	void TlsLayer::notify(
-		ProtocolInterface& protocol,
-		ConnectionInterface& connection,
-		StreamsProviderInterface& streams
-	)
+	void TlsLayer::notify(Handler& protocol, Connection& connection, StreamsProvider& streams)
 	{
 		if (next->wants_to_write())
 		{
