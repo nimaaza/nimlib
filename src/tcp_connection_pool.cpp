@@ -7,6 +7,7 @@
 #include <memory>
 #include <cassert>
 
+using nimlib::Server::Types::Connection;
 using nimlib::Server::TcpConnection;
 using nimlib::Server::ConnectionState;
 
@@ -14,24 +15,29 @@ namespace nimlib::Server
 {
     TcpConnectionPool::TcpConnectionPool()
     {
-        connections.resize(65'000);
+        connections.resize(CONNECTIONS);
+        for (int i = 0; i < connections.size(); i++)
+        {
+            connections[i] = std::move(std::make_shared<TcpConnection>(i));
+        }
     }
 
     TcpConnectionPool::~TcpConnectionPool() = default;
 
     void TcpConnectionPool::record_connection(socket_ptr s)
     {
-        assert(connections[s->get_tcp_socket_descriptor()] == nullptr);
-        connection_id id = s->get_tcp_socket_descriptor();
-        auto connection = std::make_shared<TcpConnection>(std::move(s), id);
-        auto http_handler = std::make_shared<nimlib::Server::Handlers::Http>(*connection);
+        assert(connections[s->get_tcp_socket_descriptor()] != nullptr);
+
+        auto& connection = dynamic_cast<TcpConnection&>(*connections[s->get_tcp_socket_descriptor()]);
+        connection.accept_socket(std::move(s));
+        auto http_handler = std::make_shared<nimlib::Server::Handlers::Http>(connection);
         auto tls_handler = std::make_shared<nimlib::Server::Handlers::TlsLayer>(
-            *connection,
-            *connection,
+            connection,
+            connection,
             http_handler
         );
-        connection->set_handler(tls_handler);
-        connections[id] = connection;
+
+        connection.set_handler(tls_handler);
     }
 
     connection_ptr TcpConnectionPool::find(connection_id id) const
@@ -48,15 +54,14 @@ namespace nimlib::Server
     {
         for (auto& connection : connections)
         {
-            if (connection)
+            assert(connection != nullptr);
+
+            auto connection_state = connection->get_state();
+            if (connection_state == ConnectionState::CON_ERROR || connection_state == ConnectionState::DONE)
             {
-                auto connection_state = connection->get_state();
-                if (connection_state == ConnectionState::CON_ERROR || connection_state == ConnectionState::DONE)
-                {
-                    connection.reset();
-                    connection = nullptr;
-                }
+                connection->halt();
             }
+
         }
     }
 

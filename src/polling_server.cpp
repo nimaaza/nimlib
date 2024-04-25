@@ -51,8 +51,9 @@ namespace nimlib::Server
 
 		for (const auto& connection : connection_pool.get_all())
 		{
-			if (connection)
+			if (connection->get_state() != ConnectionState::INACTIVE)
 			{
+				assert(connection->get_id() > 0);
 				pollfd fds{};
 				create_pollfds_entry(connection->get_id(), fds);
 				sockets.push_back(fds);
@@ -89,7 +90,7 @@ namespace nimlib::Server
 			{
 				// TODO: socket might be in a state which we don't handle?
 			}
-        });
+			});
 	}
 
 	void PollingServer::create_pollfds_entry(int socket, pollfd& fds)

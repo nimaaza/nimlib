@@ -79,8 +79,11 @@ namespace nimlib::Server
 
     void TcpConnection::halt()
     {
-        connection_state.set_state(ConnectionState::CON_ERROR);
-        // socket->tcp_close(); TODO: it's better to close the socket carefully.
+        connection_state.set_state(ConnectionState::INACTIVE);
+        input_stream.str("");
+        output_stream.str("");
+        socket->tcp_close();
+        socket.reset();
     }
 
     ConnectionState TcpConnection::get_state() { return connection_state.get_state(); }

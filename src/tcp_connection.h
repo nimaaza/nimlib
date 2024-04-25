@@ -20,6 +20,11 @@ namespace nimlib::Server
     {
     public:
         TcpConnection(std::unique_ptr<Socket>, connection_id, size_t buffer_size = 10240);
+        TcpConnection(connection_id id, size_t buffer_size = 10240)
+            : id{ id }, buffer_size{ buffer_size }, socket{ nullptr }, handler{ nullptr }
+        {
+            connection_state.set_state(ConnectionState::INACTIVE);
+        };
         ~TcpConnection();
 
         TcpConnection(const TcpConnection&) = delete;
@@ -27,6 +32,11 @@ namespace nimlib::Server
         TcpConnection(TcpConnection&&) noexcept = delete;
         TcpConnection& operator=(TcpConnection&&) noexcept = delete;
 
+        void accept_socket(std::unique_ptr<Socket> s) override
+        {
+            socket = std::move(s);
+            connection_state.set_state(ConnectionState::STARTING);
+        }
         void notify(ServerDirective directive) override;
         void notify(Handler& handler) override;
         void set_handler(std::shared_ptr<Handler>) override;

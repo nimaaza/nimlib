@@ -4,9 +4,7 @@
 
 namespace nimlib::Server::Handlers
 {
-	Http::Http(Connection& connection)
-		: connection{ connection }, http_request{ std::nullopt }
-	{}
+	Http::Http(Connection& connection) : connection{ connection }, http_request{ std::nullopt } {}
 
 	Http::~Http() = default;
 

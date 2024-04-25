@@ -31,5 +31,6 @@ namespace nimlib::Server
 
     private:
         std::vector<connection_ptr> connections{};
+        const int CONNECTIONS = 65'000;
     };
 };

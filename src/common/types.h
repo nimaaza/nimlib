@@ -73,6 +73,7 @@ namespace nimlib::Server::Types
 	struct Connection
 	{
 		virtual ~Connection() = default;
+        virtual void accept_socket(std::unique_ptr<Socket> s) = 0;
 		virtual void notify(ServerDirective directive) = 0;
 		virtual void notify(Handler& handler) = 0;
 		virtual void set_handler(std::shared_ptr<Handler>) = 0;
