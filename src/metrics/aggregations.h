@@ -1,12 +1,14 @@
 #pragma once
 
-// #include <cstddef>
-
 #include "timer.h"
+
+#include <limits>
+#include <queue>
+#include <vector>
 
 namespace nimlib::Server::Metrics::Aggregations
 {
-    template <typename T>
+    template<typename T>
     struct Aggregator
     {
         virtual ~Aggregator() = default;
@@ -14,13 +16,16 @@ namespace nimlib::Server::Metrics::Aggregations
         virtual bool involve(T) = 0;
         virtual bool get_val(T&) = 0;
     };
+};
 
+namespace nimlib::Server::Metrics::Aggregations
+{
     template <typename T>
     class Increment : public Aggregator<T>
     {
     public:
         Increment();
-        ~Increment();
+        ~Increment() = default;
 
         bool involve(T m = 1) override;
         bool get_val(T& m) override;
@@ -34,7 +39,7 @@ namespace nimlib::Server::Metrics::Aggregations
     {
     public:
         Sum();
-        ~Sum();
+        ~Sum() = default;
 
         bool involve(T m) override;
         bool get_val(T& m) override;
@@ -48,7 +53,7 @@ namespace nimlib::Server::Metrics::Aggregations
     {
     public:
         Max();
-        ~Max();
+        ~Max() = default;
 
         bool involve(T m) override;
         bool get_val(T& m) override;
@@ -62,7 +67,7 @@ namespace nimlib::Server::Metrics::Aggregations
     {
     public:
         Min();
-        ~Min();
+        ~Min() = default;
 
         bool involve(T m) override;
         bool get_val(T& m) override;
@@ -76,7 +81,7 @@ namespace nimlib::Server::Metrics::Aggregations
     {
     public:
         Avg();
-        ~Avg();
+        ~Avg() = default;
 
         bool involve(T m) override;
         bool get_val(T& m) override;
@@ -88,19 +93,34 @@ namespace nimlib::Server::Metrics::Aggregations
     };
 
     template <typename T>
-    class RatePerSecond : public Aggregator<T>
+    class Med : public Aggregator<T>
     {
     public:
-        RatePerSecond();
-        ~RatePerSecond();
+        Med();
+        ~Med() = default;
+
+        bool involve(T m) override;
+        bool get_val(T& m) override;
+
+    private:
+        std::priority_queue<T, std::vector<T>, std::less<T>> less{};
+        std::priority_queue<T, std::vector<T>, std::greater<T>> more{};
+    };
+
+    template <typename T>
+    class AvgRatePerSecond : public Aggregator<T>
+    {
+    public:
+        AvgRatePerSecond();
+        ~AvgRatePerSecond() = default;
 
         bool involve(T m) override;
         bool get_val(T& m) override;
 
     private:
         nimlib::Server::Metrics::Measurements::Timer timer{};
-        Sum<T> sum_of_time{};
-        Sum<T> sum_of_count{};
+        Sum<T> duration{};
+        Sum<T> count{};
     };
 };
 
@@ -108,9 +128,6 @@ namespace nimlib::Server::Metrics::Aggregations
 {
     template <typename T>
     Increment<T>::Increment() : count{} {}
-
-    template <typename T>
-    Increment<T>::~Increment() {}
 
     template <typename T>
     bool Increment<T>::involve(T m)
@@ -133,9 +150,6 @@ namespace nimlib::Server::Metrics::Aggregations
     Sum<T>::Sum() : sum{} {}
 
     template <typename T>
-    Sum<T>::~Sum() {}
-
-    template <typename T>
     bool Sum<T>::involve(T m)
     {
         sum += m;
@@ -153,10 +167,7 @@ namespace nimlib::Server::Metrics::Aggregations
 namespace nimlib::Server::Metrics::Aggregations
 {
     template <typename T>
-    Max<T>::Max() : max{ -1000000000 } {} // TODO: initialize with minus infinity
-
-    template <typename T>
-    Max<T>::~Max() {}
+    Max<T>::Max() : max{ std::numeric_limits<T>::min() } {}
 
     template <typename T>
     bool Max<T>::involve(T m)
@@ -176,10 +187,7 @@ namespace nimlib::Server::Metrics::Aggregations
 namespace nimlib::Server::Metrics::Aggregations
 {
     template <typename T>
-    Min<T>::Min() : min{ 1000000000 } {} // TODO: initialize with infinity
-
-    template <typename T>
-    Min<T>::~Min() {}
+    Min<T>::Min() : min{ std::numeric_limits<T>::max() } {}
 
     template <typename T>
     bool Min<T>::involve(T m)
@@ -202,9 +210,6 @@ namespace nimlib::Server::Metrics::Aggregations
     Avg<T>::Avg() : avg{}, increment{}, sum{} {}
 
     template <typename T>
-    Avg<T>::~Avg() {}
-
-    template <typename T>
     bool Avg<T>::involve(T m)
     {
         increment.involve(1);
@@ -218,10 +223,9 @@ namespace nimlib::Server::Metrics::Aggregations
         T s{};
         T c{};
 
-        if (sum.get_val(s) && increment.get_val(c))
+        if (sum.get_val(s) && increment.get_val(c) && c != 0)
         {
             m = s / c;
-
             return true;
         }
         else
@@ -234,20 +238,77 @@ namespace nimlib::Server::Metrics::Aggregations
 namespace nimlib::Server::Metrics::Aggregations
 {
     template <typename T>
-    RatePerSecond<T>::RatePerSecond() { timer.begin(); }
+    Med<T>::Med()
+    {
+        less.push(std::numeric_limits<T>::min());
+        more.push((std::numeric_limits<T>::max() - 1) * 1);
+    }
 
     template <typename T>
-    RatePerSecond<T>::~RatePerSecond() {}
+    bool Med<T>::involve(T m)
+    {
+        m <= less.top() ? less.push(m) : more.push(m);
+
+        auto count = less.size() + more.size();
+
+        if (count % 2 == 0 && less.size() < more.size())
+        {
+            while (less.size() != more.size())
+            {
+                less.push(more.top());
+                more.pop();
+            }
+        }
+        else if (count % 2 == 0 && less.size() > more.size())
+        {
+            while (less.size() != more.size())
+            {
+                more.push(less.top());
+                less.pop();
+            }
+        }
+        else if (count % 2 != 0 && less.size() < more.size() + 1)
+        {
+            while (less.size() != more.size() + 1)
+            {
+                less.push(more.top());
+                more.pop();
+            }
+        }
+        else if (count % 2 != 0 && less.size() > more.size() + 1)
+        {
+            while (less.size() != more.size() + 1)
+            {
+                more.push(less.top());
+                less.pop();
+            }
+        }
+
+        return true;
+    }
+
+    template<typename T>
+    bool Med<T>::get_val(T& m)
+    {
+        m = less.top();
+        return true;
+    }
+}
+
+namespace nimlib::Server::Metrics::Aggregations
+{
+    template <typename T>
+    AvgRatePerSecond<T>::AvgRatePerSecond() { timer.begin(); }
 
     template <typename T>
-    bool RatePerSecond<T>::involve(T m)
+    bool AvgRatePerSecond<T>::involve(T m)
     {
         T latency;
 
         if (timer.end(latency))
         {
             latency /= 1'000'000'000; // Converting to seconds.
-            bool value_collection_result = sum_of_time.involve(latency) && sum_of_count.involve(m);
+            bool value_collection_result = duration.involve(latency) && count.involve(m);
             timer.begin();
             return value_collection_result;
         }
@@ -258,15 +319,15 @@ namespace nimlib::Server::Metrics::Aggregations
     }
 
     template <typename T>
-    bool RatePerSecond<T>::get_val(T& m)
+    bool AvgRatePerSecond<T>::get_val(T& m)
     {
-        T count{};
-        T time{};
+        T c{};
+        T t{};
 
-        bool value_collection_result = sum_of_count.get_val(count) && sum_of_time.get_val(time);
+        bool value_collection_result = count.get_val(c) && duration.get_val(t);
         if (value_collection_result)
         {
-            m = count / time;
+            m = c / t;
         }
 
         return value_collection_result;

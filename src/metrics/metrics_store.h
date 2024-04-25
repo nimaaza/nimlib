@@ -13,10 +13,10 @@ namespace nimlib::Server::Metrics
     {
         using metric_ptr = std::shared_ptr<nimlib::Server::Metrics::Metric<T>>;
     private:
-        MetricsStore();
+        MetricsStore() = default;
 
     public:
-        ~MetricsStore();
+        ~MetricsStore() = default;
 
         MetricsStore(const MetricsStore&) = delete;
         MetricsStore& operator=(const MetricsStore&) = delete;
@@ -31,7 +31,7 @@ namespace nimlib::Server::Metrics
         static MetricsStore& get_instance();
 
     private:
-        std::unordered_map<std::string, metric_ptr> metric_register{};
+        std::unordered_map<std::string, metric_ptr> metrics_register{};
     };
 };
 
@@ -41,22 +41,16 @@ namespace nimlib::Server::Metrics
     using metric_ptr = std::shared_ptr<nimlib::Server::Metrics::Metric<T>>;
 
     template <typename T>
-    MetricsStore<T>::MetricsStore() {}
-
-    template <typename T>
-    MetricsStore<T>::~MetricsStore() {}
-
-    template <typename T>
     void MetricsStore<T>::register_metric(metric_ptr m)
     {
-        metric_register.insert_or_assign(m->get_name(), m);
+        metrics_register.insert_or_assign(m->get_name(), m);
     }
 
     template <typename T>
     metric_ptr<T> MetricsStore<T>::get_metric(const std::string& name)
     {
-        auto i = metric_register.find(name);
-        return (i != metric_register.end()) ? i->second : nullptr;
+        auto it = metrics_register.find(name);
+        return (it != metrics_register.end()) ? it->second : nullptr;
     }
 
     template <typename T>

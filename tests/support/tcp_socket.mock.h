@@ -14,8 +14,8 @@ namespace nimlib::Server::Sockets
 
         MockTcpSocket(const MockTcpSocket&) = delete;
         MockTcpSocket& operator=(const MockTcpSocket&) = delete;
-        MockTcpSocket(MockTcpSocket&&) noexcept;
-        MockTcpSocket& operator=(MockTcpSocket&&) noexcept;
+        MockTcpSocket(MockTcpSocket&&) noexcept = delete;
+        MockTcpSocket& operator=(MockTcpSocket&&) noexcept = delete;
 
         // int tcp_connect(const std::string& addr, const std::string& port) override;
         int tcp_bind() override;

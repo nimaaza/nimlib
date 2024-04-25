@@ -5,7 +5,7 @@
 
 #include "common/types.h"
 #include "utils/state_manager.h"
-//#include "metrics/measurements.h"
+#include "metrics/measurements.h"
 
 namespace nimlib::Server
 {
@@ -20,25 +20,17 @@ namespace nimlib::Server
     {
     public:
         TcpConnection(std::unique_ptr<Socket>, connection_id, size_t buffer_size = 10240);
-        TcpConnection(connection_id id, size_t buffer_size = 10240)
-            : id{ id }, buffer_size{ buffer_size }, socket{ nullptr }, handler{ nullptr }
-        {
-            connection_state.set_state(ConnectionState::INACTIVE);
-        };
-        ~TcpConnection();
+        explicit TcpConnection(connection_id id, size_t buffer_size = 10240);
+        ~TcpConnection() = default;
 
         TcpConnection(const TcpConnection&) = delete;
         TcpConnection& operator=(const TcpConnection&) = delete;
         TcpConnection(TcpConnection&&) noexcept = delete;
         TcpConnection& operator=(TcpConnection&&) noexcept = delete;
 
-        void accept_socket(std::unique_ptr<Socket> s) override
-        {
-            socket = std::move(s);
-            connection_state.set_state(ConnectionState::STARTING);
-        }
+        void accept_socket(std::unique_ptr<Socket> s) override;
         void notify(ServerDirective directive) override;
-        void notify(Handler& handler) override;
+        void notify(Handler& notifying_handler) override;
         void set_handler(std::shared_ptr<Handler>) override;
         void halt() override;
         ConnectionState get_state() override;
@@ -66,7 +58,7 @@ namespace nimlib::Server
         std::stringstream output_stream{};
         std::unique_ptr<Socket> socket;
         std::shared_ptr<Handler> handler;
-        // nimlib::Server::Metrics::Measurements::Duration<long> response_timer;
+        nimlib::Server::Metrics::Measurements::Duration<long> response_timer;
 
         static const std::unordered_map<ConnectionState, std::vector<ConnectionState>> states_transition_map;
         static const std::unordered_map<ConnectionState, long> state_time_outs;

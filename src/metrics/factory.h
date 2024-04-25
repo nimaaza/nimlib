@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../common/types.h"
 #include "metric.h"
 #include "metrics_store.h"
 
@@ -13,10 +14,16 @@ namespace nimlib::Server::Metrics
     {
         using metric_ptr = std::shared_ptr<nimlib::Server::Metrics::Metric<T>>;
     private:
-        Factory(const std::string& metric_name);
+        explicit Factory(const std::string& metric_name);
 
     public:
-        ~Factory();
+        ~Factory() = default;
+
+
+        Factory(const Factory&) = delete;
+        Factory& operator=(const Factory&) = delete;
+        Factory(Factory&&) noexcept = default;
+        Factory& operator=(Factory&&) noexcept = delete;
 
         Factory& measure_increment();
         Factory& measure_avg();
@@ -26,7 +33,7 @@ namespace nimlib::Server::Metrics
 
         metric_ptr get();
 
-        static Factory instanciate_metric(const std::string& metric_name);
+        static Factory instantiate_metric(const std::string& metric_name);
 
     private:
         metric_ptr metric;
@@ -40,9 +47,6 @@ namespace nimlib::Server::Metrics
     {
         metric = std::make_shared<Metric<T>>(metric_name);
     }
-
-    template <typename T>
-    Factory<T>::~Factory() {}
 
     template <typename T>
     Factory<T>& Factory<T>::measure_increment()
@@ -93,7 +97,7 @@ namespace nimlib::Server::Metrics
     }
 
     template <typename T>
-    Factory<T> Factory<T>::instanciate_metric(const std::string& metric_name)
+    Factory<T> Factory<T>::instantiate_metric(const std::string& metric_name)
     {
         Factory metric_factory{ metric_name };
         return metric_factory;

@@ -8,7 +8,7 @@ int main()
     using nimlib::Server::Decorators::decorate;
     using metrics_factory = nimlib::Server::Metrics::Factory<long>;
 
-    metrics_factory::instanciate_metric(nimlib::Server::Constants::TIME_TO_RESPONSE)
+    metrics_factory::instantiate_metric(nimlib::Server::Constants::TIME_TO_RESPONSE)
         .measure_avg()
         .measure_max()
         .get();

@@ -13,8 +13,8 @@ namespace nimlib::Server::Metrics
     public:
         using aggregator_ptr = std::shared_ptr<nimlib::Server::Metrics::Aggregations::Aggregator<T>>;
 
-        Metric(const std::string& name);
-        ~Metric();
+        explicit Metric(const std::string& name);
+        ~Metric() = default;
 
         Metric(const Metric&) = delete;
         Metric& operator=(const Metric&) = delete;
@@ -38,9 +38,6 @@ namespace nimlib::Server::Metrics
     Metric<T>::Metric(const std::string& name) : name{ name } {}
 
     template <typename T>
-    Metric<T>::~Metric() {}
-
-    template <typename T>
     Metric<T>& Metric<T>::register_aggregator(aggregator_ptr agg)
     {
         if (agg) aggregators.push_back(agg);
@@ -52,7 +49,7 @@ namespace nimlib::Server::Metrics
     {
         bool well_received{ true };
 
-        for (auto agg : aggregators)
+        for (auto& agg : aggregators)
         {
             well_received = well_received && agg->involve(m);
         }

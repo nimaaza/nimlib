@@ -1,34 +1,35 @@
 #include "timer.h"
 
-nimlib::Server::Metrics::Measurements::Timer::Timer() : then{ std::chrono::high_resolution_clock::now() } {}
-
-nimlib::Server::Metrics::Measurements::Timer::~Timer() {}
-
-bool nimlib::Server::Metrics::Measurements::Timer::begin()
+namespace nimlib::Server::Metrics::Measurements
 {
-    if (timing)
-    {
-        return false;
-    }
-    else
-    {
-        timing = true;
-        then = std::chrono::high_resolution_clock::now();
-        return true;
-    }
-}
+    Timer::Timer() : then{ std::chrono::high_resolution_clock::now() } {}
 
-bool nimlib::Server::Metrics::Measurements::Timer::end(long& latency)
-{
-    if (!timing)
+    bool Timer::begin()
     {
-        return false;
+        if (timing)
+        {
+            return false;
+        }
+        else
+        {
+            timing = true;
+            then = std::chrono::high_resolution_clock::now();
+            return true;
+        }
     }
-    else
+
+    bool Timer::end(long& duration)
     {
-        auto now = std::chrono::high_resolution_clock::now();
-        latency = std::chrono::duration_cast<std::chrono::nanoseconds>(now - then).count();
-        timing = false;
-        return true;
+        if (!timing)
+        {
+            return false;
+        }
+        else
+        {
+            auto now = std::chrono::high_resolution_clock::now();
+            duration = std::chrono::duration_cast<std::chrono::nanoseconds>(now - then).count();
+            timing = false;
+            return true;
+        }
     }
 }

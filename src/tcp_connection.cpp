@@ -30,20 +30,30 @@ namespace nimlib::Server
     TcpConnection::TcpConnection(std::unique_ptr<Socket> s, connection_id id, size_t buffer_size)
         : id{ id },
         buffer_size{ buffer_size },
-        socket{ std::move(s) }
-        // response_timer{ nimlib::Server::Constants::TIME_TO_RESPONSE }
+        socket{ std::move(s) },
+        response_timer{ nimlib::Server::Constants::TIME_TO_RESPONSE }
     {
-        // response_timer.start();
-
         if (!this->socket)
         {
             connection_state.set_state(ConnectionState::CON_ERROR);
         }
     }
 
-    TcpConnection::~TcpConnection()
+    TcpConnection::TcpConnection(connection_id id, size_t buffer_size)
+        : id{ id },
+        buffer_size{ buffer_size },
+        socket{ nullptr },
+        handler{ nullptr },
+        response_timer{ nimlib::Server::Constants::TIME_TO_RESPONSE }
     {
-        // response_timer.end();
+        connection_state.set_state(ConnectionState::INACTIVE);
+    }
+
+    void TcpConnection::accept_socket(std::unique_ptr<Socket> s)
+    {
+        response_timer.start();
+        socket = std::move(s);
+        connection_state.set_state(ConnectionState::STARTING);
     }
 
     void TcpConnection::notify(ServerDirective directive)
@@ -51,7 +61,7 @@ namespace nimlib::Server
         (directive == ServerDirective::READ_SOCKET) ? read() : write();
     }
 
-    void TcpConnection::notify(Handler& handler)
+    void TcpConnection::notify(Handler& notifying_handler)
     {
         // No assumption is made about how the streams will be used by the
         // application layer. The clear() method is being called in case
@@ -59,13 +69,13 @@ namespace nimlib::Server
         input_stream.clear();
         output_stream.clear();
 
-        keep_alive = handler.wants_to_live();
+        keep_alive = notifying_handler.wants_to_live();
 
-        if (handler.wants_to_write())
+        if (notifying_handler.wants_to_write())
         {
             connection_state.set_state(ConnectionState::WRITING);
         }
-        else if (handler.wants_more_bytes())
+        else if (notifying_handler.wants_more_bytes())
         {
             connection_state.set_state(ConnectionState::READING);
         }
@@ -84,6 +94,7 @@ namespace nimlib::Server
         output_stream.str("");
         socket->tcp_close();
         socket.reset();
+        response_timer.end();
     }
 
     ConnectionState TcpConnection::get_state() { return connection_state.get_state(); }
@@ -138,8 +149,8 @@ namespace nimlib::Server
 
         std::string response_str{ std::move(output_stream.str()) };
         std::string_view response{ response_str };
-        long bytes_to_send = response_str.size();
-        long bytes_sent = 0;
+        size_t bytes_to_send = response_str.size();
+        size_t bytes_sent = 0;
 
         while (bytes_sent < bytes_to_send)
         {

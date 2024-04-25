@@ -10,7 +10,7 @@ namespace nimlib::Server::Metrics::Measurements
     template<typename T>
     struct Measurement
     {
-        Measurement(const std::string& target_name)
+        explicit Measurement(const std::string& target_name)
             : metric{ nimlib::Server::Metrics::MetricsStore<T>::get_instance().get_metric(target_name) }
         {};
 
@@ -32,13 +32,16 @@ namespace nimlib::Server::Metrics::Measurements
         T measurement_result{};
         bool successful_measurement{ false };
     };
+};
 
+namespace nimlib::Server::Metrics::Measurements
+{
     template<typename T>
     class Count : public Measurement<T>
     {
     public:
-        Count(const std::string& target_name);
-        ~Count();
+        explicit Count(const std::string& target_name);
+        ~Count() = default;
 
         void start() override;
         void end() override;
@@ -48,8 +51,8 @@ namespace nimlib::Server::Metrics::Measurements
     class Duration : public Measurement<T>
     {
     public:
-        Duration(const std::string& target_name);
-        ~Duration();
+        explicit Duration(const std::string& target_name);
+        ~Duration() = default;
 
         void start() override;
         void end() override;
@@ -65,9 +68,6 @@ namespace nimlib::Server::Metrics::Measurements
     Count<T>::Count(const std::string& target_name) : Measurement<T>{ target_name } {}
 
     template<typename T>
-    Count<T>::~Count() {}
-
-    template<typename T>
     void Count<T>::start() {}
 
     template<typename T>
@@ -81,13 +81,7 @@ namespace nimlib::Server::Metrics::Measurements
     Duration<T>::Duration(const std::string& target_name) : Measurement<T>{ target_name } {}
 
     template<typename T>
-    Duration<T>::~Duration() {}
-
-    template<typename T>
-    void Duration<T>::start()
-    {
-        timer.begin();
-    }
+    void Duration<T>::start() { timer.begin(); }
 
     template<typename T>
     void Duration<T>::end()

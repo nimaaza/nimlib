@@ -6,7 +6,7 @@ namespace nimlib::Server::Metrics::Measurements
     {
     public:
         Timer();
-        ~Timer();
+        ~Timer() = default;
 
         Timer(const Timer&) = delete;
         Timer& operator=(const Timer&) = delete;
@@ -14,7 +14,7 @@ namespace nimlib::Server::Metrics::Measurements
         Timer& operator=(Timer&&) noexcept = delete;
 
         bool begin();
-        bool end(long& latency);
+        bool end(long& duration);
 
     private:
         std::chrono::high_resolution_clock::time_point then;
