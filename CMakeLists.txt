@@ -83,7 +83,8 @@ target_link_libraries(unit_tests_state_manager GTest::gtest_main)
 add_executable(unit_tests_tcp_connection
         tests/tcp_connection.test.cpp
         tests/support/tcp_socket.mock.cpp
-        src/tcp_connection.cpp)
+        src/tcp_connection.cpp
+        src/metrics/timer.cpp)
 target_include_directories(unit_tests_tcp_connection PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_tcp_connection GTest::gtest_main Botan::Botan)
 
@@ -100,7 +101,8 @@ add_executable(unit_tests_polling_server
         src/tls/botan/credentials.cpp
         src/tls/botan/tls_server.cpp
         src/tcp_connection_pool.cpp
-        src/utils/helpers.cpp)
+        src/utils/helpers.cpp
+        src/metrics/timer.cpp)
 target_include_directories(unit_tests_polling_server PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_polling_server GTest::gtest_main Botan::Botan)
 
@@ -112,7 +114,8 @@ target_include_directories(unit_tests_http_parser PUBLIC "${PROJECT_BINARY_DIR}"
 target_link_libraries(unit_tests_http_parser GTest::gtest_main Botan::Botan)
 
 include(GoogleTest)
-gtest_discover_tests(unit_tests
+gtest_discover_tests(
+        unit_tests
         unit_tests_state_manager
         unit_tests_tcp_connection
         unit_tests_polling_server
