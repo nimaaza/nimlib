@@ -7,7 +7,12 @@ namespace nimlib::Server::Constants
 {
     enum ServerDirective { READ_SOCKET, WRITE_SOCKET };
 
-    enum ConnectionState { STARTING, READING, HANDLING, WRITING, PENDING, DONE, INACTIVE, CON_ERROR };
+    enum ConnectionState
+    {
+        READY_TO_READ, READING, HANDLING,
+        READY_TO_WRITE, WRITING, DONE,
+        INACTIVE, CONNECTION_ERROR
+    };
 
     enum HandlerState { P_STARTING, P_ERROR, WRITE_AND_DIE, WRITE_AND_WAIT, INCOMPLETE };
 

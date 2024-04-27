@@ -57,11 +57,10 @@ namespace nimlib::Server
             assert(connection != nullptr);
 
             auto connection_state = connection->get_state();
-            if (connection_state == ConnectionState::CON_ERROR || connection_state == ConnectionState::DONE)
+            if (connection_state == ConnectionState::CONNECTION_ERROR || connection_state == ConnectionState::DONE)
             {
                 connection->halt();
             }
-
         }
     }
 

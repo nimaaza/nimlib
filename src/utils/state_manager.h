@@ -25,7 +25,7 @@ public:
     StateManager(StateManager&&) noexcept = delete;
     StateManager& operator=(StateManager&&) noexcept = delete;
 
-    bool ready_to_transition(T next_state) const;
+    bool can_transition_to(T next_state) const;
     T set_state(T);
     T reset_state();
     const T get_state();
@@ -65,7 +65,7 @@ StateManager<T>::StateManager(
 {}
 
 template<typename T>
-bool StateManager<T>::ready_to_transition(T next_state) const
+bool StateManager<T>::can_transition_to(T next_state) const
 {
     if (timed_out())
     {

@@ -90,7 +90,7 @@ namespace nimlib::Server
 			{
 				// TODO: socket might be in a state which we don't handle?
 			}
-			});
+        });
 	}
 
 	void PollingServer::create_pollfds_entry(int socket, pollfd& fds)
@@ -102,13 +102,11 @@ namespace nimlib::Server
 
 	bool PollingServer::allowed_to_read(ConnectionState state)
 	{
-		return (state == ConnectionState::STARTING
-			|| state == ConnectionState::READING
-			|| state == ConnectionState::PENDING);
+		return (state == ConnectionState::READY_TO_READ);
 	}
 
 	bool PollingServer::allowed_to_write(ConnectionState state)
 	{
-		return state == ConnectionState::WRITING;
+		return state == ConnectionState::READY_TO_WRITE;
 	}
 }

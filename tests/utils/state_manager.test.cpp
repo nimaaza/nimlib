@@ -20,16 +20,16 @@ TEST(StateManagerTest_Transitions, AllStatesTransitToError)
     StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, 2 };
 
     sm.set_state(States::START);
-    EXPECT_TRUE(sm.ready_to_transition(States::ERROR_STATE));
+    EXPECT_TRUE(sm.can_transition_to(States::ERROR_STATE));
 
     sm.set_state(States::SOME_STATE);
-    EXPECT_TRUE(sm.ready_to_transition(States::ERROR_STATE));
+    EXPECT_TRUE(sm.can_transition_to(States::ERROR_STATE));
 
     sm.set_state(States::ANOTHER_STATE);
-    EXPECT_TRUE(sm.ready_to_transition(States::ERROR_STATE));
+    EXPECT_TRUE(sm.can_transition_to(States::ERROR_STATE));
 
     sm.set_state(States::ERROR_STATE);
-    EXPECT_TRUE(sm.ready_to_transition(States::ERROR_STATE));
+    EXPECT_TRUE(sm.can_transition_to(States::ERROR_STATE));
 }
 
 TEST(StateManagerTest_Transitions, TransitionsCheck)
@@ -37,28 +37,28 @@ TEST(StateManagerTest_Transitions, TransitionsCheck)
     StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, 2 };
 
     sm.set_state(States::START);
-    EXPECT_FALSE(sm.ready_to_transition(States::START));
-    EXPECT_TRUE(sm.ready_to_transition(States::OK));
-    EXPECT_FALSE(sm.ready_to_transition(States::SOME_STATE));
-    EXPECT_FALSE(sm.ready_to_transition(States::ANOTHER_STATE));
+    EXPECT_FALSE(sm.can_transition_to(States::START));
+    EXPECT_TRUE(sm.can_transition_to(States::OK));
+    EXPECT_FALSE(sm.can_transition_to(States::SOME_STATE));
+    EXPECT_FALSE(sm.can_transition_to(States::ANOTHER_STATE));
 
     sm.set_state(States::OK);
-    EXPECT_TRUE(sm.ready_to_transition(States::START));
-    EXPECT_FALSE(sm.ready_to_transition(States::OK));
-    EXPECT_TRUE(sm.ready_to_transition(States::SOME_STATE));
-    EXPECT_TRUE(sm.ready_to_transition(States::ANOTHER_STATE));
+    EXPECT_TRUE(sm.can_transition_to(States::START));
+    EXPECT_FALSE(sm.can_transition_to(States::OK));
+    EXPECT_TRUE(sm.can_transition_to(States::SOME_STATE));
+    EXPECT_TRUE(sm.can_transition_to(States::ANOTHER_STATE));
 
     sm.set_state(States::SOME_STATE);
-    EXPECT_FALSE(sm.ready_to_transition(States::START));
-    EXPECT_FALSE(sm.ready_to_transition(States::OK));
-    EXPECT_TRUE(sm.ready_to_transition(States::ANOTHER_STATE));
-    EXPECT_TRUE(sm.ready_to_transition(States::SOME_STATE));
+    EXPECT_FALSE(sm.can_transition_to(States::START));
+    EXPECT_FALSE(sm.can_transition_to(States::OK));
+    EXPECT_TRUE(sm.can_transition_to(States::ANOTHER_STATE));
+    EXPECT_TRUE(sm.can_transition_to(States::SOME_STATE));
 
     sm.set_state(States::ANOTHER_STATE);
-    EXPECT_FALSE(sm.ready_to_transition(States::START));
-    EXPECT_FALSE(sm.ready_to_transition(States::OK));
-    EXPECT_FALSE(sm.ready_to_transition(States::ANOTHER_STATE));
-    EXPECT_FALSE(sm.ready_to_transition(States::SOME_STATE));
+    EXPECT_FALSE(sm.can_transition_to(States::START));
+    EXPECT_FALSE(sm.can_transition_to(States::OK));
+    EXPECT_FALSE(sm.can_transition_to(States::ANOTHER_STATE));
+    EXPECT_FALSE(sm.can_transition_to(States::SOME_STATE));
 }
 
 TEST(StateManagerTest_Transitions, UnspecifiedTransition)
@@ -76,7 +76,7 @@ TEST(StateManagerTest_Transitions, UnspecifiedTransition)
     StateManager<OtherStates> sm{ OtherStates::O_START, OtherStates::O_ERROR_STATE, other_transitions, 5 };
     sm.set_state(OtherStates::UNSPEC_TRANSITION);
 
-    EXPECT_FALSE(sm.ready_to_transition(OtherStates::UNSPEC_TRANSITION));
+    EXPECT_FALSE(sm.can_transition_to(OtherStates::UNSPEC_TRANSITION));
 }
 
 TEST(StateManagerTest_Construction, InitialState_SetToStart)

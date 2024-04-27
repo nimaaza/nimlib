@@ -4,8 +4,6 @@
 
 #include <vector>
 
-#include "common/types.h"
-
 namespace nimlib::Server
 {
     class TcpConnectionPool

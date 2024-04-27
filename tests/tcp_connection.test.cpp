@@ -75,7 +75,7 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_SingleRead)
     The mock handler object mocks the behaviour of a successful parsing
     of input data. The handler must instruct the connection to write the output
     stream to socket and close the connection. This happens when the connection
-    ends up in the DONE state.
+    ends up in the INACTIVE state.
     */
 
     // Socket has 470 bytes available to be read.
@@ -96,7 +96,7 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_SingleRead)
     connection.notify(ServerDirective::WRITE_SOCKET);
 
     auto state_2 = connection.get_state();
-    EXPECT_EQ(state_2, ConnectionState::DONE);
+    EXPECT_EQ(state_2, ConnectionState::INACTIVE);
 }
 
 TEST(ConnectionTests, Read_WithEnoughBuffer_MultipleReads)
@@ -142,7 +142,7 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_MultipleReads)
     connection.notify(ServerDirective::WRITE_SOCKET);
 
     auto state_4 = connection.get_state();
-    EXPECT_EQ(state_4, ConnectionState::DONE);
+    EXPECT_EQ(state_4, ConnectionState::INACTIVE);
 }
 
 TEST(ConnectionTests, Read_WithExactlyEnoughBuffer)
@@ -212,7 +212,7 @@ TEST(ConnectionTests, Read_WithSmallBuffer)
     connection.notify(ServerDirective::WRITE_SOCKET);
 
     auto state_4 = connection.get_state();
-    EXPECT_EQ(state_4, ConnectionState::DONE);
+    EXPECT_EQ(state_4, ConnectionState::INACTIVE);
 }
 
 TEST(ConnectionTests, Read_ConnectionStateWhenSocketNotReady)
@@ -225,7 +225,7 @@ TEST(ConnectionTests, Read_ConnectionStateWhenSocketNotReady)
     c.notify(ServerDirective::READ_SOCKET);
 
     auto state = c.get_state();
-    EXPECT_EQ(state, ConnectionState::CON_ERROR);
+    EXPECT_EQ(state, ConnectionState::CONNECTION_ERROR);
 }
 
 TEST(ConnectionTests, Read_ConnectionStateWhenConnectionInErrorState)
@@ -239,7 +239,7 @@ TEST(ConnectionTests, Read_ConnectionStateWhenConnectionInErrorState)
     c.notify(ServerDirective::READ_SOCKET);
     auto read_result = c.get_state();
     auto socket_read_result_after = pointer_to_socket->read_result.str();
-    EXPECT_EQ(read_result, ConnectionState::CON_ERROR);
+    EXPECT_EQ(read_result, ConnectionState::CONNECTION_ERROR);
     EXPECT_EQ(socket_read_result_before, socket_read_result_after);
 }
 
@@ -293,7 +293,7 @@ TEST(ConnectionTests, Write_ConnectionClose)
     connection.notify(ServerDirective::READ_SOCKET);
     connection.notify(ServerDirective::WRITE_SOCKET);
 
-    EXPECT_EQ(connection.get_state(), ConnectionState::DONE);
+    EXPECT_EQ(connection.get_state(), ConnectionState::INACTIVE);
     EXPECT_EQ(pointer_to_socket->total_socket_write_count, 22);
     EXPECT_EQ(pointer_to_socket->write_result.str(), "HTTP/1.1 404 Not Found");
 }
@@ -358,7 +358,7 @@ TEST(ConnectionTests, ConnectionState_WhenJustCreated)
     TcpConnection c{ std::move(s), 1 };
 
     auto state = c.get_state();
-    EXPECT_EQ(state, ConnectionState::STARTING);
+    EXPECT_EQ(state, ConnectionState::READY_TO_READ);
 }
 
 TEST(ConnectionTests, ConnectionState_WhenCreatedWithNullSocket)
@@ -366,7 +366,7 @@ TEST(ConnectionTests, ConnectionState_WhenCreatedWithNullSocket)
     TcpConnection c{ nullptr, 0 };
 
     auto state = c.get_state();
-    EXPECT_EQ(state, ConnectionState::CON_ERROR);
+    EXPECT_EQ(state, ConnectionState::CONNECTION_ERROR);
 }
 
 TEST(ConnectionTests, ConnectionState_WhenHalted)
@@ -377,5 +377,5 @@ TEST(ConnectionTests, ConnectionState_WhenHalted)
     c.halt();
 
     auto state = c.get_state();
-    EXPECT_EQ(state, ConnectionState::CON_ERROR);
+    EXPECT_EQ(state, ConnectionState::CONNECTION_ERROR);
 }

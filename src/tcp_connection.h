@@ -48,8 +48,8 @@ namespace nimlib::Server
         size_t buffer_size;
         bool keep_alive{ false };
         StateManager<ConnectionState> connection_state{
-            ConnectionState::STARTING,
-            ConnectionState::CON_ERROR,
+            ConnectionState::READY_TO_READ,
+            ConnectionState::CONNECTION_ERROR,
             states_transition_map,
             nimlib::Server::Constants::MAX_RESET_COUNT,
             state_time_outs

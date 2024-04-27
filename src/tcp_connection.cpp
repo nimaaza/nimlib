@@ -10,21 +10,23 @@ namespace nimlib::Server
 {
     const std::unordered_map<ConnectionState, std::vector<ConnectionState>> TcpConnection::states_transition_map
     {
-        {ConnectionState::STARTING, {ConnectionState::READING}},
-        {ConnectionState::READING, {ConnectionState::READING, ConnectionState::HANDLING}},
-        {ConnectionState::HANDLING, {ConnectionState::READING, ConnectionState::WRITING}},
-        {ConnectionState::WRITING, {ConnectionState::WRITING, ConnectionState::DONE, ConnectionState::PENDING}},
-        {ConnectionState::PENDING, {ConnectionState::READING}},
-        {ConnectionState::DONE, {}}
+        { ConnectionState::READY_TO_READ, { ConnectionState::READING}},
+        {ConnectionState::READING, {ConnectionState::HANDLING}},
+        {ConnectionState::HANDLING, {ConnectionState::READY_TO_READ, ConnectionState::READY_TO_WRITE}},
+        {ConnectionState::READY_TO_WRITE, {ConnectionState::WRITING}},
+        {ConnectionState::WRITING, { ConnectionState::READY_TO_WRITE, ConnectionState::READY_TO_READ, ConnectionState::DONE}},
+        {ConnectionState::DONE, { ConnectionState::INACTIVE}},
+        { ConnectionState::INACTIVE, {ConnectionState::READY_TO_READ}}
     };
 
     const std::unordered_map<ConnectionState, long> TcpConnection::state_time_outs
     {
-        {ConnectionState::STARTING, 10'000},
+        { ConnectionState::READY_TO_READ, 10'000},
         {ConnectionState::READING, 10'000},
         {ConnectionState::HANDLING, 10'000},
+        {ConnectionState::READY_TO_WRITE, 10'000},
         {ConnectionState::WRITING, 10'000},
-        {ConnectionState::PENDING, 10'000}
+        {ConnectionState::DONE, 10'000},
     };
 
     TcpConnection::TcpConnection(std::unique_ptr<Socket> s, connection_id id, size_t buffer_size)
@@ -35,7 +37,7 @@ namespace nimlib::Server
     {
         if (!this->socket)
         {
-            connection_state.set_state(ConnectionState::CON_ERROR);
+            connection_state.set_state(ConnectionState::CONNECTION_ERROR);
         }
     }
 
@@ -53,7 +55,7 @@ namespace nimlib::Server
     {
         response_timer.start();
         socket = std::move(s);
-        connection_state.set_state(ConnectionState::STARTING);
+        connection_state.set_state(ConnectionState::READY_TO_READ);
     }
 
     void TcpConnection::notify(ServerDirective directive)
@@ -73,19 +75,22 @@ namespace nimlib::Server
 
         if (notifying_handler.wants_to_write())
         {
-            connection_state.set_state(ConnectionState::WRITING);
+            connection_state.set_state(ConnectionState::READY_TO_WRITE);
         }
         else if (notifying_handler.wants_more_bytes())
         {
-            connection_state.set_state(ConnectionState::READING);
+            connection_state.set_state(ConnectionState::READY_TO_READ);
         }
         else
         {
-            connection_state.set_state(ConnectionState::CON_ERROR);
+            // TODO: make sure one of the calls above return true. Otherwise,
+            // there is a logic error. The handler must have decided whether
+            // it wants to send a response or read more bytes.
+            connection_state.set_state(ConnectionState::CONNECTION_ERROR);
         }
     }
 
-    void TcpConnection::set_handler(std::shared_ptr<Handler> p) { handler = p; }
+    void TcpConnection::set_handler(std::shared_ptr<Handler> h) { handler = h; }
 
     void TcpConnection::halt()
     {
@@ -107,7 +112,11 @@ namespace nimlib::Server
 
     ConnectionState TcpConnection::read()
     {
-        if (connection_state.get_state() == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
+//        if (connection_state.get_state() == ConnectionState::CONNECTION_ERROR) return ConnectionState::CONNECTION_ERROR;
+
+        if (!connection_state.can_transition_to(ConnectionState::READING)){
+            return connection_state.set_state(ConnectionState::CONNECTION_ERROR);
+        }
 
         connection_state.set_state(ConnectionState::READING);
 
@@ -139,13 +148,17 @@ namespace nimlib::Server
         {
             // TODO: read has returned a negative value.
             // This means we might need some error handling here.
-            return connection_state.set_state(ConnectionState::CON_ERROR);
+            return connection_state.set_state(ConnectionState::CONNECTION_ERROR);
         }
     }
 
     ConnectionState TcpConnection::write()
     {
-        if (connection_state.get_state() == ConnectionState::CON_ERROR) return ConnectionState::CON_ERROR;
+//        if (connection_state.get_state() == ConnectionState::CONNECTION_ERROR) return ConnectionState::CONNECTION_ERROR;
+
+        if (!connection_state.can_transition_to(ConnectionState::WRITING)){
+            return connection_state.set_state(ConnectionState::CONNECTION_ERROR);
+        }
 
         std::string response_str{ std::move(output_stream.str()) };
         std::string_view response{ response_str };
@@ -173,7 +186,7 @@ namespace nimlib::Server
                 //  TODO: reset connection variables or use state callbacks for clean up
                 input_stream.str("");
                 output_stream.str("");
-                return connection_state.set_state(ConnectionState::PENDING);
+                return connection_state.set_state(ConnectionState::READY_TO_READ);
             }
             else
             {
@@ -184,7 +197,7 @@ namespace nimlib::Server
         {
             std::string remainder{ response.substr(bytes_sent) };
             output_stream.str(remainder);
-            return connection_state.reset_state();
+            return connection_state.set_state(ConnectionState::READY_TO_WRITE);
         }
         else
         {
