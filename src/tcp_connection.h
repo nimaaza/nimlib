@@ -15,6 +15,7 @@ namespace nimlib::Server
     using nimlib::Server::Types::Handler;
     using nimlib::Server::Constants::ServerDirective;
     using nimlib::Server::Constants::ConnectionState;
+    using nimlib::Server::Utils::StateManager;
 
     class TcpConnection : public Connection, public StreamsProvider
     {
@@ -51,7 +52,7 @@ namespace nimlib::Server
             ConnectionState::READY_TO_READ,
             ConnectionState::CONNECTION_ERROR,
             states_transition_map,
-            nimlib::Server::Constants::MAX_RESET_COUNT,
+            max_reset_counts,
             state_time_outs
         };
         std::stringstream input_stream{};
@@ -61,6 +62,7 @@ namespace nimlib::Server
         nimlib::Server::Metrics::Measurements::Duration<long> response_timer;
 
         static const std::unordered_map<ConnectionState, std::vector<ConnectionState>> states_transition_map;
+        static const std::unordered_map<ConnectionState, int> max_reset_counts;
         static const std::unordered_map<ConnectionState, long> state_time_outs;
     };
 };

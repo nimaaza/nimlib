@@ -10,14 +10,24 @@ namespace nimlib::Server
 {
     const std::unordered_map<ConnectionState, std::vector<ConnectionState>> TcpConnection::states_transition_map
     {
-        { ConnectionState::READY_TO_READ, { ConnectionState::READING}},
-        {ConnectionState::READING, {ConnectionState::HANDLING}},
-        {ConnectionState::HANDLING, {ConnectionState::READY_TO_READ, ConnectionState::READY_TO_WRITE}},
-        {ConnectionState::READY_TO_WRITE, {ConnectionState::WRITING}},
-        {ConnectionState::WRITING, { ConnectionState::READY_TO_WRITE, ConnectionState::READY_TO_READ, ConnectionState::DONE}},
-        {ConnectionState::DONE, { ConnectionState::INACTIVE}},
-        { ConnectionState::INACTIVE, {ConnectionState::READY_TO_READ}}
+        {ConnectionState::READY_TO_READ, {ConnectionState::INACTIVE, ConnectionState::READING}},
+        {ConnectionState::READING, {ConnectionState::INACTIVE, ConnectionState::HANDLING}},
+        {ConnectionState::HANDLING, {ConnectionState::INACTIVE, ConnectionState::READY_TO_READ, ConnectionState::READY_TO_WRITE}},
+        {ConnectionState::READY_TO_WRITE, {ConnectionState::INACTIVE, ConnectionState::WRITING}},
+        {ConnectionState::WRITING, {ConnectionState::INACTIVE, ConnectionState::READY_TO_WRITE, ConnectionState::READY_TO_READ, ConnectionState::DONE}},
+        {ConnectionState::DONE, {ConnectionState::INACTIVE}},
+        {ConnectionState::INACTIVE, {ConnectionState::READY_TO_READ}}
     };
+
+    const std::unordered_map<ConnectionState, int> TcpConnection::max_reset_counts
+    {
+        { ConnectionState::READY_TO_READ, 1000},
+        {ConnectionState::READING, 1000},
+        {ConnectionState::HANDLING, 1000},
+        {ConnectionState::READY_TO_WRITE, 1000},
+        {ConnectionState::WRITING, 1000},
+    };
+
 
     const std::unordered_map<ConnectionState, long> TcpConnection::state_time_outs
     {
@@ -112,9 +122,8 @@ namespace nimlib::Server
 
     ConnectionState TcpConnection::read()
     {
-//        if (connection_state.get_state() == ConnectionState::CONNECTION_ERROR) return ConnectionState::CONNECTION_ERROR;
-
-        if (!connection_state.can_transition_to(ConnectionState::READING)){
+        if (!connection_state.can_transition_to(ConnectionState::READING))
+        {
             return connection_state.set_state(ConnectionState::CONNECTION_ERROR);
         }
 
@@ -154,12 +163,12 @@ namespace nimlib::Server
 
     ConnectionState TcpConnection::write()
     {
-//        if (connection_state.get_state() == ConnectionState::CONNECTION_ERROR) return ConnectionState::CONNECTION_ERROR;
-
-        if (!connection_state.can_transition_to(ConnectionState::WRITING)){
+        if (!connection_state.can_transition_to(ConnectionState::WRITING))
+        {
             return connection_state.set_state(ConnectionState::CONNECTION_ERROR);
         }
 
+        connection_state.set_state(ConnectionState::WRITING);
         std::string response_str{ std::move(output_stream.str()) };
         std::string_view response{ response_str };
         size_t bytes_to_send = response_str.size();
