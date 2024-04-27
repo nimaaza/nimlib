@@ -11,7 +11,7 @@ using nimlib::Server::Sockets::MockTcpSocket;
 using nimlib::Server::Types::Handler;
 using nimlib::Server::Types::Connection;
 using nimlib::Server::Types::StreamsProvider;
-using nimlib::Server::Constants::ParseResult;
+using nimlib::Server::Constants::HandlerState;
 using nimlib::Server::Constants::ServerDirective;
 using nimlib::Server::Constants::ConnectionState;
 
@@ -20,14 +20,14 @@ struct MockHandler : public Handler
     MockHandler(
         StreamsProvider& streams,
         int tries = 1,
-        ParseResult parse_result = ParseResult::WRITE_AND_DIE,
+        HandlerState final_handler_state = HandlerState::WRITE_AND_DIE,
         std::string output_result = ""
     )
         :
         in{ streams.source() },
         out{ streams.sink() },
         total_tries{ tries },
-        parse_result{ parse_result },
+        parse_result{ final_handler_state },
         output_result{ output_result }
     {};
     ~MockHandler() = default;
@@ -55,11 +55,11 @@ struct MockHandler : public Handler
 
     bool wants_to_write() override { return tries_so_far == total_tries; }
 
-    bool wants_to_live() override { return parse_result == ParseResult::WRITE_AND_WAIT; }
+    bool wants_to_live() override { return parse_result == HandlerState::WRITE_AND_WAIT; }
 
     std::stringstream& in;
     std::stringstream& out;
-    ParseResult parse_result;
+    HandlerState parse_result;
     std::string output_result;
     std::string internal_input{};
     int total_tries;
@@ -82,7 +82,7 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_SingleRead)
     auto socket = std::make_unique<MockTcpSocket>(1, 470, 1024);
     MockTcpSocket* pointer_to_socket = socket.get(); // Steal the pointer to the socket object for later use.
     TcpConnection connection{ std::move(socket), 1, 1024 };
-    auto handler = std::make_shared<MockHandler>(connection, 1, ParseResult::WRITE_AND_DIE);
+    auto handler = std::make_shared<MockHandler>(connection, 1, HandlerState::WRITE_AND_DIE);
     connection.set_handler(handler);
 
     connection.notify(ServerDirective::READ_SOCKET);
@@ -115,7 +115,7 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_MultipleReads)
     socket->byte_counts_to_read.push_back(131);
     socket->byte_counts_to_read.push_back(257);
     TcpConnection connection{ std::move(socket), 1, 1024 };
-    auto handler = std::make_shared<MockHandler>(connection, 3, ParseResult::WRITE_AND_DIE);
+    auto handler = std::make_shared<MockHandler>(connection, 3, HandlerState::WRITE_AND_DIE);
     connection.set_handler(handler);
 
     connection.notify(ServerDirective::READ_SOCKET);
@@ -157,7 +157,7 @@ TEST(ConnectionTests, Read_WithExactlyEnoughBuffer)
     socket->byte_counts_to_read = { 10 };
     MockTcpSocket* pointer_to_socket = socket.get();
     TcpConnection connection{ std::move(socket), 1, 10 };
-    auto handler = std::make_shared<MockHandler>(connection, 1, ParseResult::WRITE_AND_DIE);
+    auto handler = std::make_shared<MockHandler>(connection, 1, HandlerState::WRITE_AND_DIE);
     connection.set_handler(handler);
 
     connection.notify(ServerDirective::READ_SOCKET);
@@ -173,7 +173,7 @@ TEST(ConnectionTests, Read_WithSmallBuffer)
     /*
     When the TcpConnection object has a small buffer, ie., all the data the
     application requires cannot be read by the object at once, the handler
-    object is expected to report incomplete data (ParseResult::INCOMPLETE)
+    object is expected to report incomplete data (HandlerState::INCOMPLETE)
     and the TcpConnection object will try to read more data from the socket.
 
     Let's say the handler object needs 470 bytes to process but the TcpConnection
@@ -185,7 +185,7 @@ TEST(ConnectionTests, Read_WithSmallBuffer)
     auto socket = std::make_unique<MockTcpSocket>(1, 470, 1024);
     MockTcpSocket* pointer_to_socket = socket.get();
     TcpConnection connection{ std::move(socket), 1, 167 };
-    auto handler = std::make_shared<MockHandler>(connection, 3, ParseResult::WRITE_AND_DIE);
+    auto handler = std::make_shared<MockHandler>(connection, 3, HandlerState::WRITE_AND_DIE);
     connection.set_handler(handler);
 
     connection.notify(ServerDirective::READ_SOCKET);
@@ -264,7 +264,7 @@ TEST(ConnectionTests, Write_ConnectionKeepAlive)
     auto handler = std::make_shared<MockHandler>(
         connection,
         1,
-        ParseResult::WRITE_AND_WAIT,
+        HandlerState::WRITE_AND_WAIT,
         "HTTP/1.1 404 Not Found"
     );
     connection.set_handler(handler);
@@ -285,7 +285,7 @@ TEST(ConnectionTests, Write_ConnectionClose)
     auto handler = std::make_shared<MockHandler>(
         connection,
         1,
-        ParseResult::WRITE_AND_DIE,
+        HandlerState::WRITE_AND_DIE,
         "HTTP/1.1 404 Not Found"
     );
     connection.set_handler(handler);
@@ -308,7 +308,7 @@ TEST(ConnectionTests, Write_SeveralWrites)
     auto s = std::make_unique<MockTcpSocket>(1, 1024, 127);
     auto pointer_to_socket = s.get();
     TcpConnection connection{ std::move(s), 1, 473 };
-    auto handler = std::make_shared<MockHandler>(connection, 3, ParseResult::WRITE_AND_DIE);
+    auto handler = std::make_shared<MockHandler>(connection, 3, HandlerState::WRITE_AND_DIE);
     connection.set_handler(handler);
     // Get access to connection streams and add some data to the output stream.
     auto& connection_as_streams_provider = static_cast<StreamsProvider&>(connection);
@@ -334,7 +334,7 @@ TEST(ConnectionTests, Write_WithError)
     auto s = std::make_unique<MockTcpSocket>(1, 1024, 64);
     auto pointer_to_socket = s.get();
     TcpConnection connection{ std::move(s), 1, 512 };
-    auto handler = std::make_shared<MockHandler>(connection, 3, ParseResult::WRITE_AND_DIE);
+    auto handler = std::make_shared<MockHandler>(connection, 3, HandlerState::WRITE_AND_DIE);
     connection.set_handler(handler);
     // Get access to connection streams and add some data to the output stream.
     auto& connection_as_streams_provider = static_cast<StreamsProvider&>(connection);

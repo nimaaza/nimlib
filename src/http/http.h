@@ -10,7 +10,7 @@ using nimlib::Server::Types::StreamsProvider;
 namespace nimlib::Server::Handlers
 {
     using nimlib::Server::Types::Handler;
-    using ParseResult = nimlib::Server::Constants::ParseResult;
+    using nimlib::Server::Constants::HandlerState;
     class HttpRequest;
 
     class Http : public Handler

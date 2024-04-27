@@ -13,7 +13,7 @@ namespace nimlib::Server::Types
 {
 	using nimlib::Server::Constants::ServerDirective;
 	using nimlib::Server::Constants::ConnectionState;
-	using nimlib::Server::Constants::ParseResult;
+	using nimlib::Server::Constants::HandlerState;
 
 	class Connection;
 
@@ -67,7 +67,7 @@ namespace nimlib::Server::Types
 		virtual bool wants_to_live() = 0;
 
 	protected:
-		// StateManager<ParseResult> state_manager{ ParseResult::P_STARTING, ParseResult::P_ERROR, 1024 };
+		// StateManager<HandlerState> state_manager{ HandlerState::P_STARTING, HandlerState::P_ERROR, 1024 };
 	};
 
 	struct Connection
