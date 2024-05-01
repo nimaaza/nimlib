@@ -30,7 +30,7 @@ namespace nimlib::Server::Utils
         bool can_transition_to(T next_state) const;
         T set_state(T);
         T reset_state();
-        void clear(); // TODO: this method clears the error state, may also receive a callback to the owning object to clear the objects internal state as well.
+        void clear();
         const T get_state();
         bool starting() const;
         bool in_error() const;
@@ -138,7 +138,12 @@ namespace nimlib::Server::Utils
     }
 
     template<typename T>
-    void StateManager<T>::clear() {}
+    void StateManager<T>::clear()
+    {
+        state = initial_state;
+        reset_count = 0;
+        last_state_change = std::chrono::steady_clock::now();
+    }
 
     template<typename T>
     const T StateManager<T>::get_state()

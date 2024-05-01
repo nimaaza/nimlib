@@ -65,15 +65,12 @@ namespace nimlib::Server::Types
 		virtual bool wants_more_bytes() = 0;
 		virtual bool wants_to_write() = 0;
 		virtual bool wants_to_live() = 0;
-
-	protected:
-		// StateManager<HandlerState> state_manager{ HandlerState::P_STARTING, HandlerState::P_ERROR, 1024 };
 	};
 
 	struct Connection
 	{
 		virtual ~Connection() = default;
-        virtual void accept_socket(std::unique_ptr<Socket> s) = 0;
+		virtual void accept_socket(std::unique_ptr<Socket> s) = 0;
 		virtual void notify(ServerDirective directive) = 0;
 		virtual void notify(Handler& handler) = 0;
 		virtual void set_handler(std::shared_ptr<Handler>) = 0;

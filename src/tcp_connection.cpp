@@ -28,10 +28,9 @@ namespace nimlib::Server
         {ConnectionState::WRITING, 1000},
     };
 
-
     const std::unordered_map<ConnectionState, long> TcpConnection::state_time_outs
     {
-        { ConnectionState::READY_TO_READ, 10'000},
+        {ConnectionState::READY_TO_READ, 10'000},
         {ConnectionState::READING, 10'000},
         {ConnectionState::HANDLING, 10'000},
         {ConnectionState::READY_TO_WRITE, 10'000},
@@ -104,12 +103,28 @@ namespace nimlib::Server
 
     void TcpConnection::halt()
     {
-        connection_state.set_state(ConnectionState::INACTIVE);
+        auto state = connection_state.get_state();
+
+        if (state == ConnectionState::CONNECTION_ERROR)
+        {
+            connection_state.clear();
+            connection_state.set_state(ConnectionState::INACTIVE);
+            response_timer.cancel();
+        }
+        else
+        {
+            connection_state.set_state(ConnectionState::INACTIVE);
+            response_timer.end();
+        }
+
         input_stream.str("");
         output_stream.str("");
-        socket->tcp_close();
-        socket.reset();
-        response_timer.end();
+
+        if (socket)
+        {
+            socket->tcp_close();
+            socket.reset();
+        }
     }
 
     ConnectionState TcpConnection::get_state() { return connection_state.get_state(); }
