@@ -11,17 +11,18 @@ TEST(TimerTest, ProperUse)
     timespec t1, t2;
     t1.tv_sec = 1L;
     t1.tv_nsec = 100'000'000L;
-    long latency;
+    long duration;
     Timer timer{};
 
     bool begin_success = timer.begin();
     if (nanosleep(&t1, &t2) < 0)
     {
-        // TODO: failed to sleep for some reason and will cause the test to fail
+        // Failed to sleep for some reason and this will
+        // cause the test to fail.
     }
-    bool end_success = timer.end(latency);
+    bool end_success = timer.end(duration);
 
-    EXPECT_GE(latency, 1'100'000'000);
+    EXPECT_GE(duration, 1'100'000'000);
     EXPECT_TRUE(begin_success);
     EXPECT_TRUE(end_success);
 }
@@ -31,37 +32,43 @@ TEST(TimerTest, IncorrectUsage_CallEndBeforeBegin)
     timespec t1, t2;
     t1.tv_sec = 0L;
     t1.tv_nsec = 100L;
-    long latency{ 134 }; // Just a random value (not significant).
+    long duration{ 134 }; // Just a random value (not significant).
     Timer timer{};
 
-    // timer.begin() not called by mistake
+    // timer.begin() not called by mistake.
+    // timer.begin()
     if (nanosleep(&t1, &t2) < 0)
     {
-        // TODO: failed to sleep for some reason and will cause the test to fail
+        // Failed to sleep for some reason and this will
+        // cause the test to fail.
     }
-    bool end_succdss = timer.end(latency);
+    bool end_success = timer.end(duration);
 
-    EXPECT_GE(latency, 134); // latency is not modified.
-    EXPECT_FALSE(end_succdss);
+    EXPECT_EQ(duration, 134); // duration is not modified.
+    EXPECT_FALSE(end_success);
 }
 
 TEST(TimerTest, IncorrectUsage_CallBeginTwice)
 {
     timespec t1, t2;
     t1.tv_sec = 0L;
-    t1.tv_nsec = 100L;
-    long latency{ 134 }; // Just a random value (not significant).
+    t1.tv_nsec = 1000L;
+    long duration{};
     Timer timer{};
 
+    // The first call to begin() starts the timer. The
+    // second call has no effect on the timer and doesn't
+    // also stop it.
     bool begin_success_1 = timer.begin();
     bool begin_success_2 = timer.begin();
     if (nanosleep(&t1, &t2) < 0)
     {
-        // TODO: failed to sleep for some reason and will cause the test to fail
+        // Failed to sleep for some reason and this will
+        // cause the test to fail.
     }
-    bool end_success = timer.end(latency);
+    bool end_success = timer.end(duration);
 
-    EXPECT_GE(latency, 134); // latency is not modified.
+    EXPECT_GE(duration, 1000);
     EXPECT_TRUE(begin_success_1);
     EXPECT_FALSE(begin_success_2);
     EXPECT_TRUE(end_success);
@@ -71,23 +78,27 @@ TEST(TimerTest, IncorrectUsage_CallEndTwice)
 {
     timespec t1, t2;
     t1.tv_sec = 0L;
-    t1.tv_nsec = 100L;
-    long latency_1{ 34 }; // Just a random value (not significant).
-    long latency_2{ 34 };
+    t1.tv_nsec = 1000L;
+    long duration_1{ 34 }; // Just a random value (not significant).
+    long duration_2{ 34 };
     Timer timer{};
 
+    // The first call to timer.end() is correct and ends the timing so
+    // duration_1 is modified and the duration measurement is written
+    // to it. The second call to timer.end() has no effect.
     bool begin_success = timer.begin();
     if (nanosleep(&t1, &t2) < 0)
     {
-        // TODO: failed to sleep for some reason and will cause the test to fail
+        // Failed to sleep for some reason and this will
+        // cause the test to fail.
     }
-    bool end_success_1 = timer.end(latency_1);
-    bool end_success_2 = timer.end(latency_2);
+    bool end_success_1 = timer.end(duration_1);
+    bool end_success_2 = timer.end(duration_2);
 
-    EXPECT_NE(latency_1, 34); // latency is not modified.
+    EXPECT_NE(duration_1, 1000);
     EXPECT_TRUE(begin_success);
     EXPECT_TRUE(end_success_1);
-    EXPECT_EQ(latency_2, 34);
+    EXPECT_EQ(duration_2, 34);
     EXPECT_FALSE(end_success_2);
 }
 
@@ -96,26 +107,29 @@ TEST(TimerTest, UsableAfterIncorrectUsage)
     timespec t1, t2;
     t1.tv_sec = 0L;
     t1.tv_nsec = 1'000L;
-    long latency_1{ 134 }; // Just random values.
-    long latency_2{ 56 };
+    long duration_1{ 134 }; // Just random values.
+    long duration_2{ 56 };
     Timer timer{};
 
-    // timer.begin() not called by mistake
+    // timer.begin() not called by mistake.
+    // timer.begin()
     if (nanosleep(&t1, &t2) < 0)
     {
-        // TODO: failed to sleep for some reason and will cause the test to fail
+        // Failed to sleep for some reason and this will
+        // cause the test to fail.
     }
-    bool success_1 = timer.end(latency_1);
+    bool success_1 = timer.end(duration_1);
 
     timer.begin();
     if (nanosleep(&t1, &t2) < 0)
     {
-        // TODO: failed to sleep for some reason and will cause the test to fail
+        // Failed to sleep for some reason and this will
+        // cause the test to fail.
     }
-    bool success_2 = timer.end(latency_2);
+    bool success_2 = timer.end(duration_2);
 
-    EXPECT_EQ(latency_1, 134); // latency_1 is not modified.
+    EXPECT_EQ(duration_1, 134); // duration_1 is not modified.
     EXPECT_FALSE(success_1);
-    EXPECT_NE(latency_2, 56);
+    EXPECT_GE(duration_2, 1000);
     EXPECT_TRUE(success_2);
 }

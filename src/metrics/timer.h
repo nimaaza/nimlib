@@ -17,7 +17,7 @@ namespace nimlib::Server::Metrics::Measurements
         bool end(long& duration);
 
     private:
-        std::chrono::high_resolution_clock::time_point then;
+        std::chrono::steady_clock::time_point then;
         bool timing{ false };
     };
 }

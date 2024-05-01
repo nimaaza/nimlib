@@ -2,7 +2,7 @@
 
 namespace nimlib::Server::Metrics::Measurements
 {
-    Timer::Timer() : then{ std::chrono::high_resolution_clock::now() } {}
+    Timer::Timer() : then{ std::chrono::steady_clock::now() } {}
 
     bool Timer::begin()
     {
@@ -13,7 +13,7 @@ namespace nimlib::Server::Metrics::Measurements
         else
         {
             timing = true;
-            then = std::chrono::high_resolution_clock::now();
+            then = std::chrono::steady_clock::now();
             return true;
         }
     }
@@ -26,7 +26,7 @@ namespace nimlib::Server::Metrics::Measurements
         }
         else
         {
-            auto now = std::chrono::high_resolution_clock::now();
+            auto now = std::chrono::steady_clock::now();
             duration = std::chrono::duration_cast<std::chrono::nanoseconds>(now - then).count();
             timing = false;
             return true;
