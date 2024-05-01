@@ -13,24 +13,22 @@ namespace nimlib::Server::Metrics::Measurements
         explicit Measurement(const std::string& target_name)
             : metric{ nimlib::Server::Metrics::MetricsStore<T>::get_instance().get_metric(target_name) }
         {};
+        virtual ~Measurement() = default;
 
-        virtual ~Measurement()
-        {
-            if (successful_measurement && metric)
-            {
-                metric->receive(measurement_result);
-            }
-        };
-
-        // copy & move constructors?
+        // TODO: copy & move constructors for base class?
 
         virtual void start() = 0;
         virtual void end() = 0;
+        virtual void cancel() = 0;
+
+    protected:
+        void forward_measurement(T m)
+        {
+            if (metric) metric->receive(m);
+        }
 
     protected:
         std::shared_ptr<nimlib::Server::Metrics::Metric<T>> metric;
-        T measurement_result{};
-        bool successful_measurement{ false };
     };
 };
 
@@ -45,6 +43,7 @@ namespace nimlib::Server::Metrics::Measurements
 
         void start() override;
         void end() override;
+        void cancel() override;
     };
 
     template<typename T>
@@ -56,6 +55,7 @@ namespace nimlib::Server::Metrics::Measurements
 
         void start() override;
         void end() override;
+        void cancel() override;
 
     private:
         Timer timer{};
@@ -71,12 +71,14 @@ namespace nimlib::Server::Metrics::Measurements
     void Count<T>::start() {}
 
     template<typename T>
-    void Count<T>::end()
-    {
-        Measurement<T>::measurement_result = 1;
-        Measurement<T>::successful_measurement = true;
-    }
+    void Count<T>::end() { Measurement<T>::forward_measurement(1); }
 
+    template<typename T>
+    void Count<T>::cancel() {}
+}
+
+namespace nimlib::Server::Metrics::Measurements
+{
     template<typename T>
     Duration<T>::Duration(const std::string& target_name) : Measurement<T>{ target_name } {}
 
@@ -89,8 +91,14 @@ namespace nimlib::Server::Metrics::Measurements
         long duration;
         if (timer.end(duration))
         {
-            Measurement<T>::measurement_result = duration;
-            Measurement<T>::successful_measurement = true;
+            Measurement<T>::forward_measurement(duration);
         }
+    }
+
+    template<typename T>
+    void Duration<T>::cancel()
+    {
+        long duration;
+        timer.end(duration);
     }
 }

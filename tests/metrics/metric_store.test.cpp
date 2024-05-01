@@ -32,16 +32,3 @@ TEST(MetricStoreTest, ReturnPointerToMetricStore)
     EXPECT_TRUE(r1);
     EXPECT_TRUE(r2);
 }
-
-TEST(MetricStoreTest, AggregatorIsSingleton)
-{
-    MetricsStore<long>& metric_store{ MetricsStore<long>::get_instance() };
-    std::string name_1{ "metric_1" };
-    std::string name_2{ "metric_2" };
-
-    auto r1 = metric_store.get_metric(name_1);
-    auto r2 = metric_store.get_metric(name_2);
-
-    EXPECT_TRUE(r1);
-    EXPECT_TRUE(r2);
-}

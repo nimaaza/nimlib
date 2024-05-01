@@ -31,6 +31,16 @@ namespace nimlib::Server::Handlers
             http_response.body = contents;
             return http_response;
         }
+        else if (http_request.target == "/login" && http_request.method == "POST")
+        {
+            std::cout << http_request.body << std::endl;
+            HttpResponse http_response{};
+            http_response.status = 404;
+            http_response.reason = "Not found";
+            http_response.headers["content-type"].push_back("text/html; charset=UTF-8");
+            http_response.body = "not found";
+            return http_response;
+        }
         else
         {
             HttpResponse http_response{};

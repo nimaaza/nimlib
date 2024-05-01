@@ -15,6 +15,7 @@ namespace nimlib::Server::Metrics::Aggregations
 
         virtual bool involve(T) = 0;
         virtual bool get_val(T&) = 0;
+        virtual const std::string& get_name() const = 0;
     };
 };
 
@@ -29,9 +30,11 @@ namespace nimlib::Server::Metrics::Aggregations
 
         bool involve(T m = 1) override;
         bool get_val(T& m) override;
+        const std::string& get_name() const override;
 
     private:
         T count;
+        inline static const std::string name{ "increment" };
     };
 
     template <typename T>
@@ -43,9 +46,11 @@ namespace nimlib::Server::Metrics::Aggregations
 
         bool involve(T m) override;
         bool get_val(T& m) override;
+        const std::string& get_name() const override;
 
     private:
         T sum;
+        inline static const std::string name{ "sum" };
     };
 
     template <typename T>
@@ -57,9 +62,11 @@ namespace nimlib::Server::Metrics::Aggregations
 
         bool involve(T m) override;
         bool get_val(T& m) override;
+        const std::string& get_name() const override;
 
     private:
         T max;
+        inline static const std::string name{ "max" };
     };
 
     template <typename T>
@@ -71,9 +78,11 @@ namespace nimlib::Server::Metrics::Aggregations
 
         bool involve(T m) override;
         bool get_val(T& m) override;
+        const std::string& get_name() const override;
 
     private:
         T min;
+        inline static const std::string name{ "min" };
     };
 
     template <typename T>
@@ -85,11 +94,12 @@ namespace nimlib::Server::Metrics::Aggregations
 
         bool involve(T m) override;
         bool get_val(T& m) override;
+        const std::string& get_name() const override;
 
     private:
         Increment<T> increment;
         Sum<T> sum;
-        T avg;
+        inline static const std::string name{ "average" };
     };
 
     template <typename T>
@@ -101,10 +111,12 @@ namespace nimlib::Server::Metrics::Aggregations
 
         bool involve(T m) override;
         bool get_val(T& m) override;
+        const std::string& get_name() const override;
 
     private:
         std::priority_queue<T, std::vector<T>, std::less<T>> less{};
         std::priority_queue<T, std::vector<T>, std::greater<T>> more{};
+        inline static const std::string name{ "median" };
     };
 
     template <typename T>
@@ -116,11 +128,13 @@ namespace nimlib::Server::Metrics::Aggregations
 
         bool involve(T m) override;
         bool get_val(T& m) override;
+        const std::string& get_name() const override;
 
     private:
         nimlib::Server::Metrics::Measurements::Timer timer{};
         Sum<T> duration{};
         Sum<T> count{};
+        inline static const std::string name{ "average_per_second" };
     };
 };
 
@@ -142,6 +156,9 @@ namespace nimlib::Server::Metrics::Aggregations
         m = count;
         return true;
     }
+
+    template <typename T>
+    const std::string& Increment<T>::get_name() const { return Increment<T>::name; }
 }
 
 namespace nimlib::Server::Metrics::Aggregations
@@ -162,6 +179,9 @@ namespace nimlib::Server::Metrics::Aggregations
         m = sum;
         return true;
     }
+
+    template <typename T>
+    const std::string& Sum<T>::get_name() const { return Sum<T>::name; }
 }
 
 namespace nimlib::Server::Metrics::Aggregations
@@ -182,6 +202,9 @@ namespace nimlib::Server::Metrics::Aggregations
         m = max;
         return true;
     }
+
+    template <typename T>
+    const std::string& Max<T>::get_name() const { return Max<T>::name; }
 }
 
 namespace nimlib::Server::Metrics::Aggregations
@@ -202,12 +225,15 @@ namespace nimlib::Server::Metrics::Aggregations
         m = min;
         return true;
     }
+
+    template <typename T>
+    const std::string& Min<T>::get_name() const { return Min<T>::name; }
 }
 
 namespace nimlib::Server::Metrics::Aggregations
 {
     template <typename T>
-    Avg<T>::Avg() : avg{}, increment{}, sum{} {}
+    Avg<T>::Avg() : increment{}, sum{} {}
 
     template <typename T>
     bool Avg<T>::involve(T m)
@@ -233,6 +259,9 @@ namespace nimlib::Server::Metrics::Aggregations
             return false;
         }
     }
+
+    template <typename T>
+    const std::string& Avg<T>::get_name() const { return Avg<T>::name; }
 }
 
 namespace nimlib::Server::Metrics::Aggregations
@@ -293,6 +322,9 @@ namespace nimlib::Server::Metrics::Aggregations
         m = less.top();
         return true;
     }
+
+    template <typename T>
+    const std::string& Med<T>::get_name() const { return Med<T>::name; }
 }
 
 namespace nimlib::Server::Metrics::Aggregations
@@ -307,7 +339,7 @@ namespace nimlib::Server::Metrics::Aggregations
 
         if (timer.end(latency))
         {
-            latency /= 1'000'000'000; // Converting to seconds.
+            //            latency /= 1'000'000'000; // Converting to seconds.
             bool value_collection_result = duration.involve(latency) && count.involve(m);
             timer.begin();
             return value_collection_result;
@@ -325,11 +357,18 @@ namespace nimlib::Server::Metrics::Aggregations
         T t{};
 
         bool value_collection_result = count.get_val(c) && duration.get_val(t);
-        if (value_collection_result)
+        t /= 1'000'000'000; // Converting to seconds.
+        if (value_collection_result && t != 0)
         {
             m = c / t;
+            return true;
         }
-
-        return value_collection_result;
+        else
+        {
+            return  false;
+        }
     }
+
+    template <typename T>
+    const std::string& AvgRatePerSecond<T>::get_name() const { return AvgRatePerSecond<T>::name; }
 }

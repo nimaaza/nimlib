@@ -11,7 +11,7 @@ namespace nimlib::Server::Metrics
     class Metric
     {
     public:
-        using aggregator_ptr = std::shared_ptr<nimlib::Server::Metrics::Aggregations::Aggregator<T>>;
+        using aggregator_ptr = std::shared_ptr<Aggregations::Aggregator<T>>;
 
         explicit Metric(const std::string& name);
         ~Metric() = default;
@@ -25,6 +25,7 @@ namespace nimlib::Server::Metrics
         Metric& register_aggregator(aggregator_ptr agg);
         bool receive(T m);
         const std::string& get_name() const;
+        std::string get_report() const;
 
     private:
         std::string name;
@@ -59,4 +60,10 @@ namespace nimlib::Server::Metrics
 
     template <typename T>
     const std::string& Metric<T>::get_name() const { return name; }
+
+    template <typename T>
+    std::string Metric<T>::get_report() const
+    {
+        return "";
+    }
 }

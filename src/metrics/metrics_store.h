@@ -26,7 +26,7 @@ namespace nimlib::Server::Metrics
     public:
         void register_metric(metric_ptr m);
         metric_ptr get_metric(const std::string& name);
-        void generate_stats_report(); // TODO
+        std::string generate_stats_report();
 
         static MetricsStore& get_instance();
 
@@ -54,7 +54,14 @@ namespace nimlib::Server::Metrics
     }
 
     template <typename T>
-    void MetricsStore<T>::generate_stats_report() {} // TODO
+    std::string MetricsStore<T>::generate_stats_report()
+    {
+        std::stringstream report{};
+        for (const auto& [name, metric] : metrics_register)
+        {
+            report << metric->get_report();
+        }
+    }
 
     template <typename T>
     MetricsStore<T>& MetricsStore<T>::get_instance()
