@@ -17,8 +17,8 @@ namespace nimlib::Server::Utils
             T initial_state,
             T error_state,
             const std::unordered_map<T, std::vector<T>>& state_transition_map,
-            const std::unordered_map<T, int>& max_reset_counts = {},
-            const std::unordered_map<T, long>& msec_time_outs = {}
+            const std::unordered_map<T, int>& max_reset_counts,
+            const std::unordered_map<T, long>& msec_time_outs
         );
         ~StateManager() = default;
 
@@ -161,6 +161,9 @@ namespace nimlib::Server::Utils
     template<typename T>
     bool StateManager<T>::timed_out() const
     {
+        // When no timeout has been defined, the return value is always false.
+        if (msec_time_outs.empty()) return false;
+
         // When in error state, timeout makes no sense.
         if (state == error_state) return false;
 

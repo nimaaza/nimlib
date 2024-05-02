@@ -17,11 +17,15 @@ std::unordered_map<States, std::vector<States>> transitions
     {States::ANOTHER_STATE, {States::ANOTHER_STATE}},
 };
 
+const std::unordered_map<States, int> empty_max_reset_counts{};
+
+const std::unordered_map<States, long> empty_time_outs{};
+
 // TODO: timeouts and max_reset_count should have no effect when in error state.
 
 TEST(StateManagerTest_Construction, InitialState_SetToStart)
 {
-    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, empty_max_reset_counts, empty_time_outs };
 
     EXPECT_EQ(sm.get_state(), States::START);
 }
@@ -47,7 +51,7 @@ TEST(StateManagerTest_Transitions, StatesTransitToErrorWhenTimedOut)
 
 TEST(StateManagerTest_Transitions, AllStatesTransitToError)
 {
-    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, empty_max_reset_counts, empty_time_outs };
 
     sm.set_state(States::START);
     EXPECT_TRUE(sm.can_transition_to(States::ERROR_STATE));
@@ -64,7 +68,7 @@ TEST(StateManagerTest_Transitions, AllStatesTransitToError)
 
 TEST(StateManagerTest_Transitions, TransitionsCheck)
 {
-    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, empty_max_reset_counts, empty_time_outs };
 
     EXPECT_FALSE(sm.can_transition_to(States::START));
     EXPECT_TRUE(sm.can_transition_to(States::OK));
@@ -101,8 +105,17 @@ TEST(StateManagerTest_Transitions, UnspecifiedTransition)
         {OtherStates::O_SOME_STATE, {OtherStates::O_ANOTHER_STATE, OtherStates::O_SOME_STATE}},
         {OtherStates::O_ANOTHER_STATE, {}},
     };
+    std::unordered_map<OtherStates, int> other_empty_max_reset_counts{};
+    std::unordered_map<OtherStates, long> other_empty_time_outs{};
 
-    StateManager<OtherStates> sm{ OtherStates::O_START, OtherStates::O_ERROR_STATE, other_transitions };
+    StateManager<OtherStates> sm
+    {
+        OtherStates::O_START,
+        OtherStates::O_ERROR_STATE,
+        other_transitions,
+        other_empty_max_reset_counts,
+        other_empty_time_outs
+    };
     sm.set_state(OtherStates::UNSPEC_TRANSITION);
 
     EXPECT_FALSE(sm.can_transition_to(OtherStates::UNSPEC_TRANSITION));
@@ -110,7 +123,7 @@ TEST(StateManagerTest_Transitions, UnspecifiedTransition)
 
 TEST(StateManagerTest_SetState, NotPossibleWhenInError)
 {
-    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, empty_max_reset_counts, empty_time_outs };
     sm.set_state(States::ERROR_STATE);
     sm.set_state(States::ANOTHER_STATE);
 
@@ -119,7 +132,7 @@ TEST(StateManagerTest_SetState, NotPossibleWhenInError)
 
 TEST(StateManagerTest_SetState, StateChangeWhenCanTransitionTo)
 {
-    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, empty_max_reset_counts, empty_time_outs };
     // From START cannot transition to ANOTHER_STATE.
     sm.set_state(States::OK);
 
@@ -128,7 +141,7 @@ TEST(StateManagerTest_SetState, StateChangeWhenCanTransitionTo)
 
 TEST(StateManagerTest_SetState, ErrorWhenCannotTransitionTo)
 {
-    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, empty_max_reset_counts, empty_time_outs };
     // From START cannot transition to ANOTHER_STATE.
     sm.set_state(States::ANOTHER_STATE);
 
@@ -158,7 +171,7 @@ TEST(StateManagerTest_SetState, WhenTimedOut)
 TEST(StateManagerTest_SetState, WhenMoreThanMaxResetCount)
 {
     std::unordered_map<States, int> max_reset_counts{ {States::SOME_STATE, 5} };
-    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, max_reset_counts };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, max_reset_counts, empty_time_outs };
     // State is set to OK so other transitions are possible.
     sm.set_state(States::OK);
     sm.set_state(States::SOME_STATE);
@@ -185,7 +198,7 @@ TEST(StateManagerTest_SetState, ResetCountZeroedOnStateTransition)
         {States::ANOTHER_STATE, 3}
     };
 
-    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, max_reset_counts };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, max_reset_counts, empty_time_outs };
     // State is set to OK so other transitions are possible.
     sm.set_state(States::OK);
 
@@ -215,7 +228,7 @@ TEST(StateManagerTest_SetState, StateNotNew)
         {States::SOME_STATE, 3},
     };
 
-    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, max_reset_counts };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, max_reset_counts, empty_time_outs };
     // State is set to OK so other transitions are possible.
     sm.set_state(States::OK);
     sm.set_state(States::SOME_STATE);
@@ -235,7 +248,7 @@ TEST(StateManagerTest_SetState, StateNotNew)
 
 TEST(StateManagerTest_ResetState, StateShouldNotChangeUponReset)
 {
-    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, empty_max_reset_counts, empty_time_outs };
 
     auto state_before = sm.get_state();
     sm.reset_state();
@@ -251,7 +264,7 @@ TEST(StateManagerTest_ResetState, MaxResetCountReached)
         {States::SOME_STATE, 4},
     };
 
-    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, max_reset_counts };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, max_reset_counts, empty_time_outs };
     // State is set to OK so other transitions are possible.
     sm.set_state(States::OK);
 
@@ -275,7 +288,7 @@ TEST(StateManagerTest_ResetState, NoEffectWhenMaxResetCountNotPresent)
         {States::ANOTHER_STATE, 4},
     };
 
-    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, max_reset_counts };
+    StateManager<States> sm{ States::START, States::ERROR_STATE, transitions, max_reset_counts, empty_time_outs };
     // State is set to OK so other transitions are possible.
     sm.set_state(States::OK);
 

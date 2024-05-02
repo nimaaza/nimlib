@@ -1,6 +1,5 @@
 #pragma once
 
-#include <queue>
 #include <memory>
 #include <poll.h>
 

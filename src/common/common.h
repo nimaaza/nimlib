@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace nimlib::Server::Constants
 {
@@ -14,11 +15,16 @@ namespace nimlib::Server::Constants
         INACTIVE, CONNECTION_ERROR
     };
 
-    enum HandlerState { P_STARTING, P_ERROR, WRITE_AND_DIE, WRITE_AND_WAIT, INCOMPLETE };
+    enum HandlerState
+    {
+        READY_TO_HANDLE, H_HANDLING,
+        WRITE_AND_DIE, WRITE_AND_WAIT,
+        INCOMPLETE, HANDLER_ERROR
+    };
 
     enum LogLevel { INFO, DEBUG, WARN, ERROR, CRITICAL };
 
-    const std::unordered_map<LogLevel, std::string_view> level_to_string_translation = {
+    const std::unordered_map<LogLevel, std::string_view> level_to_string_translation{
             {LogLevel::INFO,     "info"},
             {LogLevel::DEBUG,    "debug"},
             {LogLevel::WARN,     "warn"},

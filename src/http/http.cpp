@@ -4,10 +4,6 @@
 
 namespace nimlib::Server::Handlers
 {
-	Http::Http(Connection& connection) : connection{ connection }, http_request{ std::nullopt } {}
-
-	Http::~Http() = default;
-
 	void Http::notify(Connection& connection, StreamsProvider& streams)
 	{
 		std::stringstream& out{ streams.sink() };
@@ -17,6 +13,11 @@ namespace nimlib::Server::Handlers
 
 	void Http::notify(Handler& handler, Connection& connection, StreamsProvider& streams)
 	{
+		if (handler_state.set_state(HandlerState::H_HANDLING) == HandlerState::HANDLER_ERROR)
+		{
+			return;
+		}
+
 		if (!http_request)
 		{
 			// This is a newly accepted request which has not been parsed.
@@ -31,6 +32,26 @@ namespace nimlib::Server::Handlers
 				{
 					std::stringstream& output_to_tls{ streams.sink() };
 					output_to_tls << http_response.value();
+
+					const auto& headers = http_request.value().headers;
+					auto it = headers.find("connection");
+					if (it != headers.end())
+					{
+						const auto& values = it->second;
+						if (std::find(values.begin(), values.end(), "keep-alive") != values.end())
+						{
+							handler_state.set_state(HandlerState::WRITE_AND_WAIT);
+						}
+						else
+						{
+							handler_state.set_state(HandlerState::WRITE_AND_DIE);
+						}
+					}
+					else
+					{
+						handler_state.set_state(HandlerState::WRITE_AND_DIE);
+					}
+
 					handler.notify(*this, connection, streams);
 				}
 			}
@@ -48,33 +69,17 @@ namespace nimlib::Server::Handlers
 
 	bool Http::wants_more_bytes()
 	{
-		return false;
+		return handler_state.get_state() == HandlerState::INCOMPLETE;
 	}
 
 	bool Http::wants_to_write()
 	{
-		return true;
+		auto state = handler_state.get_state();
+		return state == HandlerState::WRITE_AND_DIE || state == HandlerState::WRITE_AND_WAIT;
 	}
 
 	bool Http::wants_to_live()
 	{
-		if (http_request)
-		{
-			const auto& headers = http_request.value().headers;
-			auto it = headers.find("connection");
-			if (it != headers.end())
-			{
-				const auto& values = it->second;
-				return std::find(values.begin(), values.end(), "keep-alive") != values.end();
-			}
-			else
-			{
-				return false;
-			}
-		}
-		else
-		{
-			return  false;
-		}
+		return handler_state.get_state() == HandlerState::WRITE_AND_WAIT;
 	}
 };
