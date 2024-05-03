@@ -47,10 +47,10 @@ enable_testing()
 add_executable(unit_tests
         tests/http/http_parser.test.cpp
         tests/metrics/aggregations.test.cpp
-        tests/metrics/measurements.test.cpp
+        tests/metrics/measure.test.cpp
         tests/metrics/metric.test.cpp
         tests/metrics/metric_store.test.cpp
-        tests/metrics/timer.test.cpp
+        tests/utils/timer.test.cpp
         tests/support/tcp_socket.mock.cpp
         tests/utils/helpers.test.cpp
         tests/utils/state_manager.test.cpp
