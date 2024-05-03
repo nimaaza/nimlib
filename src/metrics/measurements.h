@@ -8,12 +8,12 @@
 namespace nimlib::Server::Metrics::Measurements
 {
     template<typename T>
-    struct Measurement
+    struct Measure
     {
-        explicit Measurement(const std::string& target_name)
+        explicit Measure(const std::string& target_name)
             : metric{ nimlib::Server::Metrics::MetricsStore<T>::get_instance().get_metric(target_name) }
         {};
-        virtual ~Measurement() = default;
+        virtual ~Measure() = default;
 
         // TODO: copy & move constructors for base class?
 
@@ -35,7 +35,7 @@ namespace nimlib::Server::Metrics::Measurements
 namespace nimlib::Server::Metrics::Measurements
 {
     template<typename T>
-    class Count : public Measurement<T>
+    class Count : public Measure<T>
     {
     public:
         explicit Count(const std::string& target_name);
@@ -47,7 +47,7 @@ namespace nimlib::Server::Metrics::Measurements
     };
 
     template<typename T>
-    class Duration : public Measurement<T>
+    class Duration : public Measure<T>
     {
     public:
         explicit Duration(const std::string& target_name);
@@ -58,20 +58,20 @@ namespace nimlib::Server::Metrics::Measurements
         void cancel() override;
 
     private:
-        Timer timer{};
+        nimlib::Server::Utils::Timer timer{};
     };
 };
 
 namespace nimlib::Server::Metrics::Measurements
 {
     template<typename T>
-    Count<T>::Count(const std::string& target_name) : Measurement<T>{ target_name } {}
+    Count<T>::Count(const std::string& target_name) : Measure<T>{ target_name } {}
 
     template<typename T>
     void Count<T>::start() {}
 
     template<typename T>
-    void Count<T>::end() { Measurement<T>::forward_measurement(1); }
+    void Count<T>::end() { Measure<T>::forward_measurement(1); }
 
     template<typename T>
     void Count<T>::cancel() {}
@@ -80,7 +80,7 @@ namespace nimlib::Server::Metrics::Measurements
 namespace nimlib::Server::Metrics::Measurements
 {
     template<typename T>
-    Duration<T>::Duration(const std::string& target_name) : Measurement<T>{ target_name } {}
+    Duration<T>::Duration(const std::string& target_name) : Measure<T>{ target_name } {}
 
     template<typename T>
     void Duration<T>::start() { timer.begin(); }
@@ -91,7 +91,7 @@ namespace nimlib::Server::Metrics::Measurements
         long duration;
         if (timer.end(duration))
         {
-            Measurement<T>::forward_measurement(duration);
+            Measure<T>::forward_measurement(duration);
         }
     }
 

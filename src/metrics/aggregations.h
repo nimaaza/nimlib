@@ -1,6 +1,6 @@
 #pragma once
 
-#include "timer.h"
+#include "../utils/timer.h"
 
 #include <limits>
 #include <queue>
@@ -131,7 +131,7 @@ namespace nimlib::Server::Metrics::Aggregations
         const std::string& get_name() const override;
 
     private:
-        nimlib::Server::Metrics::Measurements::Timer timer{};
+        nimlib::Server::Utils::Timer timer{};
         Sum<T> duration{};
         Sum<T> count{};
         inline static const std::string name{ "average_per_second" };

@@ -1,6 +1,8 @@
+#pragma once
+
 #include <chrono>
 
-namespace nimlib::Server::Metrics::Measurements
+namespace nimlib::Server::Utils
 {
     class Timer
     {

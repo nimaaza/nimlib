@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../common/types.h"
 #include "metric.h"
 #include "metrics_store.h"
 

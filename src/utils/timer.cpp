@@ -1,6 +1,6 @@
 #include "timer.h"
 
-namespace nimlib::Server::Metrics::Measurements
+namespace nimlib::Server::Utils
 {
     Timer::Timer() : then{ std::chrono::steady_clock::now() } {}
 

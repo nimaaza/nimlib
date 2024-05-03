@@ -2,9 +2,9 @@
 
 #include <time.h>
 
-#include "../../src/metrics/timer.h"
+#include "../../src/utils/timer.h"
 
-using namespace nimlib::Server::Metrics::Measurements;
+using namespace nimlib::Server::Utils;
 
 TEST(TimerTest, ProperUse)
 {

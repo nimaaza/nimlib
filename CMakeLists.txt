@@ -18,7 +18,7 @@ add_executable(test_run
         src/logger/agent.cpp
         src/logger/factory.cpp
         src/logger/logger.cpp
-        src/metrics/timer.cpp
+        src/utils/timer.cpp
         src/tls/botan/callbacks.cpp
         src/tls/botan/credentials.cpp
         src/tls/botan/tls_server.cpp
@@ -62,7 +62,7 @@ add_executable(unit_tests
         src/logger/agent.cpp
         src/logger/factory.cpp
         src/logger/logger.cpp
-        src/metrics/timer.cpp
+        src/utils/timer.cpp
         src/tls/botan/callbacks.cpp
         src/tls/botan/credentials.cpp
         src/tls/botan/tls_server.cpp
@@ -85,7 +85,7 @@ add_executable(unit_tests_tcp_connection
         tests/tcp_connection.test.cpp
         tests/support/tcp_socket.mock.cpp
         src/tcp_connection.cpp
-        src/metrics/timer.cpp)
+        src/utils/timer.cpp)
 target_include_directories(unit_tests_tcp_connection PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_tcp_connection GTest::gtest_main Botan::Botan)
 
@@ -103,7 +103,7 @@ add_executable(unit_tests_polling_server
         src/tls/botan/tls_server.cpp
         src/tcp_connection_pool.cpp
         src/utils/helpers.cpp
-        src/metrics/timer.cpp)
+        src/utils/timer.cpp)
 target_include_directories(unit_tests_polling_server PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_polling_server GTest::gtest_main Botan::Botan)
 
