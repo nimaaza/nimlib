@@ -81,3 +81,7 @@ The way the metric is used is through the instances of the Measure interface, li
 nimlib::Server::Metrics::Measurements::Duration<long> response_timer {"time_to_response"};
 ```
 Whenever a measurement has to start, response_timer.start() is called. At the point when the measurement must end, response_timer.end() is called and the result of the measurement is submitted to the metric. If for some reason a started measurement is not useful anymore, response_timer.cancel() can be used to cancel the measurement. The response_timer object stays available to subsequence measurements.
+
+The following is a diagram of the metrics component:
+
+![Metrics Diagram](./metrics.uml.svg)
