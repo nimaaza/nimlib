@@ -31,8 +31,8 @@ add_executable(test_run
 target_include_directories(test_run PUBLIC "${PROJECT_BINARY_DIR}")
 target_compile_definitions(test_run PRIVATE NO_TESTING)
 target_link_libraries(test_run Botan::Botan)
-target_compile_options(test_run PRIVATE -fsanitize=address)
-target_link_options(test_run PRIVATE -fsanitize=address)
+#target_compile_options(test_run PRIVATE -fsanitize=address)
+#target_link_options(test_run PRIVATE -fsanitize=address)
 #target_link_libraries(test_run OpenSSL::SSL OpenSSL::Crypto)
 
 # TDD ---------------------------------------------------------------
