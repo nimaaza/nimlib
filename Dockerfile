@@ -13,5 +13,5 @@ RUN make && make install
 WORKDIR /nimlib/build_d
 RUN cmake ..
 RUN make
-RUN test_run
 EXPOSE 8080
+RUN /nimlib/build_d/test_run
