@@ -128,7 +128,6 @@ namespace nimlib::Server
 
         if (socket)
         {
-            socket->tcp_close();
             socket.reset();
         }
     }

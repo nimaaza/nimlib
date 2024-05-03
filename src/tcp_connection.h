@@ -5,7 +5,7 @@
 
 #include "common/types.h"
 #include "utils/state_manager.h"
-#include "metrics/measurements.h"
+#include "metrics/measure.h"
 
 namespace nimlib::Server
 {

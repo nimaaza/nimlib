@@ -16,5 +16,6 @@ namespace nimlib::Server::Handlers
         HttpRouter& operator=(HttpRouter&&) noexcept = delete;
 
         HttpResponse route(HttpRequest& http_request);
+        // std::string read_next_bytes(int size, int seq);
     };
 };

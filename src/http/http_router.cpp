@@ -26,7 +26,7 @@ namespace nimlib::Server::Handlers
             http_response.body = report;
             return http_response;
         }
-        else if (http_request.target == "/files1/img.jpg")
+        else if (http_request.target == "/files/img.jpg")
         {
             std::string contents;
             std::ifstream in("./img.jpg", std::ios::in | std::ios::binary);
