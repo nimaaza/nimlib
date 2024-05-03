@@ -11,7 +11,8 @@ int main()
     metrics_builder::instantiate_metric(nimlib::Server::Constants::TIME_TO_RESPONSE)
         .measure_avg()
         .measure_max()
-        .get();
+        .with_timeseries(5)
+        .build();
 
     auto psl = decorate(std::make_unique<PollingServer>("8080"));
     psl->run();

@@ -25,8 +25,6 @@ namespace nimlib::Server::Handlers
 			http_request = std::move(parse_http_request(input_from_tls));
 			if (http_request)
 			{
-				// TODO: HTTP request has been parsed successfully. Moving on.
-				HttpRouter router{};
 				auto http_response = parse_http_response(router.route(http_request.value()));
 				if (http_response)
 				{

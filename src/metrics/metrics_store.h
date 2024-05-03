@@ -57,10 +57,26 @@ namespace nimlib::Server::Metrics
     std::string MetricsStore<T>::generate_stats_report()
     {
         std::stringstream report{};
+        std::vector<std::pair<std::string, std::vector<T>>> report_data;
+
         for (const auto& [name, metric] : metrics_register)
         {
-            report << metric->get_report();
+            report << "metric_name: " << name << ":\n";
+            metric->get_report(report_data);
+            for (const auto& [value_name, values] : report_data)
+            {
+                report << value_name << ": ";
+                for (const auto& v : values)
+                {
+                    report << v << ", ";
+                }
+                report << "\n";
+            }
+            report << "\n\n";
+            report_data.clear();
         }
+
+        return report.str();
     }
 
     template <typename T>

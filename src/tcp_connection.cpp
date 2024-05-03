@@ -62,14 +62,21 @@ namespace nimlib::Server
 
     void TcpConnection::accept_socket(std::unique_ptr<Socket> s)
     {
-        response_timer.start();
         socket = std::move(s);
         connection_state.set_state(ConnectionState::READY_TO_READ);
     }
 
     void TcpConnection::notify(ServerDirective directive)
     {
-        (directive == ServerDirective::READ_SOCKET) ? read() : write();
+        if (directive == ServerDirective::READ_SOCKET)
+        {
+            response_timer.start();
+            read();
+        }
+        else
+        {
+            write();
+        }
     }
 
     void TcpConnection::notify(Handler& notifying_handler)
@@ -108,15 +115,14 @@ namespace nimlib::Server
         if (state == ConnectionState::CONNECTION_ERROR)
         {
             connection_state.clear();
-            connection_state.set_state(ConnectionState::INACTIVE);
             response_timer.cancel();
         }
-        else
+        else if (state == ConnectionState::DONE)
         {
-            connection_state.set_state(ConnectionState::INACTIVE);
             response_timer.end();
         }
 
+        connection_state.set_state(ConnectionState::INACTIVE);
         input_stream.str("");
         output_stream.str("");
 
@@ -210,6 +216,7 @@ namespace nimlib::Server
                 //  TODO: reset connection variables or use state callbacks for clean up
                 input_stream.str("");
                 output_stream.str("");
+                response_timer.end();
                 return connection_state.set_state(ConnectionState::READY_TO_READ);
             }
             else

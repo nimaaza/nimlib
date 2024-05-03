@@ -19,7 +19,6 @@ namespace nimlib::Server::Metrics
     public:
         ~Builder() = default;
 
-
         Builder(const Builder&) = delete;
         Builder& operator=(const Builder&) = delete;
         Builder(Builder&&) noexcept = default;
@@ -32,8 +31,9 @@ namespace nimlib::Server::Metrics
         Builder& measure_sum();
         Builder& measure_med();
         Builder& measure_avg_rate();
+        Builder& with_timeseries(int capacity);
 
-        metric_ptr get();
+        metric_ptr build();
 
         static Builder instantiate_metric(const std::string& metric_name);
 
@@ -47,7 +47,7 @@ namespace nimlib::Server::Metrics
     template <typename T>
     Builder<T>::Builder(const std::string& metric_name)
     {
-        metric = std::make_shared<Metric<T>>(metric_name);
+        metric = std::make_shared<PointMetric<T>>(metric_name);
     }
 
     template <typename T>
@@ -107,7 +107,14 @@ namespace nimlib::Server::Metrics
     }
 
     template <typename T>
-    std::shared_ptr<Metric<T>> Builder<T>::get()
+    Builder<T>& Builder<T>::with_timeseries(int capacity)
+    {
+        metric = std::make_shared<TimeSeriesMetric<T>>(metric, capacity);
+        return *this;
+    }
+
+    template <typename T>
+    std::shared_ptr<Metric<T>> Builder<T>::build()
     {
         auto& metrics_store = MetricsStore<T>::get_instance();
         metrics_store.register_metric(metric);

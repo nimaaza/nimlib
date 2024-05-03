@@ -1,7 +1,10 @@
 #include "http_router.h"
 
-#include "fstream"
-#include "iostream"
+#include "../metrics/metrics_store.h"
+
+#include <fstream>
+#include <iostream>
+#include <iomanip>
 
 namespace nimlib::Server::Handlers
 {
@@ -11,7 +14,19 @@ namespace nimlib::Server::Handlers
 
     HttpResponse HttpRouter::route(HttpRequest& http_request)
     {
-        if (http_request.target == "/files/img.jpg")
+        if (http_request.target == "/metrics")
+        {
+            auto& metrics_store = nimlib::Server::Metrics::MetricsStore<long>::get_instance();
+            auto report = metrics_store.generate_stats_report();
+
+            HttpResponse http_response{};
+            http_response.status = 200;
+            http_response.reason = "OK";
+            http_response.headers["content-type"].push_back("text/plain");
+            http_response.body = report;
+            return http_response;
+        }
+        else if (http_request.target == "/files1/img.jpg")
         {
             std::string contents;
             std::ifstream in("./img.jpg", std::ios::in | std::ios::binary);

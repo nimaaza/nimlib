@@ -71,7 +71,8 @@ add_executable(unit_tests
         src/polling_server.cpp
         src/tcp_connection.cpp
         src/tcp_connection_pool.cpp
-        src/tcp_socket.cpp)
+        src/tcp_socket.cpp
+        tests/utils/circular_array.test.cpp)
 target_include_directories(unit_tests PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests GTest::gtest_main Botan::Botan)
 

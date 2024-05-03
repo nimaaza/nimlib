@@ -22,7 +22,7 @@ public:
     };
 
 protected:
-    Metric<long> metric;
+    PointMetric<long> metric;
     std::shared_ptr<Aggregations::Avg<long>> avg = std::make_shared<Aggregations::Avg<long>>();
     std::shared_ptr<Aggregations::Max<long>> max = std::make_shared<Aggregations::Max<long>>();
     std::shared_ptr<Aggregations::Min<long>> min = std::make_shared<Aggregations::Min<long>>();

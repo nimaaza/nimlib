@@ -31,6 +31,7 @@ namespace nimlib::Server::Handlers
     private:
         std::optional<HttpRequest> http_request{ std::nullopt };
         std::optional<HttpResponse> htt_response{ std::nullopt };
+        HttpRouter router{};
         StateManager<HandlerState> handler_state
         {
             HandlerState::READY_TO_HANDLE,
@@ -40,14 +41,14 @@ namespace nimlib::Server::Handlers
             time_outs
         };
         inline static const std::unordered_map<HandlerState, std::vector<HandlerState>> transition_map
-            {
-                {HandlerState::READY_TO_HANDLE, {HandlerState::H_HANDLING}},
-                {HandlerState::H_HANDLING, {HandlerState::WRITE_AND_WAIT, HandlerState::WRITE_AND_DIE, HandlerState::INCOMPLETE}},
-                {HandlerState::WRITE_AND_DIE, {}},
-                {HandlerState::WRITE_AND_WAIT, {HandlerState::H_HANDLING}},
-                {HandlerState::INCOMPLETE, {HandlerState::H_HANDLING}},
-            };
-        inline static const std::unordered_map<HandlerState, int> max_reset_counts {};
-        inline static const std::unordered_map<HandlerState, long> time_outs {};
+        {
+            {HandlerState::READY_TO_HANDLE, {HandlerState::H_HANDLING}},
+            {HandlerState::H_HANDLING, {HandlerState::WRITE_AND_WAIT, HandlerState::WRITE_AND_DIE, HandlerState::INCOMPLETE}},
+            {HandlerState::WRITE_AND_DIE, {}},
+            {HandlerState::WRITE_AND_WAIT, {HandlerState::H_HANDLING}},
+            {HandlerState::INCOMPLETE, {HandlerState::H_HANDLING}},
+        };
+        inline static const std::unordered_map<HandlerState, int> max_reset_counts{};
+        inline static const std::unordered_map<HandlerState, long> time_outs{};
     };
 };
