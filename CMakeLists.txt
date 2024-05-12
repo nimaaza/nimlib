@@ -13,8 +13,8 @@ message("Using OpenSSL version: ${OPENSSL_VERSION}")
 add_executable(test_run
         test_run.cpp
         src/http/http.cpp
-        src/http/http_parser.cpp
-        src/http/http_router.cpp
+        src/http/parser.cpp
+        src/http/router.cpp
         src/logger/agent.cpp
         src/logger/factory.cpp
         src/logger/logger.cpp
@@ -31,8 +31,8 @@ add_executable(test_run
 target_include_directories(test_run PUBLIC "${PROJECT_BINARY_DIR}")
 target_compile_definitions(test_run PRIVATE NO_TESTING)
 target_link_libraries(test_run Botan::Botan)
-#target_compile_options(test_run PRIVATE -fsanitize=address)
-#target_link_options(test_run PRIVATE -fsanitize=address)
+target_compile_options(test_run PRIVATE -fsanitize=address)
+target_link_options(test_run PRIVATE -fsanitize=address)
 #target_link_libraries(test_run OpenSSL::SSL OpenSSL::Crypto)
 
 # TDD ---------------------------------------------------------------
@@ -45,7 +45,7 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(unit_tests
-        tests/http/http_parser.test.cpp
+        tests/http/parser.test.cpp
         tests/metrics/aggregations.test.cpp
         tests/metrics/measure.test.cpp
         tests/metrics/metric.test.cpp
@@ -57,8 +57,8 @@ add_executable(unit_tests
         tests/tcp_connection.test.cpp
         tests/polling_server.test.cpp
         src/http/http.cpp
-        src/http/http_parser.cpp
-        src/http/http_router.cpp
+        src/http/parser.cpp
+        src/http/router.cpp
         src/logger/agent.cpp
         src/logger/factory.cpp
         src/logger/logger.cpp
@@ -72,7 +72,8 @@ add_executable(unit_tests
         src/tcp_connection.cpp
         src/tcp_connection_pool.cpp
         src/tcp_socket.cpp
-        tests/utils/circular_array.test.cpp)
+        tests/utils/circular_array.test.cpp
+        tests/http/router.test.cpp)
 target_include_directories(unit_tests PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests GTest::gtest_main Botan::Botan)
 
@@ -95,8 +96,8 @@ add_executable(unit_tests_polling_server
         src/tcp_socket.cpp
         src/tcp_connection.cpp
         src/http/http.cpp
-        src/http/http_parser.cpp
-        src/http/http_router.cpp
+        src/http/parser.cpp
+        src/http/router.cpp
         src/tls/tls_layer.cpp
         src/tls/botan/callbacks.cpp
         src/tls/botan/credentials.cpp
@@ -108,8 +109,8 @@ target_include_directories(unit_tests_polling_server PUBLIC "${PROJECT_BINARY_DI
 target_link_libraries(unit_tests_polling_server GTest::gtest_main Botan::Botan)
 
 add_executable(unit_tests_http_parser
-        tests/http/http_parser.test.cpp
-        src/http/http_parser.cpp
+        tests/http/parser.test.cpp
+        src/http/parser.cpp
         src/utils/helpers.cpp)
 target_include_directories(unit_tests_http_parser PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_http_parser GTest::gtest_main Botan::Botan)

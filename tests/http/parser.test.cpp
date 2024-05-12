@@ -3,9 +3,9 @@
 #include <sstream>
 #include <vector>
 
-#include "../../src/http/http_parser.h"
+#include "../../src/http/parser.h"
 
-using nimlib::Server::Handlers::parse_http_request;
+using nimlib::Server::Handlers::Http::parse_request;
 
 TEST(HttpRequestParserTests, IncorrectStartLine)
 {
@@ -96,30 +96,30 @@ TEST(HttpRequestParserTests, IncorrectStartLine)
                                         "message body" };
 
 
-    EXPECT_FALSE(parse_http_request(input_stream_1));
-    EXPECT_FALSE(parse_http_request(input_stream_1_));
-    EXPECT_FALSE(parse_http_request(input_stream_2));
-    EXPECT_FALSE(parse_http_request(input_stream_2_));
-    EXPECT_FALSE(parse_http_request(input_stream_3));
-    EXPECT_FALSE(parse_http_request(input_stream_3_));
-    EXPECT_FALSE(parse_http_request(input_stream_4));
-    EXPECT_FALSE(parse_http_request(input_stream_4_));
-    EXPECT_FALSE(parse_http_request(input_stream_5));
-    EXPECT_FALSE(parse_http_request(input_stream_5_));
-    EXPECT_FALSE(parse_http_request(input_stream_6));
-    EXPECT_FALSE(parse_http_request(input_stream_6_));
-    EXPECT_FALSE(parse_http_request(input_stream_7));
-    EXPECT_FALSE(parse_http_request(input_stream_7_));
-    EXPECT_FALSE(parse_http_request(input_stream_8));
-    EXPECT_FALSE(parse_http_request(input_stream_8_));
-    EXPECT_FALSE(parse_http_request(input_stream_9));
-    EXPECT_FALSE(parse_http_request(input_stream_9_));
-    EXPECT_FALSE(parse_http_request(input_stream_10));
-    EXPECT_FALSE(parse_http_request(input_stream_10_));
-    EXPECT_FALSE(parse_http_request(input_stream_11));
-    EXPECT_FALSE(parse_http_request(input_stream_11_));
-    EXPECT_FALSE(parse_http_request(input_stream_12));
-    EXPECT_FALSE(parse_http_request(input_stream_12_));
+    EXPECT_FALSE(parse_request(input_stream_1));
+    EXPECT_FALSE(parse_request(input_stream_1_));
+    EXPECT_FALSE(parse_request(input_stream_2));
+    EXPECT_FALSE(parse_request(input_stream_2_));
+    EXPECT_FALSE(parse_request(input_stream_3));
+    EXPECT_FALSE(parse_request(input_stream_3_));
+    EXPECT_FALSE(parse_request(input_stream_4));
+    EXPECT_FALSE(parse_request(input_stream_4_));
+    EXPECT_FALSE(parse_request(input_stream_5));
+    EXPECT_FALSE(parse_request(input_stream_5_));
+    EXPECT_FALSE(parse_request(input_stream_6));
+    EXPECT_FALSE(parse_request(input_stream_6_));
+    EXPECT_FALSE(parse_request(input_stream_7));
+    EXPECT_FALSE(parse_request(input_stream_7_));
+    EXPECT_FALSE(parse_request(input_stream_8));
+    EXPECT_FALSE(parse_request(input_stream_8_));
+    EXPECT_FALSE(parse_request(input_stream_9));
+    EXPECT_FALSE(parse_request(input_stream_9_));
+    EXPECT_FALSE(parse_request(input_stream_10));
+    EXPECT_FALSE(parse_request(input_stream_10_));
+    EXPECT_FALSE(parse_request(input_stream_11));
+    EXPECT_FALSE(parse_request(input_stream_11_));
+    EXPECT_FALSE(parse_request(input_stream_12));
+    EXPECT_FALSE(parse_request(input_stream_12_));
 }
 
 TEST(HttpRequestParserTests, IncorrectHeaders)
@@ -133,20 +133,20 @@ TEST(HttpRequestParserTests, IncorrectHeaders)
             "Connection: keep-alive"
             "\r\n"
             "message body" };
-        EXPECT_FALSE(parse_http_request(input_stream_1));
+        EXPECT_FALSE(parse_request(input_stream_1));
 
         std::stringstream input_stream_2{
             "GET /some/target/ HTTP/1.1\r\n"
             "Host: www.hostname.com\r\n"
             "Connection: keep-alive"
             "\r\n" };
-        EXPECT_FALSE(parse_http_request(input_stream_2));
+        EXPECT_FALSE(parse_request(input_stream_2));
 
         std::stringstream input_stream_3{
             "GET /some/target/ HTTP/1.1\r\n"
             "Host: www.hostname.com\r\n"
             "Connection: keep-alive" };
-        EXPECT_FALSE(parse_http_request(input_stream_3));
+        EXPECT_FALSE(parse_request(input_stream_3));
 
         // Without \n
         std::stringstream input_stream_4{
@@ -155,20 +155,20 @@ TEST(HttpRequestParserTests, IncorrectHeaders)
             "Connection: keep-alive\r"
             "\r\n"
             "message body" };
-        EXPECT_FALSE(parse_http_request(input_stream_4));
+        EXPECT_FALSE(parse_request(input_stream_4));
 
         std::stringstream input_stream_5{
             "GET /some/target/ HTTP/1.1\r\n"
             "Host: www.hostname.com\r\n"
             "Connection: keep-alive\r"
             "\r\n" };
-        EXPECT_FALSE(parse_http_request(input_stream_5));
+        EXPECT_FALSE(parse_request(input_stream_5));
 
         std::stringstream input_stream_6{
             "GET /some/target/ HTTP/1.1\r\n"
             "Host: www.hostname.com\r\n"
             "Connection: keep-alive\r" };
-        EXPECT_FALSE(parse_http_request(input_stream_6));
+        EXPECT_FALSE(parse_request(input_stream_6));
 
         // Without \r
         std::stringstream input_stream_7{
@@ -177,20 +177,20 @@ TEST(HttpRequestParserTests, IncorrectHeaders)
             "Connection: keep-alive\n"
             "\r\n"
             "message body" };
-        EXPECT_FALSE(parse_http_request(input_stream_7));
+        EXPECT_FALSE(parse_request(input_stream_7));
 
         std::stringstream input_stream_8{
             "GET /some/target/ HTTP/1.1\r\n"
             "Host: www.hostname.com\r\n"
             "Connection: keep-alive\n"
             "\r\n" };
-        EXPECT_FALSE(parse_http_request(input_stream_8));
+        EXPECT_FALSE(parse_request(input_stream_8));
 
         std::stringstream input_stream_9{
             "GET /some/target/ HTTP/1.1\r\n"
             "Host: www.hostname.com\r\n"
             "Connection: keep-alive\n" };
-        EXPECT_FALSE(parse_http_request(input_stream_9));
+        EXPECT_FALSE(parse_request(input_stream_9));
     }
 
     // No colon in some header line
@@ -201,7 +201,7 @@ TEST(HttpRequestParserTests, IncorrectHeaders)
             "Connection keep-alive\r\n"
             "\r\n"
             "message body" };
-        EXPECT_FALSE(parse_http_request(input_stream_10));
+        EXPECT_FALSE(parse_request(input_stream_10));
 
         std::stringstream input_stream_11{
             "GET /some/target/ HTTP/1.1\r\n"
@@ -209,7 +209,7 @@ TEST(HttpRequestParserTests, IncorrectHeaders)
             "Connection keep-alive\r"
             "\r\n"
             "message body" };
-        EXPECT_FALSE(parse_http_request(input_stream_11));
+        EXPECT_FALSE(parse_request(input_stream_11));
 
         std::stringstream input_stream_12{
             "GET /some/target/ HTTP/1.1\r\n"
@@ -217,14 +217,14 @@ TEST(HttpRequestParserTests, IncorrectHeaders)
             "Connection keep-alive\n"
             "\r\n"
             "message body" };
-        EXPECT_FALSE(parse_http_request(input_stream_12));
+        EXPECT_FALSE(parse_request(input_stream_12));
 
         std::stringstream input_stream_13{
             "GET /some/target/ HTTP/1.1\r\n"
             "Host: www.hostname.com\r\n"
             "Connection keep-alive\r\n"
             "\r\n" };
-        EXPECT_FALSE(parse_http_request(input_stream_13));
+        EXPECT_FALSE(parse_request(input_stream_13));
     }
 
     // There must be no whitespace between header name and the colon
@@ -235,7 +235,7 @@ TEST(HttpRequestParserTests, IncorrectHeaders)
             "Connection: keep-alive\r\n"
             "\r\n"
             "message body" };
-        EXPECT_FALSE(parse_http_request(input_stream_14));
+        EXPECT_FALSE(parse_request(input_stream_14));
 
         std::stringstream input_stream_15{
             "GET /some/target/ HTTP/1.1\r\n"
@@ -243,7 +243,7 @@ TEST(HttpRequestParserTests, IncorrectHeaders)
             "Connection: keep-alive\r\n"
             "\r\n"
             "message body" };
-        EXPECT_FALSE(parse_http_request(input_stream_15));
+        EXPECT_FALSE(parse_request(input_stream_15));
     }
 
     // A sender MUST NOT send whitespace between the start-line and the first header field.
@@ -255,7 +255,7 @@ TEST(HttpRequestParserTests, IncorrectHeaders)
             "Connection: keep-alive\r\n"
             "\r\n"
             "message body" };
-        EXPECT_FALSE(parse_http_request(input_stream_16));
+        EXPECT_FALSE(parse_request(input_stream_16));
     }
 
     // A sender MUST NOT send a Content-Length header field in any message
@@ -292,10 +292,10 @@ TEST(HttpRequestParserTests, IncorrectHeaders)
             "\r\n"
             "message body" };
 
-        EXPECT_FALSE(parse_http_request(input_stream_16));
-        EXPECT_FALSE(parse_http_request(input_stream_17));
-        EXPECT_TRUE(parse_http_request(input_stream_18));
-        EXPECT_TRUE(parse_http_request(input_stream_19));
+        EXPECT_FALSE(parse_request(input_stream_16));
+        EXPECT_FALSE(parse_request(input_stream_17));
+        EXPECT_TRUE(parse_request(input_stream_18));
+        EXPECT_TRUE(parse_request(input_stream_19));
     }
 
     // Content-Length must be an integer
@@ -322,9 +322,9 @@ TEST(HttpRequestParserTests, IncorrectHeaders)
             "\r\n"
             "message body" };
 
-        EXPECT_FALSE(parse_http_request(input_stream_20));
-        EXPECT_FALSE(parse_http_request(input_stream_21));
-        EXPECT_TRUE(parse_http_request(input_stream_22));
+        EXPECT_FALSE(parse_request(input_stream_20));
+        EXPECT_FALSE(parse_request(input_stream_21));
+        EXPECT_TRUE(parse_request(input_stream_22));
     }
 
     // Content-Length must not be repeated in headers
@@ -338,7 +338,7 @@ TEST(HttpRequestParserTests, IncorrectHeaders)
             "\r\n"
             "message body" };
 
-        EXPECT_FALSE(parse_http_request(input_stream_23));
+        EXPECT_FALSE(parse_request(input_stream_23));
     }
 }
 
@@ -351,7 +351,7 @@ TEST(HttpRequestParserTests, RepeatedHeaderField)
         "Connection: keep-alive\r\n"
         "Header1: value-2\r\n"
         "\r\n" };
-    auto parse_result = parse_http_request(input_stream);
+    auto parse_result = parse_request(input_stream);
     std::vector<std::string> header_1{ "value-1", "value-2" };
 
     EXPECT_TRUE(parse_result);
@@ -369,7 +369,7 @@ TEST(HttpRequestParserTests, WhiteSpaceRemovedFromHeaderValues)
         "Connection: keep-alive  \r\n"
         "Header1:  value-2  \r\n"
         "\r\n" };
-    auto parse_result = parse_http_request(input_stream);
+    auto parse_result = parse_request(input_stream);
     std::vector<std::string> header_1{ "value-1", "value-2" };
 
     EXPECT_TRUE(parse_result);
@@ -388,7 +388,7 @@ TEST(HttpRequestParserTests, HeaderFieldValueSplit)
         "Transfer-Encoding: gzip;q=0.5, chunked\r\n"
         "\r\n"
         "message_body" };
-    auto parse_result = parse_http_request(input_stream);
+    auto parse_result = parse_request(input_stream);
 
     EXPECT_TRUE(parse_result);
     EXPECT_EQ(parse_result.value().headers.size(), 4);

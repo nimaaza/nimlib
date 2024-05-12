@@ -1,8 +1,6 @@
 #include "src/polling_server.h"
 #include "src/metrics/builder.h"
 #include "src/common/decorators.h"
-#include <functional>
-#include "src/http/http_parser.h"
 
 int main()
 {

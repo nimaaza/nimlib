@@ -1,7 +1,7 @@
 #pragma once
 
-#include "http_parser.h"
-#include "http_router.h"
+#include "parser.h"
+#include "router.h"
 #include "../utils/state_manager.h"
 #include "../common/types.h"
 
@@ -10,17 +10,17 @@ using nimlib::Server::Utils::StateManager;
 using nimlib::Server::Types::Connection;
 using nimlib::Server::Types::StreamsProvider;
 
-namespace nimlib::Server::Handlers
+namespace nimlib::Server::Handlers::Http
 {
     using nimlib::Server::Types::Handler;
     using nimlib::Server::Constants::HandlerState;
-    class HttpRequest;
+    class Request;
 
-    class Http : public Handler
+    class HttpHandler : public Handler
     {
     public:
-        Http() = default;
-        ~Http() = default;
+        HttpHandler() = default;
+        ~HttpHandler() = default;
 
         void notify(Connection& connection, StreamsProvider& streams) override;
         void notify(Handler& handler, Connection& connection, StreamsProvider& streams) override;
@@ -29,14 +29,13 @@ namespace nimlib::Server::Handlers
         bool wants_to_live() override;
 
     private:
-        std::optional<HttpRequest> http_request{ std::nullopt };
-        std::optional<HttpResponse> htt_response{ std::nullopt };
-        HttpRouter router{};
+        std::optional<Request> http_request{ std::nullopt };
+        std::optional<Response> htt_response{ std::nullopt };
         StateManager<HandlerState> handler_state
         {
             HandlerState::READY_TO_HANDLE,
             HandlerState::HANDLER_ERROR,
-            Http::transition_map,
+            HttpHandler::transition_map,
             max_reset_counts,
             time_outs
         };

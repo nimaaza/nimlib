@@ -1,10 +1,10 @@
-#include "http_parser.h"
+#include "parser.h"
 
 #include "../utils/helpers.h"
 
 #include "iostream"
 
-namespace nimlib::Server::Handlers
+namespace nimlib::Server::Handlers::Http
 {
     header_validator content_length_validator =
         [](const std::string& value, const std::unordered_map<std::string, std::vector<std::string>>& headers) -> bool
@@ -42,7 +42,7 @@ namespace nimlib::Server::Handlers
         {"transfer-encoding", transfer_encoding_validator}
     };
 
-    HttpRequest::HttpRequest(
+    Request::Request(
         std::string method,
         std::string target,
         std::string version,
@@ -56,7 +56,7 @@ namespace nimlib::Server::Handlers
         body{ std::move(body) }
     {}
 
-    std::optional<HttpRequest> parse_http_request(std::stringstream& input_stream)
+    std::optional<Request> parse_request(std::stringstream& input_stream)
     {
         std::string method;
         std::string target;
@@ -150,7 +150,7 @@ namespace nimlib::Server::Handlers
         {
             // Read message body only if headers indicate the existence of it.
             if (body_length(headers) > 0) std::getline(input_stream, body, '\0');
-            return std::move(HttpRequest(std::move(method), std::move(target), std::move(version), std::move(headers), std::move(body)));
+            return std::move(Request(std::move(method), std::move(target), std::move(version), std::move(headers), std::move(body)));
         }
         else
         {
@@ -159,9 +159,9 @@ namespace nimlib::Server::Handlers
         }
     }
 
-    std::optional<std::string> parse_http_response(const HttpResponse& http_response)
+    std::optional<std::string> parse_response(const Response& http_response)
     {
-        std::stringstream response {};
+        std::stringstream response{};
 
         response << http_response.version << " " << http_response.status << " " << http_response.reason << "\r\n";
 

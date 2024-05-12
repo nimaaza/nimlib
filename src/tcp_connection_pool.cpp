@@ -30,7 +30,7 @@ namespace nimlib::Server
 
         auto& connection = dynamic_cast<TcpConnection&>(*connections[s->get_tcp_socket_descriptor()]);
         connection.accept_socket(std::move(s));
-        auto http_handler = std::make_shared<nimlib::Server::Handlers::Http>();
+        auto http_handler = std::make_shared<nimlib::Server::Handlers::Http::HttpHandler>();
         auto tls_handler = std::make_shared<nimlib::Server::Handlers::TlsLayer>(
             connection,
             connection,

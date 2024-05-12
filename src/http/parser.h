@@ -6,23 +6,24 @@
 #include <vector>
 #include <optional>
 
-namespace nimlib::Server::Handlers
+namespace nimlib::Server::Handlers::Http
 {
-    struct HttpRequest
+    struct Request
     {
-        HttpRequest(
+        Request(
             const std::string method,
             const std::string target,
             const std::string version,
             const headers_t headers,
             const std::string body
         );
-        ~HttpRequest() = default;
+        Request() = default;
+        ~Request() = default;
 
-        HttpRequest(const HttpRequest&) = delete;
-        HttpRequest& operator=(const HttpRequest&) = delete;
-        HttpRequest(HttpRequest&& other) noexcept = default;
-        HttpRequest& operator=(HttpRequest&&) noexcept = default;
+        Request(const Request&) = delete;
+        Request& operator=(const Request&) = delete;
+        Request(Request&& other) noexcept = default;
+        Request& operator=(Request&&) noexcept = default;
 
         std::string method;
         std::string target;
@@ -31,15 +32,15 @@ namespace nimlib::Server::Handlers
         std::string body;
     };
 
-    struct HttpResponse
+    struct Response
     {
-        HttpResponse() = default;
-        ~HttpResponse() = default;
+        Response() = default;
+        ~Response() = default;
 
-        HttpResponse(const HttpResponse&) = delete;
-        HttpResponse& operator=(const HttpResponse&) = delete;
-        HttpResponse(HttpResponse&& other) noexcept = default;
-        HttpResponse& operator=(HttpResponse&&) noexcept = default;
+        Response(const Response&) = delete;
+        Response& operator=(const Response&) = delete;
+        Response(Response&& other) noexcept = default;
+        Response& operator=(Response&&) noexcept = default;
 
         std::string version{ "HTTP/1.1" };
         short status;
@@ -48,8 +49,8 @@ namespace nimlib::Server::Handlers
         std::string body;
     };
 
-    std::optional<HttpRequest> parse_http_request(std::stringstream& input_stream);
-    std::optional<std::string> parse_http_response(const HttpResponse& http_response);
+    std::optional<Request> parse_request(std::stringstream& input_stream);
+    std::optional<std::string> parse_response(const Response& http_response);
     bool white_space(char c);
     bool validate_method(const std::string& method);
     bool validate_target(const std::string& target);
