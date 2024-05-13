@@ -76,11 +76,14 @@ add_executable(unit_tests
         tests/http/router.test.cpp)
 target_include_directories(unit_tests PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests GTest::gtest_main Botan::Botan)
+target_compile_options(unit_tests PRIVATE -fsanitize=address)
+target_link_options(unit_tests PRIVATE -fsanitize=address)
 
-add_executable(unit_tests_state_manager
-        tests/utils/state_manager.test.cpp)
+add_executable(unit_tests_state_manager tests/utils/state_manager.test.cpp)
 target_include_directories(unit_tests_state_manager PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_state_manager GTest::gtest_main)
+target_compile_options(unit_tests_state_manager PRIVATE -fsanitize=address)
+target_link_options(unit_tests_state_manager PRIVATE -fsanitize=address)
 
 add_executable(unit_tests_tcp_connection
         tests/tcp_connection.test.cpp
@@ -89,6 +92,8 @@ add_executable(unit_tests_tcp_connection
         src/utils/timer.cpp)
 target_include_directories(unit_tests_tcp_connection PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_tcp_connection GTest::gtest_main Botan::Botan)
+target_compile_options(unit_tests_tcp_connection PRIVATE -fsanitize=address)
+target_link_options(unit_tests_tcp_connection PRIVATE -fsanitize=address)
 
 add_executable(unit_tests_polling_server
         tests/polling_server.test.cpp
@@ -107,6 +112,8 @@ add_executable(unit_tests_polling_server
         src/utils/timer.cpp)
 target_include_directories(unit_tests_polling_server PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_polling_server GTest::gtest_main Botan::Botan)
+target_compile_options(unit_tests_polling_server PRIVATE -fsanitize=address)
+target_link_options(unit_tests_polling_server PRIVATE -fsanitize=address)
 
 add_executable(unit_tests_http_parser
         tests/http/parser.test.cpp
@@ -114,6 +121,8 @@ add_executable(unit_tests_http_parser
         src/utils/helpers.cpp)
 target_include_directories(unit_tests_http_parser PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_http_parser GTest::gtest_main Botan::Botan)
+target_compile_options(unit_tests_http_parser PRIVATE -fsanitize=address)
+target_link_options(unit_tests_http_parser PRIVATE -fsanitize=address)
 
 include(GoogleTest)
 gtest_discover_tests(
