@@ -14,26 +14,21 @@ namespace nimlib::Server::Handlers::Http
         class Node;
 
     public:
-        Router();
+        Router() = default;
         ~Router() = default;
 
-        // These methods are used for setting up routes.
-        void get(std::string target, route_handler handler);
-        void get(route_handler not_found_handler);
-        void post(std::string target, route_handler handler);
-        void post(route_handler not_found_handler);
+        bool get(std::string target, route_handler handler);
+        bool post(std::string target, route_handler handler);
+        void fallback(route_handler fallback_handler);
 
-        // These methods are used for invoking the handlers.
-        void get(std::string target, const Request& request, Response& response);
-        void post(std::string target, const Request& request, Response& response);
+        bool route(const Request&, Response&);
 
     private:
-        void add(std::string method, std::string target, route_handler handler);
-        void add_not_found(std::string method, route_handler handler);
-        void handle(std::string method, std::string target, const Request& request, Response& response);
+        bool add(std::string method, std::string target, route_handler handler);
+        void add_fallback(std::string method, route_handler handler);
 
     private:
-        std::unordered_map<std::string, Node> http_method_handlers{};
+        std::unordered_map<std::string, Node> handlers{};
 
         class Node
         {
@@ -51,10 +46,10 @@ namespace nimlib::Server::Handlers::Http
             std::optional<route_handler> find(std::string_view target, params_t& params);
 
         public:
-            static route_handler not_found_handler;
+            inline static route_handler fallback_handler = {};
 
         private:
-            std::unordered_map<std::string, Node> next_fixed_node{};
+            std::unordered_map<std::string, Node> next{};
             std::optional<route_handler> handler{};
             std::string parameter{};
         };

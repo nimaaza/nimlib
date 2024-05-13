@@ -19,7 +19,7 @@ namespace nimlib::Server::Handlers::Http
     class HttpHandler : public Handler
     {
     public:
-        HttpHandler() = default;
+        HttpHandler();
         ~HttpHandler() = default;
 
         void notify(Connection& connection, StreamsProvider& streams) override;
@@ -31,6 +31,7 @@ namespace nimlib::Server::Handlers::Http
     private:
         std::optional<Request> http_request{ std::nullopt };
         std::optional<Response> htt_response{ std::nullopt };
+        Router router{};
         StateManager<HandlerState> handler_state
         {
             HandlerState::READY_TO_HANDLE,

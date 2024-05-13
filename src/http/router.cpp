@@ -2,68 +2,66 @@
 
 namespace nimlib::Server::Handlers::Http
 {
-    Router::Router()
-    {
-        Node get_node;
-        Node post_node;
-        http_method_handlers["GET"] = std::move(get_node);
-        http_method_handlers["POST"] = std::move(post_node);
-    }
+    bool Router::get(std::string target, route_handler handler) { return add("GET", target, handler); }
 
-    void Router::get(std::string target, route_handler handler)
-    {
-        add("GET", target, handler);
-    }
+    bool Router::post(std::string target, route_handler handler) { return add("POST", target, handler); }
 
-    void Router::get(route_handler not_found_handler)
-    {
-        add_not_found("GET", not_found_handler);
-    }
+    void Router::fallback(route_handler fallback_handler) { add_fallback("POST", fallback_handler); }
 
-    void Router::post(std::string target, route_handler handler)
+    bool Router::route(const Request& request, Response& response)
     {
-        add("POST", target, handler);
-    }
-
-    void Router::post(route_handler not_found_handler)
-    {
-        add_not_found("POST", not_found_handler);
-    }
-
-    void Router::get(std::string target, const Request& request, Response& response)
-    {
-        handle("GET", target, request, response);
-    }
-
-    void Router::post(std::string target, const Request& request, Response& response)
-    {
-        handle("POST", target, request, response);
-    }
-
-    void Router::add(std::string method, std::string target, route_handler handler)
-    {
-        auto it = http_method_handlers.find(method);
-        it->second.add(target, handler);
-    }
-
-    void Router::add_not_found(std::string method, route_handler handler)
-    {
-        auto it = http_method_handlers.find(method);
-        it->second.not_found_handler = handler;
-    }
-
-    void Router::handle(std::string method, std::string target, const Request& request, Response& response)
-    {
-        auto it = http_method_handlers.find(method);
-        params_t params;
-        auto handler = it->second.find(target, params);
-        if (handler)
+        if (auto it = handlers.find(request.method); it != handlers.end())
         {
-            handler.value()(request, response, params);
+            params_t params;
+            auto handler = it->second.find(request.target, params);
+            if (handler && handler.value())
+            {
+                handler.value()(request, response, params);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
         }
     }
 
-    route_handler Router::Node::not_found_handler = [](const Request&, Response&, params_t&) -> void {};
+    bool Router::add(std::string method, std::string target, route_handler handler)
+    {
+        // TODO: also check if method is valid?
+        if (target.empty()) return false;
+
+        if (auto it = handlers.find(method); it != handlers.end())
+        {
+            it->second.add(target, handler);
+        }
+        else
+        {
+            Node node;
+            node.add(target, handler);
+            handlers[method] = std::move(node);
+        }
+
+        return true;
+    }
+
+    void Router::add_fallback(std::string method, route_handler handler)
+    {
+        if (auto it = handlers.find(method); it != handlers.end())
+        {
+            it->second.fallback_handler = handler;
+        }
+        else
+        {
+            Node node;
+            node.fallback_handler = handler;
+            handlers[method] = std::move(node);
+        }
+    }
 
     Router::Node::Node(std::string target, route_handler h) { add(target, h); }
 
@@ -75,23 +73,23 @@ namespace nimlib::Server::Handlers::Http
         }
         else
         {
-            size_t n = target.find('/');
-            std::string current_target_segment = target.substr(0, n);
-            std::string rest_segment = (n == std::string::npos) ? "" : target.substr(n + 1);
+            size_t pos = target.find('/');
+            std::string target_segment = target.substr(0, pos);
+            std::string target_rest = (pos == std::string::npos) ? "" : target.substr(pos + 1);
 
-            if (current_target_segment.starts_with('<') && current_target_segment.ends_with('>'))
+            if (target_segment.starts_with('<') && target_segment.ends_with('>'))
             {
-                parameter = current_target_segment.substr(1, current_target_segment.size() - 2);
-                current_target_segment = parameter;
+                parameter = target_segment.substr(1, target_segment.size() - 2);
+                target_segment = parameter;
             }
 
-            if (auto it = next_fixed_node.find(current_target_segment); it == next_fixed_node.end())
+            if (auto it = next.find(target_segment); it != next.end())
             {
-                next_fixed_node.insert_or_assign(current_target_segment, Node(rest_segment, h));
+                it->second.add(target_rest, h);
             }
             else
             {
-                it->second.add(rest_segment, h);
+                next[target_segment] = std::move(Node(target_rest, h));
             }
         }
     }
@@ -100,70 +98,27 @@ namespace nimlib::Server::Handlers::Http
     {
         if (target.empty()) return handler;
 
-        auto n = target.find('/');
-        auto current_segment = target.substr(0, n);
+        size_t pos = target.find('/');
+        std::string_view target_segment = target.substr(0, pos);
 
         if (!parameter.empty())
         {
-            params[parameter] = current_segment;
-            current_segment = parameter;
+            params[parameter] = target_segment;
+            target_segment = parameter;
         }
 
-        if (auto it = next_fixed_node.find(std::string(current_segment)); it == next_fixed_node.end())
+        if (auto it = next.find(std::string(target_segment)); it != next.end())
         {
-            return Node::not_found_handler;
+            std::string_view rest_segment = (pos == std::string::npos) ? "" : target.substr(pos + 1);
+            return it->second.find(rest_segment, params);
         }
         else
         {
-            std::string_view rest_segment = (n == std::string::npos) ? "" : target.substr(n + 1);
-            return it->second.find(rest_segment, params);
+            return Node::fallback_handler;
         }
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//#include "../metrics/metrics_store.h"
-//
-//#include <fstream>
-//#include <iostream>
-//#include <iomanip>
-//
-//namespace nimlib::Server::Handlers
-//{
-//    HttpRouter::HttpRouter() = default;
-//
-//    HttpRouter::~HttpRouter() = default;
-//
-//    Response HttpRouter::route(Request& http_request)
-//    {
-//        if (http_request.target == "/metrics")
-//        {
-//            auto& metrics_store = nimlib::Server::Metrics::MetricsStore<long>::get_instance();
-//            auto report = metrics_store.generate_stats_report();
-//
-//            Response http_response{};
-//            http_response.status = 200;
-//            http_response.reason = "OK";
-//            http_response.headers["content-type"].push_back("text/plain");
-//            http_response.body = report;
-//            return http_response;
-//        }
 //        else if (http_request.target == "/files/img.jpg")
 //        {
 //            std::string contents;
@@ -194,14 +149,3 @@ namespace nimlib::Server::Handlers::Http
 //            http_response.body = "not found";
 //            return http_response;
 //        }
-//        else
-//        {
-//            Response http_response{};
-//            http_response.status = 404;
-//            http_response.reason = "Not found";
-//            http_response.headers["content-type"].push_back("text/html; charset=UTF-8");
-//            http_response.body = "not found";
-//            return http_response;
-//        }
-//    }
-//}
