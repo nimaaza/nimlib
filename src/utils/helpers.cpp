@@ -18,10 +18,10 @@ void split(
         if (end == std::string::npos) end = s.size();
 
         // Excluding white space chars from beginning and end.
-        auto begin_no_ws = begin;
-        auto end_no_ws = end - 1;
+        long begin_no_ws = begin;
+        long end_no_ws = end - 1;
         while (white_space(s[begin_no_ws])) begin_no_ws++;
-        if (begin_no_ws < end_no_ws)
+        if (begin_no_ws < end_no_ws && end_no_ws > 0)
         {
             while (white_space(s[end_no_ws])) end_no_ws--;
         }

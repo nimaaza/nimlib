@@ -16,10 +16,10 @@ TEST(HttpRouter, EmptyRouteRejected)
     bool handler_invoked = false;
 
     route_handler handler = [&handler_invoked](const Request&, Response& response, params_t&) -> void
-        {
-            handler_invoked = true;
-            response.body = "touched_by_handler";
-        };
+    {
+        handler_invoked = true;
+        response.body = "touched_by_handler";
+    };
     bool handler_accepted = router.get("", handler);
 
     Request request{};
@@ -40,10 +40,10 @@ TEST(HttpRouter, RootHandlerSettingAndInvokation)
     bool root_handler_invoked = false;
 
     route_handler root_handler = [&root_handler_invoked](const Request&, Response& response, params_t&) -> void
-        {
-            root_handler_invoked = true;
-            response.body = "touched_by_root_handler";
-        };
+    {
+        root_handler_invoked = true;
+        response.body = "touched_by_root_handler";
+    };
     bool handler_accepted = router.get("/", root_handler);
 
     Request request{};
@@ -64,10 +64,10 @@ TEST(HttpRouter, SimpleHandlerSettingAndInvokation)
     bool handler_invoked = false;
 
     route_handler handler = [&handler_invoked](const Request& request, Response& response, params_t&) -> void
-        {
-            handler_invoked = true;
-            response.body = "touched_by_handler";
-        };
+    {
+        handler_invoked = true;
+        response.body = "touched_by_handler";
+    };
     bool handler_accepted = router.get("/target_1/target_2", handler);
 
     Request request{};
@@ -91,23 +91,23 @@ TEST(HttpRouter, ComplexHandlerSettingAndInvokation)
     bool handler_1_2_1_invoked = false;
 
     route_handler handler_1_1 = [&handler_1_1_invoked](const Request& request, Response& response, params_t&) -> void
-        {
-            handler_1_1_invoked = true;
-            response.body = "touched_by_handler_1_1";
-        };
+    {
+        handler_1_1_invoked = true;
+        response.body = "touched_by_handler_1_1";
+    };
 
     route_handler handler_1_2 = [&handler_1_2_invoked](const Request& request, Response& response, params_t&) -> void
-        {
-            handler_1_2_invoked = true;
-            response.body = "touched_by_handler_1_2";
-        };
+    {
+        handler_1_2_invoked = true;
+        response.body = "touched_by_handler_1_2";
+    };
 
     route_handler
         handler_1_2_1 = [&handler_1_2_1_invoked](const Request& request, Response& response, params_t&) -> void
-        {
-            handler_1_2_1_invoked = true;
-            response.body = "touched_by_handler_1_2_1";
-        };
+    {
+        handler_1_2_1_invoked = true;
+        response.body = "touched_by_handler_1_2_1";
+    };
 
     bool handler_accepted_1_1 = router.get("/target_1/target_1_1", handler_1_1);
     bool handler_accepted_1_2 = router.get("/target_1/target_1_2", handler_1_2);
@@ -144,22 +144,22 @@ TEST(HttpRouter, ComplexHandlerSettingAndInvokation)
     EXPECT_EQ(response_1_2_1.body, "touched_by_handler_1_2_1");
 }
 
-TEST(HttpRouter, NotFoundHandler)
+TEST(HttpRouter, FallbackHandler)
 {
     Router router{};
     int fallback_handler_invoked = 0;
     bool handler_invoked = false;
 
     route_handler fallback_handler = [&](const Request&, Response& response, params_t&) -> void
-        {
-            fallback_handler_invoked += 1;
-            response.body = "touched_by_fallback_handler";
-        };
+    {
+        fallback_handler_invoked += 1;
+        response.body = "touched_by_fallback_handler";
+    };
     route_handler handler = [&](const Request&, Response& response, params_t&) -> void
-        {
-            handler_invoked = true;
-            response.body = "touched_by_handler";
-        };
+    {
+        handler_invoked = true;
+        response.body = "touched_by_handler";
+    };
 
     router.fallback(fallback_handler);
     bool handler_accepted = router.get("/target_1/target_1_1/target_1_1_1", handler);
@@ -198,10 +198,10 @@ TEST(HttpRouter, NoRoutingForMethod)
     bool handler_invoked = false;
 
     route_handler handler = [&handler_invoked](const Request& request, Response& response, params_t&) -> void
-        {
-            handler_invoked = true;
-            response.body = "touched_by_handler";
-        };
+    {
+        handler_invoked = true;
+        response.body = "touched_by_handler";
+    };
     bool handler_accepted = router.get("/target_1/target_2", handler);
 
     Request request{};
@@ -222,10 +222,10 @@ TEST(HttpRouter, NoFallbackRouting)
     bool handler_invoked = false;
 
     route_handler handler = [&handler_invoked](const Request& request, Response& response, params_t&) -> void
-        {
-            handler_invoked = true;
-            response.body = "touched_by_handler";
-        };
+    {
+        handler_invoked = true;
+        response.body = "touched_by_handler";
+    };
     bool handler_accepted = router.get("/target_1/target_2", handler);
 
     Request request{};
@@ -247,11 +247,11 @@ TEST(HttpRouter, ParameterExtraction_StartOfUrl)
     std::string param_value;
     bool handler_invoked = false;
     route_handler handler = [&](const Request&, Response& response, params_t& params) -> void
-        {
-            param_value = params["action"];
-            response.body = params["action"];
-            handler_invoked = true;
-        };
+    {
+        param_value = params["action"];
+        response.body = params["action"];
+        handler_invoked = true;
+    };
 
     bool handler_accepted = router.get("<action>/users", handler);
 
@@ -274,11 +274,11 @@ TEST(HttpRouter, ParameterExtraction_MiddleOfUrl)
     std::string param_value;
     bool handler_invoked = false;
     route_handler handler = [&](const Request&, Response& response, params_t& params) -> void
-        {
-            param_value = params["id"];
-            response.body = params["id"];
-            handler_invoked = true;
-        };
+    {
+        param_value = params["id"];
+        response.body = params["id"];
+        handler_invoked = true;
+    };
     bool handler_accepted = router.get("/target/users/<id>/update", handler);
 
     Request request;
@@ -300,11 +300,11 @@ TEST(HttpRouter, ParameterExtraction_EndOfUrl)
     std::string param_value;
     bool handler_invoked = false;
     route_handler handler = [&](const Request&, Response& response, params_t& params) -> void
-        {
-            param_value = params["username"];
-            response.body = params["username"];
-            handler_invoked = true;
-        };
+    {
+        param_value = params["username"];
+        response.body = params["username"];
+        handler_invoked = true;
+    };
     bool handler_accepted = router.get("/target/users/<username>", handler);
 
     Request request;
@@ -328,13 +328,13 @@ TEST(HttpRouter, ParameterExtraction_MultipleParameters)
     std::string param_value_3;
     bool handler_invoked = false;
     route_handler handler = [&](const Request&, Response& response, params_t& params) -> void
-        {
-            param_value_1 = params["action"];
-            param_value_2 = params["id"];
-            param_value_3 = params["delete_type"];
-            response.body = params["action"] + "_" + params["id"] + "_" + params["delete_type"];
-            handler_invoked = true;
-        };
+    {
+        param_value_1 = params["action"];
+        param_value_2 = params["id"];
+        param_value_3 = params["delete_type"];
+        response.body = params["action"] + "_" + params["id"] + "_" + params["delete_type"];
+        handler_invoked = true;
+    };
     bool handler_accepted = router.get("<action>/users/<id>/method/<delete_type>", handler);
 
     Request request;

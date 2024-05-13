@@ -1,12 +1,52 @@
 #include "router.h"
 
+#include <filesystem>
+#include <fstream>
+
 namespace nimlib::Server::Handlers::Http
 {
     bool Router::get(std::string target, route_handler handler) { return add("GET", target, handler); }
 
     bool Router::post(std::string target, route_handler handler) { return add("POST", target, handler); }
 
-    void Router::fallback(route_handler fallback_handler) { add_fallback("POST", fallback_handler); }
+    bool Router::serve_static(std::string target, std::string file)
+    {
+        auto static_handlder = [this](const Request& request, Response& response, params_t&) -> void
+            {
+                auto file = this->target_to_file[request.target];
+                auto content_type = this->target_to_mime_type[request.target];
+
+                std::string contents;
+                std::ifstream in(file, std::ios::in | std::ios::binary);
+                if (in)
+                {
+                    in.seekg(0, std::ios::end);
+                    contents.resize(in.tellg());
+                    in.seekg(0, std::ios::beg);
+                    in.read(&contents[0], contents.size());
+                    in.close();
+                }
+
+                response.status = 200;
+                response.reason = "OK";
+                response.headers["content-type"].push_back(content_type);
+                response.body = contents;
+            };
+
+        if (valid_static_file(file) && add("GET", target, static_handlder))
+        {
+            target_to_file[target] = file;
+            target_to_mime_type[target] = get_content_type(file);
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    void Router::fallback(route_handler handler) { fallback_handler = handler; }
 
     bool Router::route(const Request& request, Response& response)
     {
@@ -17,6 +57,11 @@ namespace nimlib::Server::Handlers::Http
             if (handler && handler.value())
             {
                 handler.value()(request, response, params);
+                return true;
+            }
+            else if (fallback_handler)
+            {
+                fallback_handler(request, response, params);
                 return true;
             }
             else
@@ -49,18 +94,27 @@ namespace nimlib::Server::Handlers::Http
         return true;
     }
 
-    void Router::add_fallback(std::string method, route_handler handler)
+    std::string Router::get_content_type(std::string file)
     {
-        if (auto it = handlers.find(method); it != handlers.end())
+        auto ext = std::filesystem::path(file).extension().string();
+
+        if (auto it = ext_to_mime_type.find(ext); it != ext_to_mime_type.end())
         {
-            it->second.fallback_handler = handler;
+            return it->second;
         }
         else
         {
-            Node node;
-            node.fallback_handler = handler;
-            handlers[method] = std::move(node);
+            return {};
         }
+    }
+
+    bool Router::valid_static_file(std::string file)
+    {
+        auto path = std::filesystem::path(file);
+        return path.is_absolute()
+            && std::filesystem::exists(path)
+            && std::filesystem::is_regular_file(path)
+            && !get_content_type(file).empty();
     }
 
     Router::Node::Node(std::string target, route_handler h) { add(target, h); }
@@ -114,38 +168,7 @@ namespace nimlib::Server::Handlers::Http
         }
         else
         {
-            return Node::fallback_handler;
+            return {};
         }
     }
 }
-
-//        else if (http_request.target == "/files/img.jpg")
-//        {
-//            std::string contents;
-//            std::ifstream in("./img.jpg", std::ios::in | std::ios::binary);
-//            if (in)
-//            {
-//                in.seekg(0, std::ios::end);
-//                contents.resize(in.tellg());
-//                in.seekg(0, std::ios::beg);
-//                in.read(&contents[0], contents.size());
-//                in.close();
-//            }
-//
-//            Response http_response{};
-//            http_response.status = 200;
-//            http_response.reason = "OK";
-//            http_response.headers["content-type"].push_back("image/jpeg");
-//            http_response.body = contents;
-//            return http_response;
-//        }
-//        else if (http_request.target == "/login" && http_request.method == "POST")
-//        {
-//            std::cout << http_request.body << std::endl;
-//            Response http_response{};
-//            http_response.status = 404;
-//            http_response.reason = "Not found";
-//            http_response.headers["content-type"].push_back("text/html; charset=UTF-8");
-//            http_response.body = "not found";
-//            return http_response;
-//        }

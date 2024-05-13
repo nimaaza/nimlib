@@ -27,6 +27,8 @@ namespace nimlib::Server::Handlers::Http
 			};
 
 		router.get("/metrics", metrics_handler);
+		router.get("/", fallback_router);
+		router.serve_static("/files/bird", "/Users/nimaazarbayjani/Documents/CODE/nimlib/cmake-build-debug/img.jpg");
 		router.fallback(fallback_router);
 	}
 
@@ -52,7 +54,8 @@ namespace nimlib::Server::Handlers::Http
 			if (http_request)
 			{
 				Response response;
-				router.route(http_request.value(), response);
+				// TODO: when routing_result = false, send a bad request response.
+				bool routing_result = router.route(http_request.value(), response);
 				auto http_response = parse_response(response);
 				if (http_response)
 				{
