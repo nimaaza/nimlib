@@ -11,7 +11,7 @@ namespace nimlib::Server::Handlers::Http
 
     bool Router::serve_static(std::string target, std::string file)
     {
-        auto static_handlder = [this](const Request& request, Response& response, params_t&) -> void
+        auto static_handler = [this](const Request& request, Response& response, params_t&) -> void
             {
                 auto file = this->target_to_file[request.target];
                 auto content_type = this->target_to_mime_type[request.target];
@@ -33,7 +33,7 @@ namespace nimlib::Server::Handlers::Http
                 response.body = contents;
             };
 
-        if (valid_static_file(file) && add("GET", target, static_handlder))
+        if (valid_static_file(file) && add("GET", target, static_handler))
         {
             target_to_file[target] = file;
             target_to_mime_type[target] = get_content_type(file);

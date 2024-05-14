@@ -17,6 +17,11 @@ namespace nimlib::Server::Handlers::Http
         Router() = default;
         ~Router() = default;
 
+        Router(const Router&) = delete;
+        Router& operator=(const Router&) = delete;
+        Router(Router&&) noexcept = default;
+        Router& operator=(Router&&) = default;
+
         bool get(std::string target, route_handler handler);
         bool post(std::string target, route_handler handler);
         bool serve_static(std::string target, std::string file);
@@ -34,7 +39,8 @@ namespace nimlib::Server::Handlers::Http
         std::unordered_map<std::string, Node> handlers{};
         std::unordered_map<std::string, std::string> target_to_file{};
         std::unordered_map<std::string, std::string> target_to_mime_type{};
-        inline static const std::unordered_map<std::string, std::string> ext_to_mime_type{
+        inline static const std::unordered_map<std::string, std::string> ext_to_mime_type
+        {
             {".jpg", "image/jpeg"},
             {".jpeg", "image/jpeg"},
         };
@@ -53,9 +59,6 @@ namespace nimlib::Server::Handlers::Http
 
             void add(std::string target, route_handler h);
             std::optional<route_handler> find(std::string_view target, params_t& params);
-
-        public:
-            inline static route_handler fallback_handler = {};
 
         private:
             std::unordered_map<std::string, Node> next{};
