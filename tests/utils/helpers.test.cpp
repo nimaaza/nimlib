@@ -2,6 +2,8 @@
 
 #include "../../src/utils/helpers.h"
 
+#include <sstream>
+
 TEST(SplitTests, EmptyDelimiter)
 {
     std::string delimiter = "";
@@ -127,7 +129,10 @@ TEST(SplitTests, MultiCharDelimiter)
     std::vector<std::string_view> splits_6{};
     split(s_only_delimiter, delimiter, splits_6);
     EXPECT_EQ(splits_6.size(), 4);
-    for (int i = 0; i < splits_6.size(); i++) EXPECT_EQ(splits_6[i], "");
+    for (int i = 0; i < splits_6.size(); i++)
+    {
+        EXPECT_EQ(splits_6[i], "");
+    }
 
     std::vector<std::string_view> splits_7{};
     split(s_empty, delimiter, splits_7);
@@ -180,4 +185,68 @@ TEST(SplitTests, WhiteSpaceRemoval)
     EXPECT_EQ(splits_3.size(), 2);
     EXPECT_EQ(splits_3[0], "");
     EXPECT_EQ(splits_3[1], "text");
+}
+
+TEST(ReadChunk, ReadIndividualChunks)
+{
+    std::stringstream source{ "_some_string_stream_some_string_stream_" };
+    std::string buffer_0{};
+    std::string buffer_3{};
+    std::string buffer_7{};
+    std::string buffer_9{};
+    auto source_size = source.str().size();
+    long chunk_size = 5;
+
+    // Chunk number 0.
+    bool result_0 = read_chunk(source, buffer_0, source_size, chunk_size, 0);
+    // Chunk number 3.
+    bool result_3 = read_chunk(source, buffer_3, source_size, chunk_size, 3);
+    // Chunk number 7.
+    bool result_7 = read_chunk(source, buffer_7, source_size, chunk_size, 7);
+    // Chunk number 9 (must be empty & read_chunk() return false).
+    bool result_9 = read_chunk(source, buffer_9, source_size, chunk_size, 9);
+
+    EXPECT_TRUE(result_0);
+    EXPECT_TRUE(result_3);
+    EXPECT_TRUE(result_7);
+    EXPECT_FALSE(result_9);
+    EXPECT_EQ(buffer_0, "_some");
+    EXPECT_EQ(buffer_3, "ream_");
+    EXPECT_EQ(buffer_7, "eam_");
+    EXPECT_TRUE(buffer_9.empty());
+}
+
+TEST(ReadChunk, ReadAllChunks)
+{
+    long size = 1'070'503;
+    std::string rand_str;
+    rand_str.resize(size);
+    std::srand(std::time(nullptr));
+    for (int i = 0; i < size; i++) rand_str += 'a' + rand() % 26;
+
+    std::stringstream source{ rand_str };
+    std::string buffer{};
+    size_t source_size = rand_str.size();
+    size_t chunk_size = 67;
+    size_t expected_chunks_count = (rand_str.size() / chunk_size) + (rand_str.size() % chunk_size == 0 ? 0 : 1);
+
+    std::vector<std::string> chunks{};
+    int chunk_count = 0;
+    while (read_chunk(source, buffer, source_size, chunk_size, chunk_count))
+    {
+        chunks.push_back(buffer);
+        chunk_count++;
+    }
+
+    std::string chunks_put_together{};
+    long chunks_total_size = 0;
+    for (auto& c : chunks)
+    {
+        chunks_put_together += c;
+        chunks_total_size += c.size();
+    }
+
+    EXPECT_EQ(chunk_count, expected_chunks_count);
+    EXPECT_EQ(chunks_put_together, rand_str);
+    EXPECT_EQ(chunks_total_size, rand_str.size());
 }

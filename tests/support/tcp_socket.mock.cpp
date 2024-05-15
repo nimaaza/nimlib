@@ -21,7 +21,7 @@ namespace nimlib::Server::Sockets
         std::srand(std::time(nullptr));
         for (int i = 0; i < max_bytes_to_read; i++)
         {
-            read_buffer += 'a' + rand() % 26;;
+            read_buffer += 'a' + rand() % 26;
         }
     }
 
