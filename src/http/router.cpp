@@ -5,6 +5,7 @@
 
 namespace nimlib::Server::Handlers::Http
 {
+    // TODO: target should not end with /
     bool Router::get(std::string target, route_handler handler) { return add("GET", target, handler); }
 
     bool Router::post(std::string target, route_handler handler) { return add("POST", target, handler); }
@@ -43,6 +44,28 @@ namespace nimlib::Server::Handlers::Http
         else
         {
             return false;
+        }
+    }
+
+    void Router::sub_route(std::string target_prefix, Router sub_router)
+    {
+        const static std::string root_node_name = "";
+
+        for (const auto& [method, node] : sub_router.handlers)
+        {
+            if (auto root_node_it = node.next.find(""); root_node_it != node.next.end())
+            {
+                if (auto it = handlers.find(method); it != handlers.end())
+                {
+                    it->second.add(target_prefix, root_node_it->second);
+                }
+                else
+                {
+                    Node new_node;
+                    new_node.add(target_prefix, root_node_it->second);
+                    handlers[method] = std::move(new_node);
+                }
+            }
         }
     }
 
@@ -144,6 +167,37 @@ namespace nimlib::Server::Handlers::Http
             else
             {
                 next[target_segment] = std::move(Node(target_rest, h));
+            }
+        }
+    }
+
+    void Router::Node::add(std::string target, Node node)
+    {
+        size_t pos = target.find('/');
+        std::string target_segment = target.substr(0, pos);
+        std::string target_rest = (pos == std::string::npos) ? "" : target.substr(pos + 1);
+
+        if (target_segment.starts_with('<') && target_segment.ends_with('>'))
+        {
+            parameter = target_segment.substr(1, target_segment.size() - 2);
+            target_segment = parameter;
+        }
+
+        if (target_rest.empty())
+        {
+            next[target_segment] = std::move(node);
+        }
+        else
+        {
+            if (auto it = next.find(target_segment); it != next.end())
+            {
+                it->second.add(target_rest, std::move(node));
+            }
+            else
+            {
+                Node new_node;
+                new_node.add(target_rest, std::move(node));
+                next[target_segment] = std::move(new_node);
             }
         }
     }

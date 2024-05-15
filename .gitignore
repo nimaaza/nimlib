@@ -5,3 +5,4 @@ cmake-build-debug/
 build/
 venv/
 0ld/
+.cache/

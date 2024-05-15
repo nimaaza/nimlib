@@ -124,11 +124,20 @@ target_link_libraries(unit_tests_http_parser GTest::gtest_main Botan::Botan)
 target_compile_options(unit_tests_http_parser PRIVATE -fsanitize=address)
 target_link_options(unit_tests_http_parser PRIVATE -fsanitize=address)
 
+add_executable(unit_tests_http_router
+        tests/http/router.test.cpp
+        src/http/router.cpp)
+target_include_directories(unit_tests_http_router PUBLIC "${PROJECT_BINARY_DIR}")
+target_link_libraries(unit_tests_http_router GTest::gtest_main Botan::Botan)
+target_compile_options(unit_tests_http_router PRIVATE -fsanitize=address)
+target_link_options(unit_tests_http_router PRIVATE -fsanitize=address)
+
 include(GoogleTest)
 gtest_discover_tests(
         unit_tests
         unit_tests_state_manager
         unit_tests_tcp_connection
         unit_tests_polling_server
-        unit_tests_http_parser)
+        unit_tests_http_parser
+        unit_tests_http_router)
 # -------------------------------------------------------------------

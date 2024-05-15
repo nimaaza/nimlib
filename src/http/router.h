@@ -25,8 +25,8 @@ namespace nimlib::Server::Handlers::Http
         bool get(std::string target, route_handler handler);
         bool post(std::string target, route_handler handler);
         bool serve_static(std::string target, std::string file);
+        void sub_route(std::string target_prefix, Router sub_router);
         void fallback(route_handler fallback_handler);
-
         bool route(const Request&, Response&);
 
     private:
@@ -45,22 +45,22 @@ namespace nimlib::Server::Handlers::Http
             {".jpeg", "image/jpeg"},
         };
 
-        class Node
+    private:
+        struct Node
         {
-        public:
             Node(std::string target, route_handler h);
             Node() = default;
             ~Node() = default;
 
-            Node(const Node&) = delete;
-            Node& operator=(const Node&) = delete;
+            Node(const Node&) = default;
+            Node& operator=(const Node&) = default;
             Node(Node&&) noexcept = default;
             Node& operator=(Node&&) noexcept = default;
 
             void add(std::string target, route_handler h);
+            void add(std::string target, Node node);
             std::optional<route_handler> find(std::string_view target, params_t& params);
 
-        private:
             std::unordered_map<std::string, Node> next{};
             std::optional<route_handler> handler{};
             std::string parameter{};
