@@ -1,7 +1,11 @@
 #include "router.h"
 
+#include "../utils/helpers.h"
+
 #include <filesystem>
 #include <fstream>
+#include <functional>
+#include <iomanip>
 
 namespace nimlib::Server::Handlers::Http
 {
@@ -12,7 +16,7 @@ namespace nimlib::Server::Handlers::Http
 
     bool Router::serve_static(std::string target, std::string file)
     {
-        auto static_handler = [this](const Request& request, Response& response, params_t&) -> void
+        auto static_handler = [this](const Request& request, Response& response, params_t&) -> std::optional<HandlerState>
             {
                 auto file = this->target_to_file[request.target];
                 auto content_type = this->target_to_mime_type[request.target];
@@ -32,9 +36,32 @@ namespace nimlib::Server::Handlers::Http
                 response.reason = "OK";
                 response.headers["content-type"].push_back(content_type);
                 response.body = contents;
+
+                return HandlerState::FINISHED_NO_WAIT;
             };
 
         if (valid_static_file(file) && add("GET", target, static_handler))
+        {
+            target_to_file[target] = file;
+            target_to_mime_type[target] = get_content_type(file);
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool Router::serve_static_big(std::string target, std::string file)
+    {
+        auto a = [this](const Request& request, Response& response, params_t& params)-> std::optional<HandlerState>
+            {
+                return this->static_file_handler_big(request, response, params);
+            };
+
+
+        if (valid_static_file(file) && add("GET", target, a))
         {
             target_to_file[target] = file;
             target_to_mime_type[target] = get_content_type(file);
@@ -71,7 +98,7 @@ namespace nimlib::Server::Handlers::Http
 
     void Router::fallback(route_handler handler) { fallback_handler = handler; }
 
-    bool Router::route(const Request& request, Response& response)
+    std::optional<HandlerState> Router::route(const Request& request, Response& response)
     {
         if (auto it = handlers.find(request.method); it != handlers.end())
         {
@@ -79,22 +106,20 @@ namespace nimlib::Server::Handlers::Http
             auto handler = it->second.find(request.target, params);
             if (handler && handler.value())
             {
-                handler.value()(request, response, params);
-                return true;
+                return handler.value()(request, response, params);
             }
             else if (fallback_handler)
             {
-                fallback_handler(request, response, params);
-                return true;
+                return fallback_handler(request, response, params);
             }
             else
             {
-                return false;
+                return {};
             }
         }
         else
         {
-            return false;
+            return {};
         }
     }
 
@@ -128,6 +153,59 @@ namespace nimlib::Server::Handlers::Http
         else
         {
             return {};
+        }
+    }
+
+    std::optional<HandlerState> Router::static_file_handler_big(const Request& request, Response& response, params_t& params)
+    {
+        auto file = target_to_file[request.target];
+        std::ifstream file_stream{ file, std::ios::in | std::ios::binary };
+
+        std::stringstream body;
+        std::string buffer;
+        long chunk_size = 1024 * 300;
+        long file_size = std::filesystem::file_size(std::filesystem::path(file));
+        long expected_chunk_count = file_size / chunk_size + (file_size % chunk_size == 0 ? 0 : 1);
+        int chunk_number = 0;
+        bool has_chunk;
+
+        if (auto it = last_served_chunk.find(file); it != last_served_chunk.end())
+        {
+            chunk_number = it->second;
+        }
+
+        while (true)
+        {
+            has_chunk = read_chunk(file_stream, buffer, file_size, chunk_size, chunk_number);
+            if (has_chunk)
+            {
+                body << std::hex << buffer.size() << "\r\n" << buffer << "\r\n";
+                chunk_number++;
+            }
+
+            if (!has_chunk || (chunk_number % 2 == 0))
+            {
+                break;
+            }
+        }
+
+        response.status = 200;
+        response.reason = "OK";
+        response.headers["content-type"].push_back(target_to_mime_type[request.target]);
+        response.headers["transfer-encoding"].push_back("chunked");
+
+        if (chunk_number == expected_chunk_count)
+        {
+            body << "0\r\n\r\n";
+            response.body = body.str();
+            last_served_chunk.erase(file);
+            return HandlerState::FINISHED_NO_WAIT;
+        }
+        else
+        {
+            response.body = body.str();
+            last_served_chunk[file] = chunk_number;
+            return HandlerState::RECALL;
         }
     }
 

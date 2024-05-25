@@ -20,7 +20,7 @@ struct MockHandler : public Handler
     MockHandler(
         StreamsProvider& streams,
         int read_attempts = 1,
-        HandlerState final_handler_state = HandlerState::WRITE_AND_DIE,
+        HandlerState final_handler_state = HandlerState::FINISHED_NO_WAIT,
         std::string output_result = ""
     )
         :
@@ -55,7 +55,11 @@ struct MockHandler : public Handler
 
     bool wants_to_write() override { return read_attempts_so_far == total_read_attempts; }
 
-    bool wants_to_live() override { return handler_state == HandlerState::WRITE_AND_WAIT; }
+    bool wants_to_live() override { return handler_state == HandlerState::FINISHED_WAIT; }
+
+    bool wants_to_be_calledback() override { return false; }
+
+    HandlerState get_state() override { return state_manager.get_state(); }
 
     std::stringstream& in;
     std::stringstream& out;
@@ -82,7 +86,7 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_SingleRead)
     auto socket = std::make_unique<MockTcpSocket>(1, 470, 1024);
     MockTcpSocket* pointer_to_socket = socket.get(); // Steal the pointer to the socket object for later use.
     TcpConnection connection{ std::move(socket), 1, 1024 };
-    auto handler = std::make_shared<MockHandler>(connection, 1, HandlerState::WRITE_AND_DIE);
+    auto handler = std::make_shared<MockHandler>(connection, 1, HandlerState::FINISHED_NO_WAIT);
     connection.set_handler(handler);
 
     connection.notify(ServerDirective::READ_SOCKET);
@@ -115,7 +119,7 @@ TEST(ConnectionTests, Read_WithEnoughBuffer_MultipleReads)
     socket->byte_counts_to_read.push_back(131);
     socket->byte_counts_to_read.push_back(257);
     TcpConnection connection{ std::move(socket), 1, 1024 };
-    auto handler = std::make_shared<MockHandler>(connection, 3, HandlerState::WRITE_AND_DIE);
+    auto handler = std::make_shared<MockHandler>(connection, 3, HandlerState::FINISHED_NO_WAIT);
     connection.set_handler(handler);
 
     connection.notify(ServerDirective::READ_SOCKET);
@@ -157,7 +161,7 @@ TEST(ConnectionTests, Read_WithExactlyEnoughBuffer)
     socket->byte_counts_to_read = { 10 };
     MockTcpSocket* pointer_to_socket = socket.get();
     TcpConnection connection{ std::move(socket), 1, 10 };
-    auto handler = std::make_shared<MockHandler>(connection, 1, HandlerState::WRITE_AND_DIE);
+    auto handler = std::make_shared<MockHandler>(connection, 1, HandlerState::FINISHED_NO_WAIT);
     connection.set_handler(handler);
 
     connection.notify(ServerDirective::READ_SOCKET);
@@ -173,7 +177,7 @@ TEST(ConnectionTests, Read_WithSmallBuffer)
     /*
     When the TcpConnection object has a small buffer, ie., all the data the
     application requires cannot be read by the object at once, the handler
-    object is expected to report incomplete data (HandlerState::INCOMPLETE)
+    object is expected to report incomplete data (HandlerState::INCOMPLETE_INPUT)
     and the TcpConnection object will try to read more data from the socket.
 
     Let's say the handler object needs 470 bytes to process but the TcpConnection
@@ -185,7 +189,7 @@ TEST(ConnectionTests, Read_WithSmallBuffer)
     auto socket = std::make_unique<MockTcpSocket>(1, 470, 1024);
     MockTcpSocket* pointer_to_socket = socket.get();
     TcpConnection connection{ std::move(socket), 1, 167 };
-    auto handler = std::make_shared<MockHandler>(connection, 3, HandlerState::WRITE_AND_DIE);
+    auto handler = std::make_shared<MockHandler>(connection, 3, HandlerState::FINISHED_NO_WAIT);
     connection.set_handler(handler);
 
     connection.notify(ServerDirective::READ_SOCKET);
@@ -273,7 +277,7 @@ TEST(ConnectionTests, Write_ConnectionKeepAlive)
     auto handler = std::make_shared<MockHandler>(
         connection,
         1,
-        HandlerState::WRITE_AND_WAIT,
+        HandlerState::FINISHED_WAIT,
         "HTTP/1.1 404 Not Found"
     );
     connection.set_handler(handler);
@@ -295,7 +299,7 @@ TEST(ConnectionTests, Write_ConnectionClose)
     auto handler = std::make_shared<MockHandler>(
         connection,
         1,
-        HandlerState::WRITE_AND_DIE,
+        HandlerState::FINISHED_NO_WAIT,
         expected_connection_output
     );
     connection.set_handler(handler);

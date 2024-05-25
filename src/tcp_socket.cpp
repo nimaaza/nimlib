@@ -17,6 +17,8 @@ namespace nimlib::Server::Sockets
         Socket{ port, tcp_socket }
     {
         // TODO: can I validate the socket instead of blindly accepting it?
+        // int set = 1;
+        // setsockopt(tcp_socket, SOL_SOCKET, SO_NOSIGPIPE, (void*)&set, sizeof(int));
     }
 
     TcpSocket::TcpSocket(const std::string& port) : Socket{ port, 0 }

@@ -10,6 +10,8 @@
 using nimlib::Server::Types::Connection;
 using nimlib::Server::TcpConnection;
 using nimlib::Server::ConnectionState;
+using nimlib::Server::Handlers::Http::HttpHandler;
+using nimlib::Server::Handlers::TlsLayer;
 
 namespace nimlib::Server
 {
@@ -30,14 +32,10 @@ namespace nimlib::Server
 
         auto& connection = dynamic_cast<TcpConnection&>(*connections[s->get_tcp_socket_descriptor()]);
         connection.accept_socket(std::move(s));
-        auto http_handler = std::make_shared<nimlib::Server::Handlers::Http::HttpHandler>();
-        auto tls_handler = std::make_shared<nimlib::Server::Handlers::TlsLayer>(
-            connection,
-            connection,
-            http_handler
-        );
-
-        connection.set_handler(tls_handler);
+        auto http_handler = std::make_shared<HttpHandler>();
+        // auto tls_handler = std::make_shared<TlsLayer>(http_handler);
+        // handlers.push_back(http_handler);
+        connection.set_handler(http_handler);
     }
 
     connection_ptr TcpConnectionPool::find(connection_id id) const
@@ -55,9 +53,12 @@ namespace nimlib::Server
         for (auto& connection : connections)
         {
             assert(connection != nullptr);
-
             auto connection_state = connection->get_state();
-            if (connection_state == ConnectionState::CONNECTION_ERROR || connection_state == ConnectionState::DONE)
+            if (connection_state == ConnectionState::HANDLING)
+            {
+                connection->notify(ServerDirective::CONTINUE_HANDLING);
+            }
+            else if (connection_state == ConnectionState::CONNECTION_ERROR || connection_state == ConnectionState::DONE)
             {
                 connection->halt();
             }

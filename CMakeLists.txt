@@ -21,7 +21,7 @@ add_executable(test_run
         src/utils/timer.cpp
         src/tls/botan/callbacks.cpp
         src/tls/botan/credentials.cpp
-        src/tls/botan/tls_server.cpp
+        src/tls/botan/botan_tls_server.cpp
         src/tls/tls_layer.cpp
         src/utils/helpers.cpp
         src/polling_server.cpp
@@ -65,7 +65,7 @@ add_executable(unit_tests
         src/utils/timer.cpp
         src/tls/botan/callbacks.cpp
         src/tls/botan/credentials.cpp
-        src/tls/botan/tls_server.cpp
+        src/tls/botan/botan_tls_server.cpp
         src/tls/tls_layer.cpp
         src/utils/helpers.cpp
         src/polling_server.cpp
@@ -106,7 +106,7 @@ add_executable(unit_tests_polling_server
         src/tls/tls_layer.cpp
         src/tls/botan/callbacks.cpp
         src/tls/botan/credentials.cpp
-        src/tls/botan/tls_server.cpp
+        src/tls/botan/botan_tls_server.cpp
         src/tcp_connection_pool.cpp
         src/utils/helpers.cpp
         src/utils/timer.cpp)
@@ -126,7 +126,8 @@ target_link_options(unit_tests_http_parser PRIVATE -fsanitize=address)
 
 add_executable(unit_tests_http_router
         tests/http/router.test.cpp
-        src/http/router.cpp)
+        src/http/router.cpp
+        src/utils/helpers.cpp)
 target_include_directories(unit_tests_http_router PUBLIC "${PROJECT_BINARY_DIR}")
 target_link_libraries(unit_tests_http_router GTest::gtest_main Botan::Botan)
 target_compile_options(unit_tests_http_router PRIVATE -fsanitize=address)

@@ -6,7 +6,7 @@
 
 namespace nimlib::Server::Constants
 {
-    enum ServerDirective { READ_SOCKET, WRITE_SOCKET };
+    enum ServerDirective { READ_SOCKET, WRITE_SOCKET, CONTINUE_HANDLING };
 
     enum ConnectionState
     {
@@ -18,8 +18,8 @@ namespace nimlib::Server::Constants
     enum HandlerState
     {
         READY_TO_HANDLE, H_HANDLING,
-        WRITE_AND_DIE, WRITE_AND_WAIT,
-        INCOMPLETE, HANDLER_ERROR
+        FINISHED_NO_WAIT, FINISHED_WAIT, RECALL,
+        INCOMPLETE_INPUT, HANDLER_ERROR
     };
 
     enum LogLevel { INFO, DEBUG, WARN, ERROR, CRITICAL };

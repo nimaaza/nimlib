@@ -82,7 +82,7 @@ namespace nimlib::Server
 			{
 				if (allowed_to_read(state)) connection->notify(ServerDirective::READ_SOCKET);
 			}
-			else if (socket.revents & POLLOUT)
+			if (socket.revents & POLLOUT)
 			{
 				if (allowed_to_write(state)) connection->notify(ServerDirective::WRITE_SOCKET);
 			}
@@ -90,7 +90,7 @@ namespace nimlib::Server
 			{
 				// TODO: socket might be in a state which we don't handle?
 			}
-        });
+			});
 	}
 
 	void PollingServer::create_pollfds_entry(int socket, pollfd& fds)

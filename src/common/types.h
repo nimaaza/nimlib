@@ -62,9 +62,32 @@ namespace nimlib::Server::Types
 		virtual void notify(Connection& connection, StreamsProvider& streams) = 0;
 		virtual void notify(Handler& handler, Connection& connection, StreamsProvider& streams) = 0;
 
-		virtual bool wants_more_bytes() = 0;
-		virtual bool wants_to_write() = 0;
-		virtual bool wants_to_live() = 0;
+		virtual bool wants_more_bytes() = 0;       // HandlerState::INCOMPLETE_INPUT
+		virtual bool wants_to_write() = 0;         // HandlerState::FINISHED_NO_WAIT
+		virtual bool wants_to_live() = 0;          // HandlerState::FINISHED_WAIT
+		virtual bool wants_to_be_calledback() = 0; // HandlerState::RECALL
+
+		virtual HandlerState get_state() = 0;
+
+	protected:
+		inline static const std::unordered_map<HandlerState, std::vector<HandlerState>> transition_map
+		{
+			{HandlerState::READY_TO_HANDLE, {HandlerState::H_HANDLING}},
+			{HandlerState::H_HANDLING, {HandlerState::FINISHED_WAIT, HandlerState::FINISHED_NO_WAIT, HandlerState::RECALL, HandlerState::INCOMPLETE_INPUT}},
+			{HandlerState::INCOMPLETE_INPUT, {HandlerState::FINISHED_WAIT, HandlerState::FINISHED_NO_WAIT, HandlerState::RECALL}},
+			{HandlerState::FINISHED_NO_WAIT, {HandlerState::READY_TO_HANDLE}},
+			{HandlerState::FINISHED_WAIT, {HandlerState::READY_TO_HANDLE}},
+			{HandlerState::RECALL, {HandlerState::FINISHED_WAIT, HandlerState::FINISHED_NO_WAIT}},
+		};
+		inline static const std::unordered_map<HandlerState, int> max_reset_counts{};
+		inline static const std::unordered_map<HandlerState, long> time_outs{};
+		nimlib::Server::Utils::StateManager<HandlerState> state_manager{
+			HandlerState::READY_TO_HANDLE,
+			HandlerState::HANDLER_ERROR,
+			transition_map,
+			max_reset_counts,
+			time_outs
+		};
 	};
 
 	struct Connection

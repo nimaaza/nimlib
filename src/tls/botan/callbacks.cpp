@@ -5,15 +5,15 @@ namespace nimlib::Server::Handlers::BotanSpec
 	Callbacks::Callbacks(
 		Connection& connection,
 		Handler& tls_layer,
+		std::shared_ptr<Handler> next,
 		StreamsProvider& encrypted_streams,
-		StreamsProvider& decrypted_streams,
-		std::shared_ptr<Handler> next
+		StreamsProvider& decrypted_streams
 	) :
 		connection{ connection },
 		tls_layer{ tls_layer },
+		next{ next },
 		encrypted_streams{ encrypted_streams },
-		decrypted_streams{ decrypted_streams },
-		next{ next }
+		decrypted_streams{ decrypted_streams }
 	{}
 
 	void Callbacks::tls_emit_data(std::span<const uint8_t> data)

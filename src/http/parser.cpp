@@ -177,11 +177,11 @@ namespace nimlib::Server::Handlers::Http
             response << "\r\n";
         }
 
-        auto content_length_header = http_response.headers.find("content-length");
-        if (content_length_header == http_response.headers.end() && !http_response.body.empty())
-        {
-            response << "content-length: " << http_response.body.size() << "\r\n";
-        }
+        // auto content_length_header = http_response.headers.find("content-length");
+        // if (content_length_header == http_response.headers.end() && !http_response.body.empty())
+        // {
+        //     response << "content-length: " << http_response.body.size() << "\r\n";
+        // }
 
         response << "\r\n";
 

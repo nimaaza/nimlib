@@ -10,31 +10,30 @@
 using nimlib::Server::Types::StreamsProvider;
 using nimlib::Server::Types::Handler;
 using nimlib::Server::Types::Connection;
+using nimlib::Server::Constants::HandlerState;
 
 namespace nimlib::Server::Handlers
 {
 	class TlsLayer : public Handler, public StreamsProvider
 	{
 	public:
-		TlsLayer(
-			Connection& connection,
-			StreamsProvider& connection_encrypted_streams,
-			std::shared_ptr<Handler> next = nullptr
-		);
-		~TlsLayer();
+		TlsLayer(std::shared_ptr<Handler> next = nullptr);
+		~TlsLayer() = default;
 
 		void notify(Connection& connection, StreamsProvider& streams) override;
 		void notify(Handler& handler, Connection& connection, StreamsProvider& streams) override;
 		bool wants_more_bytes() override;
 		bool wants_to_write() override;
 		bool wants_to_live() override;
+		bool wants_to_be_calledback() override;
+
+		HandlerState get_state() override;
 
 		std::stringstream& source() override;
 		std::stringstream& sink() override;
 
 	private:
 		bool tls_continue{ true };
-		StreamsProvider& connection_encrypted_streams;
 		std::stringstream decrypted_input{};
 		std::stringstream decrypted_output{};
 		std::unique_ptr<Botan::TLS::Server> tls_server;

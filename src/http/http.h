@@ -27,28 +27,13 @@ namespace nimlib::Server::Handlers::Http
         bool wants_more_bytes() override;
         bool wants_to_write() override;
         bool wants_to_live() override;
+        bool wants_to_be_calledback() override;
+
+        HandlerState get_state() override;
 
     private:
         std::optional<Request> http_request{ std::nullopt };
         std::optional<Response> htt_response{ std::nullopt };
         Router router{};
-        StateManager<HandlerState> handler_state
-        {
-            HandlerState::READY_TO_HANDLE,
-            HandlerState::HANDLER_ERROR,
-            HttpHandler::transition_map,
-            max_reset_counts,
-            time_outs
-        };
-        inline static const std::unordered_map<HandlerState, std::vector<HandlerState>> transition_map
-        {
-            {HandlerState::READY_TO_HANDLE, {HandlerState::H_HANDLING}},
-            {HandlerState::H_HANDLING, {HandlerState::WRITE_AND_WAIT, HandlerState::WRITE_AND_DIE, HandlerState::INCOMPLETE}},
-            {HandlerState::WRITE_AND_DIE, {}},
-            {HandlerState::WRITE_AND_WAIT, {HandlerState::H_HANDLING}},
-            {HandlerState::INCOMPLETE, {HandlerState::H_HANDLING}},
-        };
-        inline static const std::unordered_map<HandlerState, int> max_reset_counts{};
-        inline static const std::unordered_map<HandlerState, long> time_outs{};
     };
 };

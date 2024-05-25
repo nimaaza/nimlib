@@ -87,14 +87,20 @@ namespace nimlib::Server::Sockets
         int tcp_send(std::span<uint8_t> buffer)
         {
             int bytes_count = tcp_socket->tcp_send(buffer);
-            log_agent->info(std::format("wrote {} bytes to socket {}", bytes_count, tcp_socket_descriptor));
+            if (bytes_count > 0)
+            {
+                log_agent->info(std::format("wrote {} bytes to socket {}", bytes_count, tcp_socket_descriptor));
+            }
             return bytes_count;
         };
 
         int tcp_send(std::string_view buffer)
         {
             int bytes_count = tcp_socket->tcp_send(buffer);
-            log_agent->info(std::format("wrote {} bytes to socket {}", bytes_count, tcp_socket_descriptor));
+            if (bytes_count > 0)
+            {
+                log_agent->info(std::format("wrote {} bytes to socket {}", bytes_count, tcp_socket_descriptor));
+            }
             return bytes_count;
         };
 

@@ -18,9 +18,9 @@ namespace nimlib::Server::Handlers::BotanSpec
 		Callbacks(
 			Connection& connection,
 			Handler& tls_layer,
+			std::shared_ptr<Handler> next,
 			StreamsProvider& encrypted_streams,
-			StreamsProvider& decrypted_streams,
-			std::shared_ptr<Handler> next
+			StreamsProvider& decrypted_streams
 		);
 		~Callbacks() = default;
 
@@ -32,8 +32,8 @@ namespace nimlib::Server::Handlers::BotanSpec
 	private:
 		Connection& connection;
 		Handler& tls_layer;
+		std::shared_ptr<Handler> next;
 		StreamsProvider& encrypted_streams;
 		StreamsProvider& decrypted_streams;
-		std::shared_ptr<Handler> next;
 	};
 }
