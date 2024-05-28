@@ -1,0 +1,6 @@
+{
+  "dependencies" : [ "botan", {
+    "name" : "botan",
+    "version>=" : "3.3.0"
+  } ]
+}

@@ -33,8 +33,8 @@ namespace nimlib::Server::Handlers::Http
 
         router.get("/metrics", metrics_handler);
         router.get("/", fallback_router);
-        router.serve_static_big("/files/bird", "/Users/nimaazarbayjani/Documents/CODE/nimlib/cmake-build-debug/img.jpg");
-        router.serve_static_big("/files/big", "/Users/nimaazarbayjani/Movies/Tafrigh-1080.mp4");
+        router.serve_static_big("/files/big", "/absolute/path/to/big/file");
+        router.serve_static("/files/small", "/absolute/path/to/small/file");
         router.fallback(fallback_router);
     }
 
